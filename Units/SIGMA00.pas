@@ -12,7 +12,8 @@ uses
   cxLookAndFeelPainters, cxEdit,
   IdMessageClient, IdSMTP, ADODB,
   QExport, QExportXLS, frxpngimage, EASendMailObjLib_TLB,
-  Variants, StrUtils, OCXFISLib_TLB,Tfhkaif,iFiscal;
+  Variants, StrUtils, OCXFISLib_TLB,Tfhkaif,iFiscal,
+  IdHTTP, IdSSLOpenSSL, IdGlobal, UrlMon;
 
 type
   TfrmMain = class(TForm)
@@ -486,10 +487,11 @@ type
     Serial1: TMenuItem;
     ConfiguracionCorreo1: TMenuItem;
     Actualizaciones1: TMenuItem;
-    qRepBalanceFact: TADOQuery;
     banco_disp: TAction;
     CierredeldaCardnet1: TMenuItem;
     FacturacionElectronica1: TMenuItem;
+    btnSoporte: TSpeedButton;
+    qRepBalanceFact: TADOQuery;
 
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -926,6 +928,7 @@ type
     procedure banco_dispExecute(Sender: TObject);
     procedure CierredeldaCardnet1Click(Sender: TObject);
     procedure FacturacionElectronica1Click(Sender: TObject);
+    procedure btnSoporteClick(Sender: TObject);
   private
     { Private declarations }
     FClientInstance : TFarProc;
@@ -1025,7 +1028,7 @@ uses PVENTA03, PVENTA02, PVENTA04, PVENTA05, PVENTA06, PVENTA08, PVENTA07,
   SERV05, PVENTA230, PTIKET001, DateUtils, PTIKET002, PTIKET003, PRENTA02,
   PVENTAREPVENC, USerial, PVenta233, RVENTA129, PVenta235, PVENTA236,
   PVENTA237, PVenta241, PVENTA242, PVENTA244, StdConvs, SIGMA09, CONT93,
-  PVENTA245, prueba;
+  PVENTA245, prueba, RVENTA137;
 
 {$R *.DFM}
 
@@ -4067,12 +4070,15 @@ begin
 end;
 
 procedure TfrmMain.Generarfacturasautomticas1Click(Sender: TObject);
+var
+  qEjecutar: TADOQuery;
 begin
-  dm.Query1.Close;
-  dm.Query1.SQL.Clear;
-  dm.Query1.SQL.Add('select * from factura_automatica where dia = '+IntToStr(DayOf(now)));
-  dm.Query1.open;
-  case dm.Query1.RecordCount of
+  qEjecutar := dm.Query1;
+  qEjecutar.Close;
+  qEjecutar.SQL.Clear;
+  qEjecutar.SQL.Add('select * from factura_automatica where dia = '+IntToStr(DayOf(now)));
+  qEjecutar.open;
+  case qEjecutar.RecordCount of
     0 : if MessageDlg('NO HAY FACTURACION AUTOMATICA PARA ESTE DIA,'+#13+
         'DESEA CONTINUAR?',mtConfirmation, [mbyes,mbno], 0) = mryes then
         begin
@@ -4080,13 +4086,13 @@ begin
         end;
     else if MessageDlg('DESEA EJECUTAR EL PROCESO DE FACTURACION AUTOMATICA?',mtConfirmation, [mbyes,mbno], 0) = mryes then
           begin
-            dm.Query1.Close;
-            dm.Query1.SQL.Clear;
-            //.Query1.SQL.Add('exec pr_factura_automatica');
-            dm.Query1.SQL.Add('exec pr_factura_automatica :cia, :fecha');
-            dm.Query1.Parameters.ParamByName('cia').Value    := DM.vp_cia;
-            dm.Query1.Parameters.ParamByName('fecha').Value    := Date;
-            dm.Query1.ExecSQL;
+            qEjecutar.Close;
+            qEjecutar.SQL.Clear;
+            //qEjecutar.SQL.Add('exec pr_factura_automatica');
+            qEjecutar.SQL.Add('exec pr_factura_automatica :cia, :fecha');
+            qEjecutar.Parameters.ParamByName('cia').Value    := DM.vp_cia;
+            qEjecutar.Parameters.ParamByName('fecha').Value    := Date;
+            qEjecutar.ExecSQL;
             MessageDlg('PROCESO EJECUTADO SATISFACTORIAMENTE',mtInformation, [mbok], 0);
           end;
   end;
@@ -5472,7 +5478,7 @@ begin
     dm.Query1.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
     dm.Query1.ExecSQL;
     frmActBalance.Close;
-  end
+ end
   else
   begin
   if MessageDlg('DESEA REPARAR LOS BALANCES DE LAS FACTURAS?',mtConfirmation,[mbyes,mbno],0) = mryes then
@@ -5489,7 +5495,7 @@ begin
     dm.Query1.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
     dm.Query1.ExecSQL;
     frmActBalance.Close;
-  end;
+  end;                     
   end;
 
 end;
@@ -5511,35 +5517,123 @@ end;
 procedure TfrmMain.Timer2Timer(Sender: TObject);
 var
   texto : string;
+  nombre, fven: string;
+  rest, dias, minreq, cantidad: Integer;
 begin
-  dm.QNotificaComprobantes.Close;
-  dm.QNotificaComprobantes.SQL.Clear;
-  dm.QNotificaComprobantes.SQL.Add('select distinct a.ncf_fijo from Alarma_Comprobantes a,');
-  dm.QNotificaComprobantes.SQL.Add('ncf n where n.emp_codigo = a.emp_codigo');
-  dm.QNotificaComprobantes.SQL.Add('and n.ncf_fijo = a.ncf_fijo');
-  dm.QNotificaComprobantes.SQL.Add('and a.ncf_cantidad >= (n.NCF_Final - n.NCF_Secuencia)');
-  dm.QNotificaComprobantes.SQL.Add('and a.emp_codigo = :emp');
-  dm.QNotificaComprobantes.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
-  dm.QNotificaComprobantes.Open;
-  dm.QNotificaComprobantes.DisableControls;
-  memonotificaciones.Visible := false;
-  memonotificaciones.Lines.Clear;
-  if dm.QNotificaComprobantes.RecordCount > 0 then
-  begin
-    texto := '';
+    if  dm.QParametrosUsa_FacturacionElectronica.Value  then
+          begin
+          memonotificaciones.Clear;
 
-    while not dm.QNotificaComprobantes.Eof do
-    begin
-      //texto := texto + 'NCF '+dm.QNotificaComprobantes.FieldByName('ncf_fijo').AsString+
-      //                          ' Está a punto de terminarse, ';
-      memonotificaciones.Lines.Add('NCF '+dm.QNotificaComprobantes.FieldByName('ncf_fijo').AsString+
-                                ' Está a punto de terminarse, ');
-      dm.QNotificaComprobantes.Next;
-    end;
-    //memonotificaciones.Lines.Add(Trim(texto));
-    lblAlerta.Caption := 'ALERTA !! : Comprobantes Fiscal, Presione Click aqui para ver';
-    lblAlerta.Visible := true;
+          dm.QNotificaComprobantes.Close;
+          dm.QNotificaComprobantes.SQL.Clear;
+
+          // Restantes y vencimiento desde SecuenciaDGII + TipoNCF
+          dm.QNotificaComprobantes.SQL.Clear;
+          dm.QNotificaComprobantes.SQL.Add(
+            'select s.Cantidad,  '+
+            '  (s.Cantidad - s.Ultima_secuencia_DGII) as Restantes, '+
+            '  t.tip_codigo, t.nombre_dgii, '+
+            '  s.emp_codigo, s.Tipo, s.Secuencia_Inicial_DGII, s.Ultima_secuencia_DGII, '+
+            '  s.FechaVencimientoSecuenciaDGII, s.Activa, s.ID, s.Cantidad, '+
+            '  s.cantidad_minima, '+
+            '  DATEDIFF(day, GETDATE(), s.FechaVencimientoSecuenciaDGII) as DiasParaVencer '+
+            'from SecuenciaDGII s '+
+            'inner join TipoNCF t on t.emp_codigo = s.emp_codigo and s.Tipo = t.cod_dgii '+
+            'where s.emp_codigo = :emp '+
+            '  and s.Activa = 1 '+
+            // Dispara si llega al mínimo O si vence pronto (o vencida)
+            '  and ( (s.Cantidad - s.Ultima_secuencia_DGII) <= isnull(s.cantidad_minima, 0) '+
+            '        or (s.FechaVencimientoSecuenciaDGII is not null '+
+            '            and DATEDIFF(day, GETDATE(), s.FechaVencimientoSecuenciaDGII) <= :umbralDias) ) '+
+            'order by t.nombre_dgii'
+          );
+          dm.QNotificaComprobantes.Parameters.ParamByName('emp').Value        := dm.QEmpresasEMP_CODIGO.Value;
+          dm.QNotificaComprobantes.Parameters.ParamByName('umbralDias').Value := 30; // o el que quieras
+          dm.QNotificaComprobantes.Open;
+
+          memonotificaciones.Visible := False;
+
+          if dm.QNotificaComprobantes.RecordCount>0 then
+          begin
+            dm.QNotificaComprobantes.DisableControls;
+            try
+              dm.QNotificaComprobantes.First;
+              while not dm.QNotificaComprobantes.Eof do
+              begin
+                 nombre := dm.QNotificaComprobantes.FieldByName('nombre_dgii').AsString;
+                 rest   := dm.QNotificaComprobantes.FieldByName('Restantes').AsInteger;
+                 dias   := dm.QNotificaComprobantes.FieldByName('DiasParaVencer').AsInteger;
+                 fven   := dm.QNotificaComprobantes.FieldByName('FechaVencimientoSecuenciaDGII').AsString;
+                 minreq := dm.QNotificaComprobantes.FieldByName('cantidad_minima').AsInteger;
+                 cantidad := dm.QNotificaComprobantes.FieldByName('Cantidad').AsInteger;
+                // 1) Notificación por pocos números
+                if (rest <= minreq) and (cantidad > 0 ) then
+                  memonotificaciones.Lines.Add(
+                    Format('eNCF %s: quedan %d (mínimo %d).', [nombre, rest, minreq])
+                  );
+
+                // 2) Notificación por vencimiento (si tiene fecha)
+                if fven <> '' then
+                begin
+                  if dias < 0 then
+                    memonotificaciones.Lines.Add(
+                      Format('eNCF %s: SECUENCIA VENCIDA hace %d día(s). (Venc: %s)', [nombre, Abs(dias), fven])
+                    )
+                  else if dias <= 30 then
+                    memonotificaciones.Lines.Add(
+                      Format('eNCF %s: vence en %d día(s). (Venc: %s)', [nombre, dias, fven])
+                    );
+                end;
+
+                dm.QNotificaComprobantes.Next;
+              end;
+            finally
+              dm.QNotificaComprobantes.EnableControls;
+            end;
+
+            // Mostrar si hay algo que decir
+            memonotificaciones.Visible := (memonotificaciones.Lines.Count > 0);
+            if memonotificaciones.Visible then
+            begin
+              lblAlerta.Caption := 'ALERTA !! : Comprobantes Electrónicos (folios/vencimiento). Click para ver';
+              lblAlerta.Visible := True;
+            end
+            else
+              lblAlerta.Visible := False;
+            end;
+          end
+          else
+          begin  
+            dm.QNotificaComprobantes.Close;
+            dm.QNotificaComprobantes.SQL.Clear;
+            dm.QNotificaComprobantes.SQL.Add('select distinct a.ncf_fijo from Alarma_Comprobantes a,');
+            dm.QNotificaComprobantes.SQL.Add('ncf n where n.emp_codigo = a.emp_codigo');
+            dm.QNotificaComprobantes.SQL.Add('and n.ncf_fijo = a.ncf_fijo');
+            dm.QNotificaComprobantes.SQL.Add('and a.ncf_cantidad >= (n.NCF_Final - n.NCF_Secuencia)');
+            dm.QNotificaComprobantes.SQL.Add('and a.emp_codigo = :emp');
+            dm.QNotificaComprobantes.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
+            dm.QNotificaComprobantes.Open;
+            dm.QNotificaComprobantes.DisableControls;
+            memonotificaciones.Visible := false;
+            memonotificaciones.Lines.Clear;
+            if dm.QNotificaComprobantes.RecordCount > 0 then
+            begin
+              texto := '';
+
+              while not dm.QNotificaComprobantes.Eof do
+              begin
+                //texto := texto + 'NCF '+dm.QNotificaComprobantes.FieldByName('ncf_fijo').AsString+
+                //                          ' Está a punto de terminarse, ';
+                memonotificaciones.Lines.Add('NCF '+dm.QNotificaComprobantes.FieldByName('ncf_fijo').AsString+
+                                          ' Está a punto de terminarse, ');
+                dm.QNotificaComprobantes.Next;
+              end;
+              //memonotificaciones.Lines.Add(Trim(texto));
+              lblAlerta.Caption := 'ALERTA !! : Comprobantes Fiscal, Presione Click aqui para ver';
+              lblAlerta.Visible := true;
+            end;
   end;
+
   dm.QNotificaComprobantes.EnableControls;
 end;
 
@@ -6222,43 +6316,136 @@ end;
 
 procedure TfrmMain.tmr4Timer(Sender: TObject);
 var
-  texto : string;
+  texto: string;
+  nombre, fven: string;
+  rest, dias, minreq: Integer;
 begin
-  dm.QNotificaComprobantes.Close;
-  dm.QNotificaComprobantes.SQL.Clear;
-  dm.QNotificaComprobantes.SQL.Add('select RIGHT(N.NCF_FIJO,3) FIJO, N.FECHAVENC, DATEDIFF(DAY,FechaVenc,GETDATE()) DIASVENC');
-  dm.QNotificaComprobantes.SQL.Add('from NCF N');
-  dm.QNotificaComprobantes.SQL.Add('WHERE FECHAVENC IS NOT NULL and isnull(Verificavenc,0) = 1');
-  dm.QNotificaComprobantes.SQL.Add('AND DATEDIFF(DAY,FECHAVENC,GETDATE()) >=-30');
-  //dm.QNotificaComprobantes.SQL.Add('AND YEAR(FECHAVENC)>=2019');                     
-  dm.QNotificaComprobantes.SQL.Add('AND EMP_CODIGO ='+IntToStr(DM.vp_cia));
-  dm.QNotificaComprobantes.Open;
-  dm.QNotificaComprobantes.DisableControls;
-  memonotificaciones.Visible := false;
-  memonotificaciones.Clear;
-  if dm.QNotificaComprobantes.RecordCount > 0 then
-  begin
-    //texto := '';
+        if dm.QParametrosUsa_FacturacionElectronica.Value then
+        begin
+          memonotificaciones.Clear;
 
-    dm.QNotificaComprobantes.First;
-    while not dm.QNotificaComprobantes.Eof do
-    begin
-      //texto := texto + 'NCF '+dm.QNotificaComprobantes.FieldByName('ncf_fijo').AsString+
-      //                          ' Está a punto de terminarse, ';
-      if dm.QNotificaComprobantes.FieldByName('DIASVENC').Value < 0 then
-      memonotificaciones.Lines.Add('NCF '+dm.QNotificaComprobantes.FieldByName('FIJO').AsString+
-                                ' Tiene '+dm.QNotificaComprobantes.FieldByName('DIASVENC').AsString+
-                                ' dias para vencer......') else
-      memonotificaciones.Lines.Add('NCF '+dm.QNotificaComprobantes.FieldByName('FIJO').AsString+
-                                ' Tiene '+dm.QNotificaComprobantes.FieldByName('DIASVENC').AsString+
-                                ' dias vencidos......');
+          dm.QNotificaComprobantes.Close;
+          dm.QNotificaComprobantes.SQL.Clear;
 
-      dm.QNotificaComprobantes.Next;
-    end;
-    //memonotificaciones.Lines.Add(Trim(texto));
-    lblAlerta.Caption := 'ALERTA !! : Comprobantes Fiscal a Vencer, Presione Click aqui para ver';
-    lblAlerta.Visible := true;
-  end;
+          // Restantes y vencimiento desde SecuenciaDGII + TipoNCF
+          dm.QNotificaComprobantes.SQL.Clear;
+          dm.QNotificaComprobantes.SQL.Add(
+            'select '+
+            '  (s.Cantidad - s.Ultima_secuencia_DGII) as Restantes, '+
+            '  t.tip_codigo, t.nombre_dgii, '+
+            '  s.emp_codigo, s.Tipo, s.Secuencia_Inicial_DGII, s.Ultima_secuencia_DGII, '+
+            '  s.FechaVencimientoSecuenciaDGII, s.Activa, s.ID, s.Cantidad, '+
+            '  s.cantidad_minima, '+
+            '  DATEDIFF(day, GETDATE(), s.FechaVencimientoSecuenciaDGII) as DiasParaVencer '+
+            'from SecuenciaDGII s '+
+            'inner join TipoNCF t on t.emp_codigo = s.emp_codigo and s.Tipo = t.cod_dgii '+
+            'where s.emp_codigo = :emp '+
+            '  and s.Activa = 1 '+
+            // Dispara si llega al mínimo O si vence pronto (o vencida)
+            '  and ( (s.Cantidad - s.Ultima_secuencia_DGII) <= isnull(s.cantidad_minima, 0) '+
+            '        or (s.FechaVencimientoSecuenciaDGII is not null '+
+            '            and DATEDIFF(day, GETDATE(), s.FechaVencimientoSecuenciaDGII) <= :umbralDias) ) '+
+            'order by t.nombre_dgii'
+          );
+          dm.QNotificaComprobantes.Parameters.ParamByName('emp').Value        := dm.QEmpresasEMP_CODIGO.Value;
+          dm.QNotificaComprobantes.Parameters.ParamByName('umbralDias').Value := 30; // o el que quieras
+          dm.QNotificaComprobantes.Open;
+
+          memonotificaciones.Visible := False;
+
+          if not dm.QNotificaComprobantes.RecordCount>0 then
+          begin
+            dm.QNotificaComprobantes.DisableControls;
+            try
+              dm.QNotificaComprobantes.First;
+              while not dm.QNotificaComprobantes.Eof do
+              begin
+                 nombre := dm.QNotificaComprobantes.FieldByName('nombre_dgii').AsString;
+                 rest   := dm.QNotificaComprobantes.FieldByName('Restantes').AsInteger;
+                 dias   := dm.QNotificaComprobantes.FieldByName('DiasParaVencer').AsInteger;
+                 fven   := dm.QNotificaComprobantes.FieldByName('FechaVencimientoSecuenciaDGII').AsString;
+                 minreq := dm.QNotificaComprobantes.FieldByName('cantidad_minima').AsInteger;
+
+                // 1) Notificación por pocos números
+                if rest <= minreq then
+                  memonotificaciones.Lines.Add(
+                    Format('eNCF %s: quedan %d (mínimo %d).', [nombre, rest, minreq])
+                  );
+
+                // 2) Notificación por vencimiento (si tiene fecha)
+                if fven <> '' then
+                begin
+                  if dias < 0 then
+                    memonotificaciones.Lines.Add(
+                      Format('eNCF %s: SECUENCIA VENCIDA hace %d día(s). (Venc: %s)', [nombre, Abs(dias), fven])
+                    )
+                  else if dias <= 30 then
+                    memonotificaciones.Lines.Add(
+                      Format('eNCF %s: vence en %d día(s). (Venc: %s)', [nombre, dias, fven])
+                    );
+                end;
+
+                dm.QNotificaComprobantes.Next;
+              end;
+            finally
+              dm.QNotificaComprobantes.EnableControls;
+            end;
+
+            // Mostrar si hay algo que decir
+            memonotificaciones.Visible := (memonotificaciones.Lines.Count > 0);
+            if memonotificaciones.Visible then
+            begin
+              lblAlerta.Caption := 'ALERTA !! : Comprobantes Electrónicos (folios/vencimiento). Click para ver';
+              lblAlerta.Visible := True;
+            end
+            else
+              lblAlerta.Visible := False;
+          end
+          else
+          begin
+            lblAlerta.Visible := False;
+            memonotificaciones.Visible := False;
+          end;
+         end
+          else
+          begin
+            dm.QNotificaComprobantes.Close;
+            dm.QNotificaComprobantes.SQL.Clear;
+            dm.QNotificaComprobantes.SQL.Add('select RIGHT(N.NCF_FIJO,3) FIJO, N.FECHAVENC, DATEDIFF(DAY,FechaVenc,GETDATE()) DIASVENC');
+            dm.QNotificaComprobantes.SQL.Add('from NCF N');
+            dm.QNotificaComprobantes.SQL.Add('WHERE FECHAVENC IS NOT NULL and isnull(Verificavenc,0) = 1');
+            dm.QNotificaComprobantes.SQL.Add('AND DATEDIFF(DAY,FECHAVENC,GETDATE()) >=-30');
+            //dm.QNotificaComprobantes.SQL.Add('AND YEAR(FECHAVENC)>=2019');
+            dm.QNotificaComprobantes.SQL.Add('AND EMP_CODIGO ='+IntToStr(DM.vp_cia));
+            dm.QNotificaComprobantes.Open;
+            dm.QNotificaComprobantes.DisableControls;
+            memonotificaciones.Visible := false;
+            memonotificaciones.Clear;
+            if dm.QNotificaComprobantes.RecordCount > 0 then
+            begin
+              //texto := '';
+
+              dm.QNotificaComprobantes.First;
+              while not dm.QNotificaComprobantes.Eof do
+              begin
+                //texto := texto + 'NCF '+dm.QNotificaComprobantes.FieldByName('ncf_fijo').AsString+
+                //                          ' Está a punto de terminarse, ';
+                if dm.QNotificaComprobantes.FieldByName('DIASVENC').Value < 0 then
+                memonotificaciones.Lines.Add('NCF '+dm.QNotificaComprobantes.FieldByName('FIJO').AsString+
+                                          ' Tiene '+dm.QNotificaComprobantes.FieldByName('DIASVENC').AsString+
+                                          ' dias para vencer......') else
+                memonotificaciones.Lines.Add('NCF '+dm.QNotificaComprobantes.FieldByName('FIJO').AsString+
+                                          ' Tiene '+dm.QNotificaComprobantes.FieldByName('DIASVENC').AsString+
+                                          ' dias vencidos......');
+
+                dm.QNotificaComprobantes.Next;
+              end;
+              //memonotificaciones.Lines.Add(Trim(texto));
+              lblAlerta.Caption := 'ALERTA !! : Comprobantes Fiscal a Vencer, Presione Click aqui para ver';
+              lblAlerta.Visible := true;
+            end;
+          end;
+
   dm.QNotificaComprobantes.EnableControls;
 
 
@@ -6489,6 +6676,87 @@ begin
   // Llamada a la aplicación .NET con los parámetros
   ShellExecute(0, 'open', PChar(ExePath), PChar(Parametros), nil, SW_SHOWNORMAL);
 
+end;
+
+procedure TfrmMain.btnSoporteClick(Sender: TObject);
+var
+  RutaSoporte, UrlSoporte: string;
+  FrmDescarga: TForm;
+  ProgressBar: TProgressBar;
+  LabelInfo: TLabel;
+  DescargaOK: Boolean;
+begin
+  RutaSoporte := ExtractFilePath(Application.ExeName) + 'UltraViewerQS.exe';
+  UrlSoporte := 'https://get.ultraviewer.net/quicksupport/QSDownload2.aspx?code=6WDCND12';
+
+  try
+    // Si no existe, descargarlo
+    if not FileExists(RutaSoporte) then
+    begin
+      DescargaOK := False;
+
+      // Ventana simple de progreso
+      FrmDescarga := TForm.Create(nil);
+      try
+        FrmDescarga.Width := 420;
+        FrmDescarga.Height := 150;
+        FrmDescarga.Position := poScreenCenter;
+        FrmDescarga.BorderStyle := bsDialog;
+        FrmDescarga.Caption := 'Soporte Técnico';
+
+        LabelInfo := TLabel.Create(FrmDescarga);
+        LabelInfo.Parent := FrmDescarga;
+        LabelInfo.Left := 20;
+        LabelInfo.Top := 20;
+        LabelInfo.Caption := 'Descargando soporte técnico...';
+        LabelInfo.Font.Size := 10;
+
+        ProgressBar := TProgressBar.Create(FrmDescarga);
+        ProgressBar.Parent := FrmDescarga;
+        ProgressBar.Left := 20;
+        ProgressBar.Top := 55;
+        ProgressBar.Width := 360;
+        ProgressBar.Height := 25;
+        ProgressBar.Min := 0;
+        ProgressBar.Max := 100;
+        ProgressBar.Position := 10;
+
+        FrmDescarga.Show;
+        Application.ProcessMessages;
+
+        // Simulación visual mientras descarga
+        ProgressBar.Position := 25;
+        LabelInfo.Caption := 'Conectando con servidor...';
+        Application.ProcessMessages;
+
+        // Descarga real usando Windows (sin SSL extra)
+        if URLDownloadToFile(nil, PChar(UrlSoporte), PChar(RutaSoporte), 0, nil) = 0 then
+        begin
+          ProgressBar.Position := 100;
+          LabelInfo.Caption := 'Descarga completada.';
+          Application.ProcessMessages;
+          Sleep(500);
+          DescargaOK := True;
+        end;
+
+      finally
+        FrmDescarga.Free;
+      end;
+
+      if not DescargaOK or (not FileExists(RutaSoporte)) then
+      begin
+        ShowMessage('No se pudo descargar UltraViewer.');
+        Exit;
+      end;
+    end;
+
+    // Ejecutar automáticamente
+    ShellExecute(0, 'open', PChar(RutaSoporte), nil, nil, SW_SHOWNORMAL);
+
+  except
+    on E: Exception do
+      ShowMessage('Error: ' + E.Message);
+  end;
 end;
 
 end.

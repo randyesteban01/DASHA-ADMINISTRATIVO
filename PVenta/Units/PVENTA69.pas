@@ -229,9 +229,123 @@ uses RVENTA02, RVENTA00, RVENTA01, RVENTA03, RVENTA32, RVENTA33,
   RVENTA34, RVENTA35, RVENTA36, RVENTA37, RVENTA38, RVENTA39, PVENTA83,
   SIGMA01, RVENTA64, RVENTA65, RVENTA67, RVENTA68, SIGMA00, RVENTA71,
   RVENTA72, RSERV00, RVENTA79, RVENTA85, RVENTA88, RVENTA100, RVENTA115,
-  RVENTA122, RVENTA126, RVENTA127, RVENTA128, RVENTA130, RVENTA134;
+  RVENTA122, RVENTA126, RVENTA127, RVENTA128, RVENTA130, RVENTA134, RVENTA137,
+  JPEG;
 
 {$R *.dfm}
+// --- Helpers ESC/POS ---
+function ESC(const b: Byte): AnsiString;
+begin
+  Result := AnsiChar(#27) + AnsiChar(b);
+end;
+
+function GS(const b: Byte): AnsiString;
+begin
+  Result := AnsiChar(#29) + AnsiChar(b);
+end;
+
+procedure ImprimirLogoTicket(var F: TextFile);
+const
+  MaxLogoWidth = 300;
+  MaxLogoHeight = 140;
+var
+  Stream: TMemoryStream;
+  SrcBmp: TBitmap;
+  Jpg: TJPEGImage;
+  Bmp: TBitmap;
+  Scale: Double;
+  LogoWidth, LogoHeight, WidthBytes: Integer;
+  x, y, Bit: Integer;
+  ByteValue: Byte;
+  ColorRef: DWORD;
+  Gray: Integer;
+  Data: AnsiString;
+begin
+  if Trim(dm.QParametrospar_imprime_logo.Value) <> 'True' then
+    Exit;
+  if DM.QEmpresasEMP_LOGO.IsNull then
+    Exit;
+
+  Stream := TMemoryStream.Create;
+  SrcBmp := TBitmap.Create;
+  Bmp := TBitmap.Create;
+  try
+    try
+      DM.QEmpresasEMP_LOGO.SaveToStream(Stream);
+      if Stream.Size = 0 then
+        Exit;
+
+      Stream.Position := 0;
+      try
+        SrcBmp.LoadFromStream(Stream);
+      except
+        Stream.Position := 0;
+        Jpg := TJPEGImage.Create;
+        try
+          Jpg.LoadFromStream(Stream);
+          SrcBmp.Assign(Jpg);
+        finally
+          Jpg.Free;
+        end;
+      end;
+
+      if (SrcBmp.Width = 0) or (SrcBmp.Height = 0) then
+        Exit;
+
+      Scale := 1;
+      if SrcBmp.Width > MaxLogoWidth then
+        Scale := MaxLogoWidth / SrcBmp.Width;
+      if (SrcBmp.Height * Scale) > MaxLogoHeight then
+        Scale := MaxLogoHeight / SrcBmp.Height;
+
+      LogoWidth := Round(SrcBmp.Width * Scale);
+      LogoHeight := Round(SrcBmp.Height * Scale);
+      if (LogoWidth <= 0) or (LogoHeight <= 0) then
+        Exit;
+
+      Bmp.PixelFormat := pf24bit;
+      Bmp.Width := LogoWidth;
+      Bmp.Height := LogoHeight;
+      Bmp.Canvas.Brush.Color := clWhite;
+      Bmp.Canvas.FillRect(Rect(0, 0, LogoWidth, LogoHeight));
+      Bmp.Canvas.StretchDraw(Rect(0, 0, LogoWidth, LogoHeight), SrcBmp);
+
+      WidthBytes := (LogoWidth + 7) div 8;
+      SetLength(Data, WidthBytes * LogoHeight);
+      for y := 0 to LogoHeight - 1 do
+      begin
+        for x := 0 to WidthBytes - 1 do
+        begin
+          ByteValue := 0;
+          for Bit := 0 to 7 do
+          begin
+            if (x * 8 + Bit) < LogoWidth then
+            begin
+              ColorRef := GetPixel(Bmp.Canvas.Handle, x * 8 + Bit, y);
+              Gray := (GetRValue(ColorRef) * 30 + GetGValue(ColorRef) * 59 + GetBValue(ColorRef) * 11) div 100;
+              if Gray < 160 then
+                ByteValue := ByteValue or (128 shr Bit);
+            end;
+          end;
+          Data[(y * WidthBytes) + x + 1] := AnsiChar(ByteValue);
+        end;
+      end;
+
+      Write(F, ESC($61) + AnsiChar(#1));
+      Write(F, GS($76) + AnsiChar(#48) + AnsiChar(#0) +
+        AnsiChar(WidthBytes and $FF) + AnsiChar(WidthBytes shr 8) +
+        AnsiChar(LogoHeight and $FF) + AnsiChar(LogoHeight shr 8) + Data);
+      Writeln(F);
+      Write(F, ESC($61) + AnsiChar(#0));
+    except
+      // If the saved logo is not supported, keep printing the ticket without it.
+    end;
+  finally
+    Bmp.Free;
+    SrcBmp.Free;
+    Stream.Free;
+  end;
+end;
 
 procedure TfrmReimpresion.btTipoClick(Sender: TObject);
 begin
@@ -241,7 +355,7 @@ begin
   search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('Cï¿½digo');
   search.ResultField := 'tfa_codigo';
   search.Title := 'Tipos de factura';
   if search.execute then
@@ -457,8 +571,9 @@ begin
             end;
       end;
 
-      if ((dm.QParametrospar_fac_preimpresa.Value = 'True') AND (dm.QParametrospar_formato_preimpreso.Value = 'SteelTec')) then
-          begin
+      if ((dm.QParametrospar_fac_preimpresa.Value = 'True') and
+       ((dm.QParametrospar_formato_preimpreso.Value = 'SteelTec') )) then
+        begin
               application.createform(tRFacturaSteelTec, RFacturaSteelTec);
               RFacturaSteelTec.QFactura.Close;
               RFacturaSteelTec.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
@@ -489,7 +604,42 @@ begin
             end;
             end;
       end;
-      
+
+      if ((dm.QParametrospar_fac_preimpresa.Value = 'True') and
+       (
+        (dm.QParametrospar_formato_preimpreso.Value = 'Construccion'))) then
+        begin
+              application.createform(TRFacturaConstruccion, RFacturaContruccion);
+              RFacturaContruccion.QFactura.Close;
+              RFacturaContruccion.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+              RFacturaContruccion.QFactura.Parameters.ParamByName('tipo').Value   := edTipo.Text;
+              RFacturaContruccion.QFactura.Parameters.ParamByName('forma').Value  := 'A';
+              RFacturaContruccion.QFactura.Parameters.ParamByName('numero').Value := edNumero.Text;
+              RFacturaContruccion.QFactura.Parameters.ParamByName('suc').Value    := DBLookupComboBox2.KeyValue;
+              RFacturaContruccion.QFactura.open;
+              RFacturaContruccion.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+              RFacturaContruccion.QDetalle.open;
+              RFacturaContruccion.lbReimpresion.Enabled := True;
+            case cbDestino.ItemIndex of
+            0:begin
+            RFacturaContruccion.PrinterSetup;
+            RFacturaContruccion.Preview;
+            RFacturaContruccion.Destroy;
+            end;
+            1:begin
+            RFacturaContruccion.PrinterSetup;
+            RFacturaContruccion.Print;
+            RFacturaContruccion.Destroy;
+            end;
+            2:begin
+            vl_cliente := GetCliente('Facturas','fac_numero');
+            vl_atach := 'Factura_No_'+edNumero.Text+'.PDF';
+            RFacturaContruccion.ExportToFilter(TQRPDFDocumentFilter.Create('.\'+vl_atach));
+            EnvioMail(RFacturaContruccion,'Factura');
+            end;
+            end;
+      end;
+
 
       if ((dm.QParametrospar_fac_preimpresa.Value = 'True') AND (dm.QParametrospar_formato_preimpreso.Value = 'Caceres&Equipos')) then
           begin
@@ -561,7 +711,7 @@ begin
         if (dm.QParametrospar_fac_preimpresa.Value = 'True') and (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados')
         and (dm.QParametrospar_formato_preimpreso.Value <> 'Grabado_Exento') and
         ((DM.QParametrospar_formato_preimpreso.Value <> 'Sarita & Asociados') or
-         (dm.QParametrospar_formato_preimpreso.Value = 'SteelTec')) then
+         (dm.QParametrospar_formato_preimpreso.Value = 'SteelTec')  ) then
         begin
           application.CreateForm(tRFacturaPreImpresa, RFacturaPreImpresa);
           RFacturaPreImpresa.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
@@ -582,7 +732,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QRBelkis.PrinterSetup;
@@ -635,7 +785,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QRSoloAutos.print;
@@ -662,7 +812,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.lbReimpresion.Enabled := True;
@@ -704,7 +854,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QFactura.Close;
@@ -758,7 +908,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QRMadeco.PrinterSetup;
@@ -784,7 +934,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QRMSConsulting.PrinterSetup;
@@ -809,7 +959,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QRImpresosDuran.PrinterSetup;
@@ -845,7 +995,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFactura.lbReimpresion.Enabled := True;
@@ -880,7 +1030,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaClinico.PrinterSetup;
@@ -911,7 +1061,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaGrabadoExento.PrinterSetup;
@@ -950,7 +1100,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFactura.PrinterSetup;
@@ -990,7 +1140,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFactura.PrinterSetup;
@@ -1029,7 +1179,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaElegante.PrinterSetup;
@@ -1065,7 +1215,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFactura2Columnas.PrinterSetup;
@@ -1231,8 +1381,8 @@ begin
         RNotaDebito.destroy;
       end;
   5 : begin //Devolucion
-        if dm.QParametrospar_fac_preimpresa.Value = 'False' then
-        begin
+       // if (dm.QParametrospar_fac_preimpresa.Value = 'False') or (dm.QParametrosintegracion_luganis.AsBoolean) then
+      //  begin
           application.createform(tRDevolucion, RDevolucion);
           RDevolucion.QDevolucion.Close;
           RDevolucion.QDevolucion.Parameters.ParamByName('emp_codigo').Value := dm.vp_cia;
@@ -1278,8 +1428,8 @@ begin
             end;
           end;
           RDevolucion.Destroy;
-          end
-        else
+         // end
+        {else
         begin
           application.createform(tRDevolucionPreImpresa, RDevolucionPreImpresa);
           RDevolucionPreImpresa.QDevolucion.Parameters.ParamByName('numero').Value := StrToInt(Trim(edNumero.Text));
@@ -1297,7 +1447,7 @@ begin
             //2:EnvioMail(RDevolucionPreImpresa.QRBB,'Devolucion');
             end;
            RDevolucionPreImpresa.Release;
-        end;
+        end;    }
       end;
   6 : if Trim(edNumero.Text) = '' then
          ShowMessage('DEBE INGRESAR UN NUMERO DE RECIBO')
@@ -1635,7 +1785,7 @@ begin
         dm.Query1.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
         dm.Query1.Open;
         if dm.Query1.FieldByName('con_status').AsString = 'ANU' then
-          MessageDlg('Este conduce está anulado',mtError,[mbok],0)
+          MessageDlg('Este conduce estï¿½ anulado',mtError,[mbok],0)
         else
         begin
         if (DM.QParametrospar_fac_preimpresa.Value = 'False') then begin
@@ -3198,7 +3348,7 @@ end;
 //Orden de Compra
 2:begin
 end;
-//Nota de crédito
+//Nota de crï¿½dito
 3:begin
 vl_cliente  := GetCliente('NotasCredito','ncr_numero');
 vl_destino  := GetDestino('NotasCredito','ncr_numero');
@@ -3214,7 +3364,7 @@ vl_concepto := GetConcepto('NotasCredito','ncr_concepto','ncr_numero');
   mmo1.Lines.Add(DBLookupComboBox2.Text);
 
 end;
-//Nota de débito
+//Nota de dï¿½bito
 4:begin
 vl_cliente  := GetCliente('NotasDebito','nde_numero');
 vl_destino  := GetDestino('NotasDebito','nde_numero');
@@ -3230,7 +3380,7 @@ vl_concepto := GetConcepto('NotasDebito','nde_concepto','nde_numero');
   mmo1.Lines.Add(DBLookupComboBox2.Text);
 
 end;
-//Devolución
+//Devoluciï¿½n
 5:begin
 end;
 //Recibo
@@ -3252,7 +3402,7 @@ end;
 //Desembolso
 7:begin
 end;
-//Cotización
+//Cotizaciï¿½n
 8:begin
 vl_cliente  := GetCliente('Cotizacion','cot_numero');
 vl_destino  := GetDestino('Cotizacion','cot_numero');
@@ -3266,7 +3416,7 @@ vl_destino  := GetDestino('Cotizacion','cot_numero');
   mmo1.Lines.Add(DBLookupComboBox2.Text);
 
 end;
-//Entrada de almacén
+//Entrada de almacï¿½n
 9:begin
 end;
 //Conduce / Salida
@@ -3275,7 +3425,7 @@ end;
 //Transferencia
 11:begin
 end;
-//Cotización múltiple
+//Cotizaciï¿½n mï¿½ltiple
 12:begin
 end;
 //Liquidacion de Mercancia
@@ -3284,7 +3434,7 @@ end;
 //Orden de Servicio
 14:begin
 end;
-//Devolución en Compra
+//Devoluciï¿½n en Compra
 15:begin
 end;
 end;
@@ -3384,6 +3534,33 @@ with DM.Query1 do begin
 end;
 end;
 
+// Imprime QR nativo ESC/POS (module 1..16, EC: 48=L,49=M,50=Q,51=H)
+procedure WriteQR(var F: TextFile; const Data: AnsiString; ModuleSize: Byte = 6; ECLevel: Byte = 48);
+var pL, pH: AnsiChar;
+begin
+  // centrar
+  Write(F, ESC($61) + AnsiChar(#1));              // ESC a 1
+
+  // modelo
+  Write(F, GS($28) + 'k' + #04#00 + #49#65#50#00); // GS ( k 4 0 1 41 2 0
+  // tamaï¿½o de mï¿½dulo
+  Write(F, GS($28) + 'k' + #03#00 + #49#67 + AnsiChar(ModuleSize));
+  // nivel de correcciï¿½n
+  Write(F, GS($28) + 'k' + #03#00 + #49#69 + AnsiChar(ECLevel));
+
+  // almacenar datos
+  pL := AnsiChar((Length(Data)+3) and $FF);
+  pH := AnsiChar((Length(Data)+3) shr 8);
+  Write(F, GS($28) + 'k' + pL + pH + #49#80#48 + Data);
+
+  // imprimir
+  Write(F, GS($28) + 'k' + #03#00 + #49#81 + #48);
+
+  // salto y volver a izquierda
+  Writeln(F); Writeln(F);
+  Write(F, ESC($61) + AnsiChar(#0));              // ESC a 0
+end;
+
 
 procedure TfrmReimpresion.Imp40ColumnasFac;
 var
@@ -3392,6 +3569,10 @@ var
   Tfac, Saldo, TDesc : double;
   puerto, lbitbis, impcodigo, pro_codigo, Unidad, codigoabre, t, copias, Recibido, Devuelta : string;
   a : integer;
+  qrData: AnsiString;
+  qrURL, codSeg, fechaFirma, codDGII: string;
+  aceptado: Boolean;
+
 begin
   QFactura.Close;
   QFactura.Parameters.ParamByName('emp').Value := dm.vp_cia;
@@ -3505,6 +3686,10 @@ end;
   RFactura.QFormasPago.Open;
   AssignFile(arch, '.\t.txt');
   rewrite(arch);
+  Write(arch, ESC($40));                     // ESC @ (init)
+  Write(arch, ESC($74) + AnsiChar(#2));      // ESC t 2 -> CP850
+  Writeln(arch);
+  ImprimirLogoTicket(arch);
 
   writeln(arch, dm.Centro('***RE-IMPRESION**'));
 
@@ -3558,10 +3743,10 @@ end;
     writeln(arch, 'Cajero: '+copy(dm.Query1.FieldByName('caj_nombre').asstring,1,13)+s+'Hora: '+RFactura.QFacturaFAC_HORA.AsString);
   end;
 
-  if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
+  if Trim(RFactura.QFacturaeNCF.Value) <> '' then
   begin
     writeln(arch, ' ');
-    writeln(arch, 'NCF: '+RFactura.QFacturaNumeroCF.Value);
+    writeln(arch, 'eNCF: '+RFactura.QFacturaeNCF.Value);
   //buscar vencimiento
       with QDatos do begin
       Close;
@@ -4059,9 +4244,6 @@ end;
   writeln(arch, ' ');
   writeln(arch, ' ');
   writeln(arch, ' ');
-  writeln(arch, ' ');
-  writeln(arch, ' ');
-  writeln(arch, ' ');
 
 //  dm.Query1.Close;
 //  dm.Query1.SQL.Clear;
@@ -4073,9 +4255,77 @@ end;
 
 
 
-
+    {
  if codigoabre = 'Termica' then
-  writeln(arch,chr(27)+chr(109));
+  writeln(arch,chr(27)+chr(109));      }
+
+  //Informacion necesaria para el codigo QR
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('select ');
+    dm.Query1.SQL.Add('(select top 1 UrlCodigoQR from vwFacturasXMLRptCodigoBarra cb ');
+    dm.Query1.SQL.Add(' where cb.emp_codigo=f.emp_codigo and cb.fac_numero=f.fac_numero ');
+    dm.Query1.SQL.Add(' and cb.tfa_codigo=f.tfa_codigo and cb.fac_forma=f.fac_forma) as UrlCodigoQR,');
+    dm.Query1.SQL.Add('f.codigoseguridad, ');
+    dm.Query1.SQL.Add('CONVERT(varchar(23), f.fechafirma, 121) AS fechafirma,');
+    dm.Query1.SQL.Add('(select top 1 tf.cod_dgii from TipoNCF tf where tf.tip_codigo=f.tip_codigo) as cod_dgii,');
+    dm.Query1.SQL.Add('ISNULL(f.AceptadoDGII,0) AS AceptadoDGII ');
+    dm.Query1.SQL.Add('from FACTURAS f ');
+    dm.Query1.SQL.Add('where f.emp_codigo=:emp and f.tfa_codigo=:tipo ');
+    dm.Query1.SQL.Add('and f.fac_numero=:numero and f.fac_forma=:forma ');
+    dm.Query1.SQL.Add('and f.suc_codigo=:suc');
+    dm.Query1.Parameters.ParamByName('emp').Value    := DM.vp_cia;
+    dm.Query1.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+    dm.Query1.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+    dm.Query1.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+    dm.Query1.Parameters.ParamByName('suc').Value    := QFacturaSUC_CODIGO.Value;
+    dm.Query1.Open;
+
+    qrURL      := dm.Query1.FieldByName('UrlCodigoQR').AsString;
+    codSeg     := dm.Query1.FieldByName('codigoseguridad').AsString;
+    fechaFirma := dm.Query1.FieldByName('fechafirma').AsString;
+    codDGII    := dm.Query1.FieldByName('cod_dgii').AsString;
+
+   if dm.Query1.FieldByName('AceptadoDGII').AsBoolean
+     and (Trim(qrURL) <> '') then
+  begin
+     // ---- QR DGII / timbre ----
+
+     qrData := AnsiString(Trim(qrURL));
+    {qrData := AnsiString(
+      // Usa tu funciï¿½n/campo que arma la URL del timbre:
+      // Ejemplo:
+      'https://timbre.dgii.gov.do/consulta?encf=' + RFactura.QFacturaNumeroCF.AsString +
+      '&rn=' + QSucursalsuc_rnc.AsString
+    );  }
+    WriteQR(arch, qrData, 6, 48);   // mï¿½dulo 6, nivel L (rï¿½pido y legible)
+    Writeln(arch, 'Fecha firma: ' + fechaFirma);
+    Writeln(arch, 'Cod. seguridad: ' + codSeg);
+    
+     {
+    qrData := AnsiString(qrURL);
+    WriteQR(arch, qrData, 6, 48);  // mï¿½dulo 6, nivel L
+    Writeln(arch, 'Fecha firma: ' + fechaFirma);
+    Writeln(arch, 'Cod. seguridad: ' + codSeg);   
+    Writeln(arch); // lï¿½nea en blanco antes del corte
+    }
+  end
+  else
+  begin
+    // No imprimas QR ni datos; si quieres, puedes mostrar un aviso:
+    // Writeln(arch, 'Documento pendiente de aceptaciï¿½n DGII');
+  end;
+  writeln(arch, ' ');
+  // Mensaje final opcional
+  Writeln(arch, dm.Centro('ï¿½Gracias por su compra!'));
+  writeln(arch, ' ');
+  writeln(arch, ' ');
+  writeln(arch, ' ');
+  Writeln(arch);
+
+  // ---- Corte de papel ----
+  Write(arch, GS($56) + AnsiChar(#66) + AnsiChar(#0));  // GS V B 0  (corte parcial)
+  Writeln(arch);   
 
 
   CloseFile(arch);

@@ -1,6 +1,6 @@
 object frmProveedores: TfrmProveedores
-  Left = 376
-  Top = 208
+  Left = 378
+  Top = 193
   BorderIcons = [biSystemMenu, biMinimize, biHelp]
   BorderStyle = bsSingle
   Caption = 'Proveedores'
@@ -248,7 +248,7 @@ object frmProveedores: TfrmProveedores
       end
       object Label18: TLabel
         Left = 360
-        Top = 101
+        Top = 133
         Width = 63
         Height = 13
         Caption = 'Dias Creditos'
@@ -412,17 +412,19 @@ object frmProveedores: TfrmProveedores
         Left = 360
         Top = 8
         Width = 169
-        Height = 57
+        Height = 73
         Caption = 'Tipo de Proveedor'
         DataField = 'SUP_TIPO'
         DataSource = dsProveedores
         Items.Strings = (
           'Proveedor formal'
-          'Proveedor informal')
+          'Proveedor informal'
+          'Proveedor internacional')
         TabOrder = 15
         Values.Strings = (
           'F'
-          'I')
+          'I'
+          'E')
       end
       object DBEdit13: TDBEdit
         Left = 96
@@ -548,7 +550,7 @@ object frmProveedores: TfrmProveedores
       end
       object DBCheckBox1: TDBCheckBox
         Left = 360
-        Top = 64
+        Top = 96
         Width = 169
         Height = 33
         Caption = 'Imprimir el concepto dentro del cheque'
@@ -595,7 +597,7 @@ object frmProveedores: TfrmProveedores
       end
       object DBEdit20: TDBEdit
         Left = 432
-        Top = 97
+        Top = 129
         Width = 57
         Height = 21
         DataField = 'dias_creditos'

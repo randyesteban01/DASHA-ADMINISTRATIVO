@@ -177,6 +177,8 @@ type
     procedure QProveedoresBeforeOpen(DataSet: TDataSet);
   private
     { Private declarations }
+    CargandoDatosRnc: Boolean;
+    procedure CargarDatosRnc(const ARnc: string);
   public
     { Public declarations }
   end;
@@ -253,6 +255,7 @@ begin
   QProveedoresEMP_CODIGO.value := dm.vp_cia;
   QProveedoresSUP_BALANCE.value := 0;
   QProveedoresSUP_STATUS.value := 'ACT';
+  QProveedoresSUP_TIPO.Value := 'F';
   QProveedoresSUP_LIMIte.Value := 0;
   QProveedoressup_concepto_cheque.Value := 'False';
 end;
@@ -263,16 +266,19 @@ var
   a : integer;
 begin
   valido := true;
-  for a := 1 to length(QProveedoresSUP_RNC.AsString) do
+  if QProveedoresSUP_TIPO.AsString <> 'E' then
   begin
-    if (copy(QProveedoresSUP_RNC.AsString,a,1) <> '0') and (copy(QProveedoresSUP_RNC.AsString,a,1) <> '1') and
-    (copy(QProveedoresSUP_RNC.AsString,a,1) <> '2') and (copy(QProveedoresSUP_RNC.AsString,a,1) <> '3') and
-    (copy(QProveedoresSUP_RNC.AsString,a,1) <> '4') and (copy(QProveedoresSUP_RNC.AsString,a,1) <> '5') and
-    (copy(QProveedoresSUP_RNC.AsString,a,1) <> '6') and (copy(QProveedoresSUP_RNC.AsString,a,1) <> '7') and
-    (copy(QProveedoresSUP_RNC.AsString,a,1) <> '8') and (copy(QProveedoresSUP_RNC.AsString,a,1) <> '9') then
+    for a := 1 to length(QProveedoresSUP_RNC.AsString) do
     begin
-      valido := false;
-      break;
+      if (copy(QProveedoresSUP_RNC.AsString,a,1) <> '0') and (copy(QProveedoresSUP_RNC.AsString,a,1) <> '1') and
+      (copy(QProveedoresSUP_RNC.AsString,a,1) <> '2') and (copy(QProveedoresSUP_RNC.AsString,a,1) <> '3') and
+      (copy(QProveedoresSUP_RNC.AsString,a,1) <> '4') and (copy(QProveedoresSUP_RNC.AsString,a,1) <> '5') and
+      (copy(QProveedoresSUP_RNC.AsString,a,1) <> '6') and (copy(QProveedoresSUP_RNC.AsString,a,1) <> '7') and
+      (copy(QProveedoresSUP_RNC.AsString,a,1) <> '8') and (copy(QProveedoresSUP_RNC.AsString,a,1) <> '9') then
+      begin
+        valido := false;
+        break;
+      end;
     end;
   end;
 
@@ -492,25 +498,42 @@ begin
   Search.query.add('where emp_codigo = '+inttostr(dm.vp_cia));
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   if search.execute then
      QProveedoresger_codigo.value := strtoint(search.valuefield);
 end;
 
 procedure TfrmProveedores.btrncClick(Sender: TObject);
 begin
-  Application.CreateForm(tfrmInformacionNCF, frmInformacionNCF);
-  frmInformacionNCF.rnc := DBEdit3.Text;
-  frmInformacionNCF.ShowModal;
-  if MessageDlg('Desea actualizar los datos del proveedor?',mtConfirmation,[mbyes,mbno],0) = mryes then
+  CargarDatosRnc(DBEdit3.Text);
+end;
+
+procedure TfrmProveedores.CargarDatosRnc(const ARnc: string);
+var
+  D: TDatoRncConsulta;
+begin
+  D := dm.ConsultarRncCompleto(ARnc);
+  if not D.Encontrado then
   begin
-    QProveedoresSUP_NOMBRE.Value := frmInformacionNCF.Query1.FieldByName('razon_social').AsString;
-    QProveedoresSUP_DIRECCION.Value := frmInformacionNCF.Query1.FieldByName('direccion').AsString;
-    QProveedoresSUP_LOCALIDAD.Value := frmInformacionNCF.Query1.FieldByName('urbanizacion').AsString+
-                                       frmInformacionNCF.Query1.FieldByName('numero').AsString;
-    QProveedoresSUP_TELEFONO.Value  := frmInformacionNCF.Query1.FieldByName('telefono').AsString;
+    if D.Mensaje <> '' then
+      MessageDlg(D.Mensaje, mtInformation, [mbok], 0);
+    Exit;
   end;
-  frmInformacionNCF.Release;
+
+  if MessageDlg('Desea actualizar los datos del proveedor con '+D.RazonSocial+'?',mtConfirmation,[mbyes,mbno],0) = mryes then
+  begin
+    CargandoDatosRnc := True;
+    try
+      if Trim(D.RncCedula) <> '' then
+        QProveedoresSUP_RNC.Value := D.RncCedula;
+      QProveedoresSUP_NOMBRE.Value := D.RazonSocial;
+      QProveedoresSUP_DIRECCION.Value := D.Direccion;
+      QProveedoresSUP_LOCALIDAD.Value := Trim(D.Urbanizacion)+Trim(D.Numero);
+      QProveedoresSUP_TELEFONO.Value := D.Telefono;
+    finally
+      CargandoDatosRnc := False;
+    end;
+  end;
 end;
 
 procedure TfrmProveedores.bttipoClick(Sender: TObject);
@@ -523,7 +546,7 @@ begin
   Search.query.add('where emp_codigo = '+inttostr(dm.vp_cia));
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   if search.execute then
      QProveedorestip_codigo.value := strtoint(search.valuefield);
 end;
@@ -625,6 +648,9 @@ end;
 
 procedure TfrmProveedores.QProveedoresSUP_RNCChange(Sender: TField);
 begin
+  if CargandoDatosRnc then
+    Exit;
+
   if not QProveedoresSUP_RNC.IsNull then
   begin
     Query1.Close;
