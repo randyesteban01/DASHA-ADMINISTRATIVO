@@ -1,11 +1,11 @@
 object frmBuscaProducto: TfrmBuscaProducto
-  Left = 260
+  Left = 48
   Top = 0
   ActiveControl = edOpcion
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Buscar productos'
-  ClientHeight = 749
+  ClientHeight = 618
   ClientWidth = 1188
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -26,7 +26,7 @@ object frmBuscaProducto: TfrmBuscaProducto
     Left = 0
     Top = 0
     Width = 1188
-    Height = 553
+    Height = 422
     Align = alClient
     Color = clInfoBk
     Ctl3D = False
@@ -52,7 +52,7 @@ object frmBuscaProducto: TfrmBuscaProducto
   end
   object Panel1: TPanel
     Left = 0
-    Top = 553
+    Top = 422
     Width = 1188
     Height = 196
     Align = alBottom
@@ -659,8 +659,9 @@ object frmBuscaProducto: TfrmBuscaProducto
     end
     object QProductosPRO_UBICACION: TIBStringField
       DisplayLabel = 'Ubicaci'#243'n'
+      DisplayWidth = 30
       FieldName = 'PRO_UBICACION'
-      Size = 10
+      Size = 30
     end
     object QProductosPRO_NUEVOUSADO: TIBStringField
       DisplayLabel = 'Tipo'

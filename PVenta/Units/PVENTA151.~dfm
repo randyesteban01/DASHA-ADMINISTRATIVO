@@ -1,8 +1,8 @@
 object frmConsTicket: TfrmConsTicket
-  Left = 153
-  Top = 72
-  Width = 1620
-  Height = 853
+  Left = 354
+  Top = 142
+  Width = 1132
+  Height = 620
   Caption = 'Consulta de tickets de caja'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -26,7 +26,7 @@ object frmConsTicket: TfrmConsTicket
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1604
+    Width = 1116
     Height = 106
     Align = alTop
     BevelInner = bvRaised
@@ -490,18 +490,32 @@ object frmConsTicket: TfrmConsTicket
       TabOrder = 23
       OnClick = btRefreshClick
     end
+    object cbStatusDGII: TRadioGroup
+      Left = 1017
+      Top = 4
+      Width = 232
+      Height = 75
+      ItemIndex = 0
+      Items.Strings = (
+        'Todas'
+        'Aceptada por DGII'
+        'Rechazada por DGII'
+        'Enviada (no procesada por DGII)')
+      TabOrder = 24
+      OnClick = cbStatusDGIIClick
+    end
   end
   object Panel2: TPanel
     Left = 0
-    Top = 753
-    Width = 1604
+    Top = 520
+    Width = 1116
     Height = 61
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 1
     DesignSize = (
-      1604
+      1116
       61)
     object lbcant: TLabel
       Left = 8
@@ -517,7 +531,7 @@ object frmConsTicket: TfrmConsTicket
       ParentFont = False
     end
     object btRefresh: TBitBtn
-      Left = 576
+      Left = 322
       Top = 28
       Width = 81
       Height = 24
@@ -527,7 +541,7 @@ object frmConsTicket: TfrmConsTicket
       OnClick = btRefreshClick
     end
     object btClose: TBitBtn
-      Left = 920
+      Left = 666
       Top = 28
       Width = 81
       Height = 24
@@ -551,7 +565,7 @@ object frmConsTicket: TfrmConsTicket
       NumGlyphs = 2
     end
     object BitBtn2: TBitBtn
-      Left = 672
+      Left = 418
       Top = 3
       Width = 72
       Height = 24
@@ -570,7 +584,7 @@ object frmConsTicket: TfrmConsTicket
         03333333333333333333}
     end
     object BitBtn1: TBitBtn
-      Left = 856
+      Left = 602
       Top = 3
       Width = 140
       Height = 24
@@ -589,7 +603,7 @@ object frmConsTicket: TfrmConsTicket
         03333333333333333333}
     end
     object BitBtn3: TBitBtn
-      Left = 744
+      Left = 490
       Top = 3
       Width = 112
       Height = 24
@@ -608,7 +622,7 @@ object frmConsTicket: TfrmConsTicket
         03333333333333333333}
     end
     object btAnula: TBitBtn
-      Left = 495
+      Left = 241
       Top = 28
       Width = 81
       Height = 24
@@ -631,7 +645,7 @@ object frmConsTicket: TfrmConsTicket
         77777777779977770000}
     end
     object BitBtn4: TBitBtn
-      Left = 824
+      Left = 570
       Top = 28
       Width = 96
       Height = 24
@@ -641,7 +655,7 @@ object frmConsTicket: TfrmConsTicket
       OnClick = BitBtn4Click
     end
     object BitBtn5: TBitBtn
-      Left = 744
+      Left = 490
       Top = 28
       Width = 79
       Height = 24
@@ -660,7 +674,7 @@ object frmConsTicket: TfrmConsTicket
         03333333333333333333}
     end
     object BitBtn6: TBitBtn
-      Left = 656
+      Left = 402
       Top = 28
       Width = 85
       Height = 24
@@ -679,7 +693,7 @@ object frmConsTicket: TfrmConsTicket
         03333333333333333333}
     end
     object btcambiar: TBitBtn
-      Left = 556
+      Left = 302
       Top = 3
       Width = 116
       Height = 24
@@ -689,7 +703,7 @@ object frmConsTicket: TfrmConsTicket
       OnClick = btcambiarClick
     end
     object btcambiarnc: TBitBtn
-      Left = 418
+      Left = 164
       Top = 28
       Width = 75
       Height = 25
@@ -698,12 +712,40 @@ object frmConsTicket: TfrmConsTicket
       TabOrder = 10
       OnClick = btcambiarncClick
     end
+    object btnEnviarDGII: TBitBtn
+      Left = 201
+      Top = 1
+      Width = 95
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Enviar DGII >>'
+      TabOrder = 11
+      OnClick = btnEnviarDGIIClick
+    end
+    object btnEnviarDGIIMasivo: TBitBtn
+      Left = 77
+      Top = 2
+      Width = 118
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Enviar todas DGII >>'
+      TabOrder = 12
+      OnClick = btnEnviarDGIIMasivoClick
+    end
+    object ProgressBar1: TProgressBar
+      Left = 96
+      Top = 28
+      Width = 193
+      Height = 17
+      TabOrder = 13
+      Visible = False
+    end
   end
   object PageControl1: TPageControl
     Left = 0
     Top = 106
-    Width = 1604
-    Height = 647
+    Width = 1116
+    Height = 414
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 2
@@ -713,7 +755,7 @@ object frmConsTicket: TfrmConsTicket
       object Splitter1: TSplitter
         Left = 0
         Top = 0
-        Width = 1596
+        Width = 1108
         Height = 4
         Cursor = crVSplit
         Align = alTop
@@ -721,8 +763,8 @@ object frmConsTicket: TfrmConsTicket
       object DBGrid1: TDBGrid
         Left = 0
         Top = 4
-        Width = 1596
-        Height = 453
+        Width = 1108
+        Height = 220
         Align = alClient
         Color = clInfoBk
         Ctl3D = False
@@ -743,6 +785,7 @@ object frmConsTicket: TfrmConsTicket
         TitleFont.Height = -11
         TitleFont.Name = 'Tahoma'
         TitleFont.Style = []
+        OnDrawColumnCell = DBGrid1DrawColumnCell
         Columns = <
           item
             Expanded = False
@@ -875,12 +918,17 @@ object frmConsTicket: TfrmConsTicket
             Title.Caption = 'Nombre'
             Width = 150
             Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'Error_DGII'
+            Visible = False
           end>
       end
       object PageControl2: TPageControl
         Left = 0
-        Top = 457
-        Width = 1596
+        Top = 224
+        Width = 1108
         Height = 162
         ActivePage = TabSheet3
         Align = alBottom
@@ -890,7 +938,7 @@ object frmConsTicket: TfrmConsTicket
           object Grid: TDBGrid
             Left = 0
             Top = 0
-            Width = 1588
+            Width = 1100
             Height = 134
             Align = alClient
             Color = clInfoBk
@@ -1304,7 +1352,13 @@ object frmConsTicket: TfrmConsTicket
         'm.nombre_domicilio, m.telefono_domicilio, m.Domicilio, u.usu_nom' +
         'bre,'
       's.usu_nombre as Supervisor, m.ncf_tipo, c.Nombre as NombreCaja,'
-      'm.emp_codigo, m.suc_codigo,  m.grabado, m.exento'
+      
+        'm.emp_codigo, m.suc_codigo,  m.grabado, m.exento, m.AceptadoDGII' +
+        ', m.eNCF, '
+      
+        'm.Error_DGII, e.emp_rnc, eNCF, ti.cod_dgii,  m.Enviado_DGII, m.A' +
+        'ceptadoDGII'
+      ''
       'from'
       'montos_ticket m'
       'left join usuarios s on (m.supervisor = s.usu_codigo)'
@@ -1312,6 +1366,11 @@ object frmConsTicket: TfrmConsTicket
       
         'inner join cajas_ip c on m.caja=c.caja and m.emp_codigo = c.emp_' +
         'codigo and m.suc_codigo = c.suc_codigo'
+      'INNER JOIN Empresas e ON e.emp_codigo=m.emp_codigo'
+      
+        'left join TipoNCF ti on ti.tip_codigo=m.tip_codigo AND ti.emp_co' +
+        'digo=m.emp_codigo'
+      ''
       'where m.ticket > 0'
       'and m.status <> '#39'ABI'#39
       
@@ -1430,6 +1489,24 @@ object frmConsTicket: TfrmConsTicket
     end
     object QTicketssuc_codigo: TIntegerField
       FieldName = 'suc_codigo'
+    end
+    object QTicketsError_DGII: TBooleanField
+      FieldName = 'Error_DGII'
+    end
+    object QTicketsemp_rnc: TStringField
+      FieldName = 'emp_rnc'
+    end
+    object QTicketseNCF: TStringField
+      FieldName = 'eNCF'
+    end
+    object QTicketscod_dgii: TIntegerField
+      FieldName = 'cod_dgii'
+    end
+    object QTicketsEnviado_DGII: TBooleanField
+      FieldName = 'Enviado_DGII'
+    end
+    object QTicketsAceptadoDGII: TBooleanField
+      FieldName = 'AceptadoDGII'
     end
   end
   object dsTickets: TDataSource
@@ -1973,6 +2050,10 @@ object frmConsTicket: TfrmConsTicket
   object PopupMenu2: TPopupMenu
     Left = 100
     Top = 162
+    object FrmPopupDGIIQDGIIParametersParamByNamecaja1: TMenuItem
+      Caption = 'Informacion DGII'
+      OnClick = FrmPopupDGIIQDGIIParametersParamByNamecaja1Click
+    end
     object Cambiarempresa1: TMenuItem
       Caption = 'Cambiar empresa'
       OnClick = Cambiarempresa1Click

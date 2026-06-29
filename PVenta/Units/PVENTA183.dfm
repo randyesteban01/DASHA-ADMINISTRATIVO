@@ -1,6 +1,6 @@
 object frmCuadreCajasIP: TfrmCuadreCajasIP
-  Left = 410
-  Top = 169
+  Left = 328
+  Top = 135
   ActiveControl = edcaja
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -385,9 +385,9 @@ object frmCuadreCajasIP: TfrmCuadreCajasIP
       'and c.caja = :caj'
       'and c.usu_codigo = :usu'
       'and c.status = '#39'ABI'#39
-      'and c.secuencia = (select min(secuencia) from cuadre_caja'
+      '/*and c.secuencia = (select min(secuencia) from cuadre_caja'
       'where fecha = c.fecha and usu_codigo = c.usu_codigo'
-      'and caja = c.caja)')
+      'and caja = c.caja)*/')
     Left = 160
     Top = 240
     object QCuadrefecha: TDateTimeField

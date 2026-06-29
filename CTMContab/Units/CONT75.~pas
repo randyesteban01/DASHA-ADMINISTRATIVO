@@ -81,6 +81,7 @@ type
     procedure FormPaint(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -159,16 +160,49 @@ begin
   if PageControl1.ActivePageIndex = 0 then
   begin
     if not QComprobantes.Active then
-    btCloseClick(Sender);
+    btCloseClick(Sender) else
+    begin
     Application.CreateForm(tRComprobantes, RComprobantes);
     RComprobantes.lbFecha.Caption := 'Del '+DateToStr(fecha1.Date)+' Al '+DateToStr(fecha2.Date);
     RComprobantes.lbTipo.Caption  := cbtipo.Text;
+    RComprobantes.DataSet         := frmConsComprobantes.QComprobantes;
+    RComprobantes.DBFecha.DataSet := frmConsComprobantes.QComprobantes;
+    RComprobantes.DBDesde.DataSet := frmConsComprobantes.QComprobantes;
+    RComprobantes.QRHasta.Caption := 'Hasta';
+    RComprobantes.DBHasta.DataSet := frmConsComprobantes.QComprobantes;
+    RComprobantes.DBHasta.DataField := 'Hasta';
+    RComprobantes.DBTotal.DataSet := frmConsComprobantes.QComprobantes;
+    RComprobantes.DBGrabado.DataSet := frmConsComprobantes.QComprobantes;
+    RComprobantes.DBItbis.DataSet := frmConsComprobantes.QComprobantes;
+    RComprobantes.DBExento.DataSet := frmConsComprobantes.QComprobantes;
     RComprobantes.PrinterSetup;
     RComprobantes.Preview;
     RComprobantes.Destroy;
+    end;
   end
   else
   begin
+    if not QListado.Active then
+    btCloseClick(Sender) else
+    begin
+    Application.CreateForm(tRComprobantes, RComprobantes);
+    RComprobantes.lbFecha.Caption := 'Del '+DateToStr(fecha1.Date)+' Al '+DateToStr(fecha2.Date);
+    RComprobantes.lbTipo.Caption  := cbtipo.Text;
+    RComprobantes.DataSet         := frmConsComprobantes.QListado;
+    RComprobantes.DBFecha.DataSet := frmConsComprobantes.QListado;
+    RComprobantes.DBDesde.DataSet := frmConsComprobantes.QListado;
+    RComprobantes.QRHasta.Caption := 'RNC';
+    RComprobantes.DBHasta.DataSet := frmConsComprobantes.QListado;
+    RComprobantes.DBHasta.DataField := 'RNC';
+    RComprobantes.DBTotal.DataSet := frmConsComprobantes.QListado;
+    RComprobantes.DBGrabado.DataSet := frmConsComprobantes.QListado;
+    RComprobantes.DBItbis.DataSet := frmConsComprobantes.QListado;
+    RComprobantes.DBExento.DataSet := frmConsComprobantes.QListado;
+    RComprobantes.PrinterSetup;
+    RComprobantes.Preview;
+    RComprobantes.Destroy;
+    end;
+    {
     if not QListado.Active then
     btCloseClick(Sender);
     Application.CreateForm(tRComprobantesDetalle, RComprobantesDetalle);
@@ -176,7 +210,7 @@ begin
     RComprobantesDetalle.lbTipo.Caption  := cbtipo.Text;
     RComprobantesDetalle.PrinterSetup;
     RComprobantesDetalle.Preview;
-    RComprobantesDetalle.Destroy;
+    RComprobantesDetalle.Destroy;}
   end;
   end;
 
@@ -196,6 +230,41 @@ begin
     frmMain.ExportXLS.Sheets[1].Exported := False;
     frmMain.ExportXLS.Sheets[2].Exported := False;
     frmMain.ExportXLS.Sheets[0].Exported := True;
+  end;
+end;
+
+procedure TfrmConsComprobantes.FormShow(Sender: TObject);
+begin
+if DM.QParametrosUsa_FacturacionElectronica.Value = true then begin
+    cbtipo.Clear;
+    cbtipo.Items.Add('Todos');
+    cbtipo.Items.Add('Factura de Crédito Fiscal Electrónica (Tipo 31)');
+    cbtipo.Items.Add('Factura de Consumo Electrónica (Tipo 32)');
+    cbtipo.Items.Add('Nota de Débito Electrónica (Tipo 33)');
+    cbtipo.Items.Add('Nota de Crédito Electrónica (Tipo 34)');
+    cbtipo.Items.Add('Comprobante Electrónico de Compras (Tipo 41)');
+    cbtipo.Items.Add('Comprobante Electrónico para Gastos Menores (Tipo 43)');
+    cbtipo.Items.Add('Comprobante Electrónico para Regímenes Especiales (Tipo 44)');
+    cbtipo.Items.Add('Comprobante Electrónico Gubernamental (Tipo 45)');
+    cbtipo.Items.Add('Comprobante Electrónico para Exportaciones (Tipo 46)');
+    cbtipo.Items.Add('Comprobante Electrónico para Pagos al Exterior (Tipo 47)');
+    cbtipo.ItemIndex:=0;
+    Exit;
+    end
+    else
+    begin
+    cbtipo.Clear;
+    cbtipo.Items.Add('Todos');
+    cbtipo.Items.Add('Factura de Crédito Fiscal (Tipo 01)');
+    cbtipo.Items.Add('Factura de Consumo (Tipo 02)');
+    cbtipo.Items.Add('Notas de Débito (Tipo 03)');
+    cbtipo.Items.Add('Notas de Crédito (Tipo 04)');
+    cbtipo.Items.Add('Registro de Proveedores informales (Tipo 11)');
+    cbtipo.Items.Add('Registro Único de Ingresos (Tipo 12)');
+    cbtipo.Items.Add('Registro de Gastos Menores (Tipo 13)');
+    cbtipo.Items.Add('Regímenes Especiales de Tributación (Tipo 14)');
+    cbtipo.Items.Add('Comprobantes Gubernamentales (Tipo 15)');
+    cbtipo.ItemIndex:=0;
   end;
 end;
 

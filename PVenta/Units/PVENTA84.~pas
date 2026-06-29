@@ -271,6 +271,12 @@ begin
   2 : REstadoCtaProv.QProv.SQL.Add('and S.sup_status = '+#39+'INA'+#39);
   end;
 
+  CASE cbBalance.ItemIndex OF
+  1:REstadoCtaProv.QProv.SQL.Add('and s.sup_codigo in (select sup_codigo from provfacturas where fac_total-fac_abono=0)');
+  2:REstadoCtaProv.QProv.SQL.Add('and s.sup_codigo in (select sup_codigo from provfacturas where fac_total-fac_abono>=1)');
+  3:REstadoCtaProv.QProv.SQL.Add('and s.sup_codigo in (select sup_codigo from provfacturas where fac_total-fac_abono<0)');
+  end;
+
   if (trim(edDesde.Text) <> '') and (Trim(edHasta.Text) <> '') then
     REstadoCtaProv.QProv.SQL.Add('and S.sup_codigo between '+Trim(edDesde.Text)+
                                  ' and '+Trim(edHasta.Text));
@@ -341,17 +347,20 @@ begin
     REstadoCtaProv.QDocs.SQL.Add('AND sup_codigo = @SUP');
     REstadoCtaProv.QDocs.SQL.Add('AND FAC_TOTAL > 0');
     REstadoCtaProv.QDocs.SQL.Add('and FAC_FECHA <= @FECHA');
-
+    IF ckMov.Checked THEN
+    cbBalance.ItemIndex := 2;
+    
 case cbBalance.ItemIndex of
     1:REstadoCtaProv.QDocs.SQL.Add('AND (FAC_TOTAL - ABONO) = 0');
-    2:REstadoCtaProv.QDocs.SQL.Add('AND (FAC_TOTAL - ABONO) > 0');
+    2:REstadoCtaProv.QDocs.SQL.Add('AND (FAC_TOTAL - ABONO) >= 1');
     3:REstadoCtaProv.QDocs.SQL.Add('AND (FAC_TOTAL - ABONO) < 0');
 end;
 
 
- IF ckMov.Checked THEN
-REstadoCtaProv.QDocs.SQL.Add('AND (FAC_TOTAL - ABONO)>0');
+
   //REstadoCtaProv.QDocs.SQL.Add(mmoMayorZero.Lines.GetText);
+
+
 
     IF REstadoCtaProv.vl_suc > 0 THEN
     REstadoCtaProv.QDocs.SQL.Add('AND SUC_CODIGO = '+IntToStr(REstadoCtaProv.vl_suc));

@@ -1,12 +1,12 @@
 object frmConsRecibos: TfrmConsRecibos
-  Left = 207
-  Top = 272
+  Left = 368
+  Top = 251
   ActiveControl = edVendedor
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Consulta de recibos'
   ClientHeight = 416
-  ClientWidth = 1540
+  ClientWidth = 967
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -29,7 +29,7 @@ object frmConsRecibos: TfrmConsRecibos
   object Splitter1: TSplitter
     Left = 0
     Top = 233
-    Width = 1540
+    Width = 967
     Height = 4
     Cursor = crVSplit
     Align = alTop
@@ -37,7 +37,7 @@ object frmConsRecibos: TfrmConsRecibos
   object DBGrid1: TDBGrid
     Left = 0
     Top = 129
-    Width = 1540
+    Width = 967
     Height = 104
     Align = alTop
     Anchors = [akLeft, akTop, akRight, akBottom]
@@ -199,7 +199,7 @@ object frmConsRecibos: TfrmConsRecibos
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1540
+    Width = 967
     Height = 129
     Align = alTop
     BevelInner = bvRaised
@@ -809,14 +809,14 @@ object frmConsRecibos: TfrmConsRecibos
   object Panel2: TPanel
     Left = 0
     Top = 376
-    Width = 1540
+    Width = 967
     Height = 40
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 3
     DesignSize = (
-      1540
+      967
       40)
     object lbCantidad: TLabel
       Left = 8
@@ -832,7 +832,7 @@ object frmConsRecibos: TfrmConsRecibos
       ParentFont = False
     end
     object BitBtn2: TBitBtn
-      Left = 1381
+      Left = 808
       Top = 8
       Width = 75
       Height = 25
@@ -851,7 +851,7 @@ object frmConsRecibos: TfrmConsRecibos
         03333333333333333333}
     end
     object btRefresh: TBitBtn
-      Left = 1301
+      Left = 728
       Top = 8
       Width = 75
       Height = 25
@@ -861,7 +861,7 @@ object frmConsRecibos: TfrmConsRecibos
       OnClick = btRefreshClick
     end
     object btClose: TBitBtn
-      Left = 1461
+      Left = 888
       Top = 8
       Width = 75
       Height = 25
@@ -888,7 +888,7 @@ object frmConsRecibos: TfrmConsRecibos
   object PageControl1: TPageControl
     Left = 0
     Top = 237
-    Width = 1540
+    Width = 967
     Height = 139
     ActivePage = TabSheet2
     Align = alClient
@@ -899,7 +899,7 @@ object frmConsRecibos: TfrmConsRecibos
       object GridMov: TDBGrid
         Left = 0
         Top = 0
-        Width = 1532
+        Width = 959
         Height = 111
         Align = alClient
         Color = clInfoBk
@@ -991,10 +991,10 @@ object frmConsRecibos: TfrmConsRecibos
     object TabSheet1: TTabSheet
       Caption = 'Cuentas contables'
       DesignSize = (
-        1532
+        959
         111)
       object Label9: TLabel
-        Left = 1372
+        Left = 799
         Top = 3
         Width = 48
         Height = 13
@@ -1008,7 +1008,7 @@ object frmConsRecibos: TfrmConsRecibos
         ParentFont = False
       end
       object Label10: TLabel
-        Left = 1372
+        Left = 799
         Top = 19
         Width = 43
         Height = 13
@@ -1022,7 +1022,7 @@ object frmConsRecibos: TfrmConsRecibos
         ParentFont = False
       end
       object Label11: TLabel
-        Left = 1372
+        Left = 799
         Top = 35
         Width = 45
         Height = 13
@@ -1036,7 +1036,7 @@ object frmConsRecibos: TfrmConsRecibos
         ParentFont = False
       end
       object btBuscaCta: TSpeedButton
-        Left = 1372
+        Left = 799
         Top = 82
         Width = 153
         Height = 25
@@ -1051,7 +1051,7 @@ object frmConsRecibos: TfrmConsRecibos
         OnClick = btBuscaCtaClick
       end
       object btElimina: TSpeedButton
-        Left = 1372
+        Left = 799
         Top = 57
         Width = 153
         Height = 25
@@ -1068,7 +1068,7 @@ object frmConsRecibos: TfrmConsRecibos
       object GridCuentas: TDBGrid
         Left = 0
         Top = 0
-        Width = 1366
+        Width = 793
         Height = 111
         Align = alLeft
         Anchors = [akLeft, akTop, akRight, akBottom]
@@ -1127,7 +1127,7 @@ object frmConsRecibos: TfrmConsRecibos
           end>
       end
       object lbCR: TStaticText
-        Left = 1428
+        Left = 855
         Top = 3
         Width = 103
         Height = 17
@@ -1145,7 +1145,7 @@ object frmConsRecibos: TfrmConsRecibos
         TabOrder = 3
       end
       object lbDB: TStaticText
-        Left = 1428
+        Left = 855
         Top = 19
         Width = 103
         Height = 17
@@ -1163,7 +1163,7 @@ object frmConsRecibos: TfrmConsRecibos
         TabOrder = 1
       end
       object lbBAL: TStaticText
-        Left = 1428
+        Left = 855
         Top = 35
         Width = 103
         Height = 17

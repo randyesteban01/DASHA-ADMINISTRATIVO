@@ -222,7 +222,7 @@ end;
 procedure TfrmEnvio.qSucDestinoBeforeOpen(DataSet: TDataSet);
 begin
 qSucDestino.Parameters[0].Value := frmFactura.QFacturaEMP_CODIGO.Value;
-qSucDestino.Parameters[1].Value := frmFactura.QFacturaUSU_CODIGO.Value;
+//qSucDestino.Parameters[1].Value := frmFactura.QFacturaUSU_CODIGO.Value;
 
 end;
 

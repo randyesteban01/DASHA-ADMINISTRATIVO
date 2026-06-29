@@ -1,11 +1,11 @@
 object frmConsFacProvee: TfrmConsFacProvee
-  Left = 264
-  Top = 151
+  Left = 366
+  Top = 222
   ActiveControl = Fecha1
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Consulta de facturas de proveedores'
-  ClientHeight = 600
+  ClientHeight = 555
   ClientWidth = 927
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -668,10 +668,24 @@ object frmConsFacProvee: TfrmConsFacProvee
       ParentFont = False
       TabOrder = 23
     end
+    object cbStatusDGII: TRadioGroup
+      Left = 695
+      Top = 3
+      Width = 232
+      Height = 75
+      ItemIndex = 0
+      Items.Strings = (
+        'Todas'
+        'Aceptada por DGII'
+        'Rechazada por DGII'
+        'Enviada (no procesada por DGII)')
+      TabOrder = 24
+      OnClick = cbStatusDGIIClick
+    end
   end
   object Panel2: TPanel
     Left = 0
-    Top = 559
+    Top = 514
     Width = 927
     Height = 41
     Align = alBottom
@@ -793,12 +807,22 @@ object frmConsFacProvee: TfrmConsFacProvee
         03333330FFFFFFFF03333330FCCCCCCF03333330FFFFFFFF0333333000000000
         03333333333333333333}
     end
+    object btnEnviarDGII: TBitBtn
+      Left = 456
+      Top = 9
+      Width = 95
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Enviar DGII >>'
+      TabOrder = 5
+      OnClick = btnEnviarDGIIClick
+    end
   end
   object PageControl2: TPageControl
     Left = 0
     Top = 153
     Width = 927
-    Height = 406
+    Height = 361
     ActivePage = TabSheet6
     Align = alClient
     TabOrder = 3
@@ -807,7 +831,7 @@ object frmConsFacProvee: TfrmConsFacProvee
       Caption = 'Facturas de compra'
       object Splitter1: TSplitter
         Left = 0
-        Top = 243
+        Top = 198
         Width = 919
         Height = -3
         Cursor = crVSplit
@@ -817,7 +841,7 @@ object frmConsFacProvee: TfrmConsFacProvee
         Left = 0
         Top = 0
         Width = 919
-        Height = 243
+        Height = 198
         Align = alTop
         Anchors = [akLeft, akTop, akRight, akBottom]
         Ctl3D = False
@@ -837,6 +861,7 @@ object frmConsFacProvee: TfrmConsFacProvee
         TitleFont.Height = -11
         TitleFont.Name = 'Tahoma'
         TitleFont.Style = []
+        OnDrawColumnCell = DBGrid1DrawColumnCell
         Columns = <
           item
             Expanded = False
@@ -866,9 +891,8 @@ object frmConsFacProvee: TfrmConsFacProvee
           item
             Alignment = taCenter
             Expanded = False
-            FieldName = 'NumeroCF'
+            FieldName = 'eNCF'
             Title.Alignment = taCenter
-            Title.Caption = 'N.C.F.'
             Width = 125
             Visible = True
           end
@@ -1067,7 +1091,7 @@ object frmConsFacProvee: TfrmConsFacProvee
       end
       object PageControl1: TPageControl
         Left = 0
-        Top = 240
+        Top = 195
         Width = 919
         Height = 138
         ActivePage = TabSheet4
@@ -1920,9 +1944,19 @@ object frmConsFacProvee: TfrmConsFacProvee
       'f.ped_numero, f.ent_numero, t.tip_nombre, f.fac_concepto,'
       
         'f.fac_retencion_isr, f.fac_servicios, fac_otrosimpuestos, fac_pr' +
-        'oplegal, f.suc_codigo'
+        'oplegal, f.suc_codigo,'
+      ' CASE '
+      '        WHEN prov.sup_tipo = '#39'I'#39' '
+      '            THEN f.eNCF'
+      '        ELSE '
+      '          f.NCF'
+      
+        '    END AS eNCF , f.Enviado_DGII, f.Error_DGII, e.emp_rnc, 41 AS' +
+        ' cod_dgii, f.AceptadoDGII,prov.sup_tipo'
       'from'
-      'provfacturas f'
+      
+        'provfacturas f inner join Proveedores prov on prov.sup_codigo=f.' +
+        'sup_codigo and prov.emp_codigo=f.emp_codigo'
       'left outer join Tipo_Bienes_Servicios t on'
       '(f.tip_codigo = t.tip_codigo)'
       'left outer join moneda m on'
@@ -1931,16 +1965,20 @@ object frmConsFacProvee: TfrmConsFacProvee
       'left outer join ProvFacturasCentros c on'
       '(f.emp_codigo = c.emp_codigo'
       'and f.sup_codigo = c.sup_codigo'
-      'and f.fac_numero = c.fac_numero), proveedores s, usuarios u'
+      
+        'and f.fac_numero = c.fac_numero), proveedores s, usuarios u, Emp' +
+        'resas e'
       'where'
       'f.sup_codigo = s.sup_codigo'
       'and f.emp_codigo = s.emp_codigo'
       'and f.usu_codigo = u.usu_codigo'
+      'and f.emp_codigo=e.emp_codigo'
+      ''
       
         'and f.fac_fecha between convert(datetime,:fecha1,105) and conver' +
         't(datetime,:fecha2,105)'
       'AND F.EMP_CODIGO = :par_invempresa')
-    Left = 240
+    Left = 248
     Top = 144
     object QFacturasALM_CODIGO: TIntegerField
       FieldName = 'ALM_CODIGO'
@@ -2112,6 +2150,27 @@ object frmConsFacProvee: TfrmConsFacProvee
     end
     object QFacturasSUC_CODIGO: TIntegerField
       FieldName = 'SUC_CODIGO'
+    end
+    object QFacturaseNCF: TStringField
+      FieldName = 'eNCF'
+    end
+    object QFacturasEnviado_DGII: TBooleanField
+      FieldName = 'Enviado_DGII'
+    end
+    object QFacturasError_DGII: TBooleanField
+      FieldName = 'Error_DGII'
+    end
+    object QFacturasemp_rnc: TStringField
+      FieldName = 'emp_rnc'
+    end
+    object QFacturascod_dgii: TIntegerField
+      FieldName = 'cod_dgii'
+    end
+    object QFacturasAceptadoDGII: TBooleanField
+      FieldName = 'AceptadoDGII'
+    end
+    object QFacturassup_tipo: TStringField
+      FieldName = 'sup_tipo'
     end
   end
   object dsFacturas: TDataSource
@@ -2974,6 +3033,10 @@ object frmConsFacProvee: TfrmConsFacProvee
   object PopupMenu1: TPopupMenu
     Left = 200
     Top = 144
+    object InformacionDGII1: TMenuItem
+      Caption = 'Informacion DGII'
+      OnClick = InformacionDGII1Click
+    end
     object CambiarTasa1: TMenuItem
       Caption = 'Cambiar Tasa'
       OnClick = CambiarTasa1Click

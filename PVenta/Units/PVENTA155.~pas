@@ -186,7 +186,7 @@ begin
       RRepHistorialCli.QHistorial.Parameters.ParamByName('suc').Value  := DBLookupComboBox2.KeyValue;
       RRepHistorialCli.QHistorial.Parameters.ParamByName('fec1').Value := Fecha1.Date;
       RRepHistorialCli.QHistorial.Parameters.ParamByName('fec2').Value := Fecha2.Date;
-      RRepHistorialCli.QHistorial.Parameters.ParamByName('cli').Value  := Cli;
+      RRepHistorialCli.QHistorial.Parameters.ParamByName('cli').Value  := edHasta.Text;
       RRepHistorialCli.pendientes := ckpendientes.Checked;
       if ckpendientes.Checked then
         RRepHistorialCli.QHistorial.Parameters.ParamByName('tip').Value := 'True'

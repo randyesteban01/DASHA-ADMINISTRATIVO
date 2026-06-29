@@ -1,6 +1,6 @@
 object frmRecibos: TfrmRecibos
-  Left = 375
-  Top = 110
+  Left = 342
+  Top = 157
   ActiveControl = edCliente
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -320,7 +320,7 @@ object frmRecibos: TfrmRecibos
       820
       459)
     object SpeedButton2: TSpeedButton
-      Left = 116
+      Left = 164
       Top = 62
       Width = 23
       Height = 22
@@ -486,7 +486,7 @@ object frmRecibos: TfrmRecibos
     object edCliente: TEdit
       Left = 64
       Top = 62
-      Width = 49
+      Width = 97
       Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
@@ -622,9 +622,9 @@ object frmRecibos: TfrmRecibos
       TabOrder = 9
     end
     object DBEdit7: TDBEdit
-      Left = 144
+      Left = 192
       Top = 62
-      Width = 257
+      Width = 209
       Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
@@ -4031,7 +4031,9 @@ object frmRecibos: TfrmRecibos
       
         'WHERE emp_codigo = @EMPRESA AND suc_codigo = @SUC AND tfa_codigo' +
         ' = @tipo AND fac_forma = @FORMA '
-      'AND MOV_numero = @FAC and cli_codigo = @CLI'
+      
+        'AND MOV_numero = @FAC and cli_codigo = @CLI AND ISNULL(MOV_CUOTA' +
+        ','#39'False'#39')='#39'False'#39
       ''
       ''
       

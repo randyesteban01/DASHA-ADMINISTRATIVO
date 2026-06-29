@@ -348,14 +348,6 @@ object frmEnvio: TfrmEnvio
         Precision = 10
         Size = 4
         Value = Null
-      end
-      item
-        Name = 'usu'
-        Attributes = [paSigned]
-        DataType = ftInteger
-        Precision = 10
-        Size = 4
-        Value = Null
       end>
     SQL.Strings = (
       
@@ -363,12 +355,8 @@ object frmEnvio: TfrmEnvio
         'rnc,'
       's.emp_codigo, s.suc_codigo, s.suc_nombre, s.alm_codigo'
       'from'
-      'sucursales s, sucursal_acceso a'
-      'where'
-      's.emp_codigo = a.emp_codigo'
-      'and s.suc_codigo = a.suc_codigo'
-      'and a.emp_codigo = :emp_codigo'
-      'and a.usu_codigo = :usu'
+      'sucursales s '
+      'where s.emp_codigo =:emp_codigo'
       'order by s.suc_codigo')
     Left = 474
     Top = 186

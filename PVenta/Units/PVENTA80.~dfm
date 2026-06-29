@@ -1,12 +1,12 @@
 object frmParametros: TfrmParametros
-  Left = 275
-  Top = 119
+  Left = 15
+  Top = 5
   ActiveControl = tvOpciones
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Parametros generales'
-  ClientHeight = 517
-  ClientWidth = 1009
+  ClientHeight = 552
+  ClientWidth = 989
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -1275,7 +1275,7 @@ object frmParametros: TfrmParametros
     Left = 0
     Top = 0
     Width = 161
-    Height = 517
+    Height = 552
     Align = alLeft
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -1318,12 +1318,13 @@ object frmParametros: TfrmParametros
       0000000000000000000000FFFFFFFFFFFFFFFF00000000000000000A436F7469
       7A6163696F6E280000000000000000000000FFFFFFFFFFFFFFFF000000000000
       00000F427572F3206465204372E96469746F210000000000000000000000FFFF
-      FFFFFFFFFFFF00000000000000000856657269666F6E65190000000000000000
-      000000FFFFFFFFFFFFFFFF000000000000000000}
+      FFFFFFFFFFFF00000000000000000856657269666F6E65300000000000000000
+      000000FFFFFFFFFFFFFFFF000000000000000017466163747572616369F36E20
+      456C65637472F36E696361}
   end
   object btPost: TBitBtn
     Left = 430
-    Top = 395
+    Top = 415
     Width = 75
     Height = 25
     Caption = '&Grabar'
@@ -1341,7 +1342,7 @@ object frmParametros: TfrmParametros
   end
   object btClose: TBitBtn
     Left = 506
-    Top = 395
+    Top = 415
     Width = 74
     Height = 25
     Caption = '&Salir'
@@ -1669,8 +1670,8 @@ object frmParametros: TfrmParametros
     end
   end
   object pnInvent: TPanel
-    Left = 200
-    Top = 8
+    Left = 1000
+    Top = 168
     Width = 417
     Height = 417
     TabOrder = 2
@@ -7601,13 +7602,13 @@ object frmParametros: TfrmParametros
       ValueChecked = 'True'
       ValueUnchecked = 'False'
     end
-    object dbchkpar_posAutorizacion: TDBCheckBox
+    object DBCheckBox71: TDBCheckBox
       Left = 232
-      Top = 51
-      Width = 185
+      Top = 52
+      Width = 170
       Height = 17
-      Caption = 'Autorizacion no requerida en POS'
-      DataField = 'PAR_AutorizacionNoRequerida'
+      Caption = 'Servicio de construcci'#243'n '
+      DataField = 'servicio_construccion'
       DataSource = dsParametros
       TabOrder = 26
       ValueChecked = 'True'
@@ -8150,17 +8151,17 @@ object frmParametros: TfrmParametros
     end
   end
   object pnFormatosImp: TPanel
-    Left = 1500
-    Top = 0
+    Left = 100
+    Top = -50
     Width = 417
-    Height = 365
+    Height = 380
     TabOrder = 28
     Visible = False
     object pcFormatosImpresion: TPageControl
       Left = 1
       Top = 1
       Width = 415
-      Height = 363
+      Height = 378
       ActivePage = tbsFormatos
       Align = alClient
       TabOrder = 0
@@ -8170,7 +8171,7 @@ object frmParametros: TfrmParametros
           Left = 0
           Top = 0
           Width = 407
-          Height = 335
+          Height = 350
           Align = alClient
           BevelInner = bvRaised
           BevelOuter = bvLowered
@@ -8353,6 +8354,7 @@ object frmParametros: TfrmParametros
             DataSource = dsParametros
             ItemHeight = 13
             Items.Strings = (
+              'Construccion'
               'QRBelkis'
               'QRSoloAutos'
               'QRImpresosDuran'
@@ -8640,14 +8642,14 @@ object frmParametros: TfrmParametros
           Left = 0
           Top = 154
           Width = 407
-          Height = 181
+          Height = 196
           Align = alClient
           TabOrder = 0
           object DBGrid8: TDBGrid
             Left = 2
             Top = 15
             Width = 403
-            Height = 164
+            Height = 179
             Align = alClient
             Ctl3D = False
             DataSource = dsPrinters
@@ -9219,14 +9221,14 @@ object frmParametros: TfrmParametros
           Left = 0
           Top = 167
           Width = 407
-          Height = 168
+          Height = 183
           Align = alClient
           TabOrder = 2
           object DBGrid9: TDBGrid
             Left = 2
             Top = 15
             Width = 403
-            Height = 151
+            Height = 166
             Align = alClient
             Ctl3D = False
             DataSource = dsadoPrinterxPC
@@ -9583,8 +9585,8 @@ object frmParametros: TfrmParametros
     end
   end
   object pntickets: TPanel
-    Left = 600
-    Top = 2
+    Left = 100
+    Top = 160
     Width = 417
     Height = 385
     TabOrder = 13
@@ -9795,6 +9797,18 @@ object frmParametros: TfrmParametros
           ValueChecked = 'True'
           ValueUnchecked = 'False'
         end
+        object DBCheckBox70: TDBCheckBox
+          Left = 150
+          Top = 8
+          Width = 99
+          Height = 17
+          Caption = 'Imprimir copia'
+          DataField = 'ImprimirCopia'
+          DataSource = dsParametros
+          TabOrder = 6
+          ValueChecked = 'True'
+          ValueUnchecked = 'False'
+        end
       end
       object TabSheet6: TTabSheet
         Caption = 'Contabilidad'
@@ -9962,7 +9976,7 @@ object frmParametros: TfrmParametros
         end
         object DBCheckBox65: TDBCheckBox
           Left = 0
-          Top = 23
+          Top = 31
           Width = 217
           Height = 17
           Caption = 'Facturacion con Itbis '
@@ -9974,7 +9988,7 @@ object frmParametros: TfrmParametros
         end
         object DBCheckBox66: TDBCheckBox
           Left = 0
-          Top = 47
+          Top = 55
           Width = 217
           Height = 17
           Caption = 'Mostrar mesero'
@@ -9986,13 +10000,61 @@ object frmParametros: TfrmParametros
         end
         object DBCheckBox69: TDBCheckBox
           Left = 0
-          Top = 71
+          Top = 79
           Width = 217
           Height = 17
           Caption = 'Mostrar subcategorias'
           DataField = 'PAR_mostrarsubcategorias'
           DataSource = dsParametros
           TabOrder = 3
+          ValueChecked = 'True'
+          ValueUnchecked = 'False'
+        end
+        object dbchkpar_posAutorizacion: TDBCheckBox
+          Left = -1
+          Top = 101
+          Width = 185
+          Height = 17
+          Caption = 'Autorizacion no requerida'
+          DataField = 'PAR_AutorizacionNoRequerida'
+          DataSource = dsParametros
+          TabOrder = 4
+          ValueChecked = 'True'
+          ValueUnchecked = 'False'
+        end
+        object DBCheckBox74: TDBCheckBox
+          Left = -1
+          Top = 123
+          Width = 185
+          Height = 18
+          Caption = 'Mesero - Solo mesas abiertas'
+          DataField = 'mesas_abiertas'
+          DataSource = dsParametros
+          TabOrder = 5
+          ValueChecked = 'True'
+          ValueUnchecked = 'False'
+        end
+        object DBCheckBox76: TDBCheckBox
+          Left = -1
+          Top = 145
+          Width = 185
+          Height = 18
+          Caption = 'Imprimir Factura - pregunta'
+          DataField = 'par_ImprimirFacturaRestBar'
+          DataSource = dsParametros
+          TabOrder = 6
+          ValueChecked = 'True'
+          ValueUnchecked = 'False'
+        end
+        object DBCheckBox77: TDBCheckBox
+          Left = -1
+          Top = 169
+          Width = 185
+          Height = 18
+          Caption = 'Imprimir Copia - pregunta'
+          DataField = 'par_ImprimirCopiaRestBar'
+          DataSource = dsParametros
+          TabOrder = 7
           ValueChecked = 'True'
           ValueUnchecked = 'False'
         end
@@ -10218,8 +10280,8 @@ object frmParametros: TfrmParametros
     end
   end
   object pnGenerales: TPanel
-    Left = 988
-    Top = 395
+    Left = 228
+    Top = 172
     Width = 417
     Height = 385
     TabOrder = 1
@@ -10869,6 +10931,430 @@ object frmParametros: TfrmParametros
       Properties.MaxLength = 0
       TabOrder = 23
       Width = 65
+    end
+    object DBCheckBox72: TDBCheckBox
+      Left = 8
+      Top = 310
+      Width = 176
+      Height = 17
+      Caption = 'Comision Ventas  x Productos'
+      DataField = 'par_comision_vend'
+      DataSource = dsParametros
+      TabOrder = 24
+      ValueChecked = 'True'
+      ValueUnchecked = 'False'
+    end
+  end
+  object pnFE: TPanel
+    Left = 500
+    Top = 150
+    Width = 480
+    Height = 385
+    TabOrder = 30
+    object pgc2: TPageControl
+      Left = 1
+      Top = 1
+      Width = 478
+      Height = 383
+      ActivePage = tsRestBar1
+      Align = alClient
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      object tsRestBar1: TTabSheet
+        Caption = 'Opciones'
+        ImageIndex = 2
+        object lbl1: TLabel
+          Left = 8
+          Top = 25
+          Width = 52
+          Height = 13
+          Caption = 'URL eNCF:'
+        end
+        object lbl11: TLabel
+          Left = 8
+          Top = 46
+          Width = 39
+          Height = 13
+          Caption = 'URL FC:'
+        end
+        object lbl12: TLabel
+          Left = 8
+          Top = 66
+          Width = 105
+          Height = 13
+          Caption = 'Password Certificado:'
+        end
+        object Label180: TLabel
+          Left = 8
+          Top = 119
+          Width = 95
+          Height = 13
+          Caption = 'URL Base - Luganis:'
+        end
+        object Label181: TLabel
+          Left = 8
+          Top = 143
+          Width = 121
+          Height = 13
+          Caption = 'Company code - Luganis:'
+        end
+        object Label182: TLabel
+          Left = 8
+          Top = 167
+          Width = 99
+          Height = 13
+          Caption = 'UserName - Luganis:'
+        end
+        object Label183: TLabel
+          Left = 8
+          Top = 191
+          Width = 93
+          Height = 13
+          Caption = 'Password- Luganis:'
+        end
+        object Label184: TLabel
+          Left = 8
+          Top = 215
+          Width = 101
+          Height = 13
+          Caption = 'Appversion- Luganis:'
+        end
+        object Label185: TLabel
+          Left = 8
+          Top = 239
+          Width = 64
+          Height = 13
+          Caption = 'SO - Luganis:'
+        end
+        object Label186: TLabel
+          Left = 8
+          Top = 263
+          Width = 92
+          Height = 13
+          Caption = 'DeviceId - Luganis:'
+        end
+        object Label187: TLabel
+          Left = 8
+          Top = 287
+          Width = 89
+          Height = 13
+          Caption = 'Latitude - Luganis:'
+        end
+        object Label188: TLabel
+          Left = 8
+          Top = 311
+          Width = 97
+          Height = 13
+          Caption = 'Longitude - Luganis:'
+        end
+        object Label189: TLabel
+          Left = 8
+          Top = 335
+          Width = 100
+          Height = 13
+          Caption = 'ProviderIP - Luganis:'
+        end
+        object dbedtPass_FacturacionElectronica: TDBEdit
+          Left = 128
+          Top = 64
+          Width = 185
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          CharCase = ecUpperCase
+          DataField = 'Pass_FacturacionElectronica'
+          DataSource = dsParametros
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          PasswordChar = 'x'
+          TabOrder = 3
+        end
+        object dbchkRestBar_FactConItbis: TDBCheckBox
+          Left = 0
+          Top = -1
+          Width = 217
+          Height = 17
+          Caption = 'Facturacion Electronica'
+          DataField = 'Usa_FacturacionElectronica'
+          DataSource = dsParametros
+          TabOrder = 0
+          ValueChecked = 'True'
+          ValueUnchecked = 'False'
+        end
+        object dbedtURL_FacturacionElectronica: TDBEdit
+          Left = 68
+          Top = 18
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'URL_FacturacionElectronica'
+          DataSource = dsParametros
+          TabOrder = 1
+        end
+        object dbedtURL_FCFacturacionElectronica: TDBEdit
+          Left = 68
+          Top = 41
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'URL_FCFacturacionElectronica'
+          DataSource = dsParametros
+          TabOrder = 2
+        end
+        object DBCheckBox73: TDBCheckBox
+          Left = 8
+          Top = 95
+          Width = 145
+          Height = 17
+          Caption = 'Integracion con luganis'
+          DataField = 'integracion_luganis'
+          DataSource = dsParametros
+          TabOrder = 4
+          ValueChecked = 'True'
+          ValueUnchecked = 'False'
+        end
+        object DBEdit23: TDBEdit
+          Left = 132
+          Top = 114
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'par_luganis_baseurl'
+          DataSource = dsParametros
+          TabOrder = 5
+        end
+        object DBEdit24: TDBEdit
+          Left = 132
+          Top = 138
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'par_luganis_companycode'
+          DataSource = dsParametros
+          TabOrder = 6
+        end
+        object DBEdit28: TDBEdit
+          Left = 132
+          Top = 162
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'par_luganis_username'
+          DataSource = dsParametros
+          TabOrder = 7
+        end
+        object DBEdit40: TDBEdit
+          Left = 132
+          Top = 210
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'par_luganis_appversion'
+          DataSource = dsParametros
+          TabOrder = 8
+        end
+        object DBEdit47: TDBEdit
+          Left = 132
+          Top = 258
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'par_luganis_deviceid'
+          DataSource = dsParametros
+          TabOrder = 9
+        end
+        object DBEdit48: TDBEdit
+          Left = 132
+          Top = 186
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'par_luganis_password'
+          DataSource = dsParametros
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          PasswordChar = 'x'
+          TabOrder = 10
+        end
+        object DBEdit39: TDBEdit
+          Left = 132
+          Top = 234
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'par_luganis_os'
+          DataSource = dsParametros
+          TabOrder = 11
+        end
+        object DBEdit49: TDBEdit
+          Left = 132
+          Top = 282
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'par_luganis_latitude'
+          DataSource = dsParametros
+          TabOrder = 12
+        end
+        object DBEdit59: TDBEdit
+          Left = 132
+          Top = 306
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'par_luganis_longitude'
+          DataSource = dsParametros
+          TabOrder = 13
+        end
+        object DBEdit60: TDBEdit
+          Left = 132
+          Top = 330
+          Width = 245
+          Height = 21
+          BevelKind = bkFlat
+          BorderStyle = bsNone
+          DataField = 'par_luganis_providerip'
+          DataSource = dsParametros
+          TabOrder = 14
+        end
+        object DBCheckBox75: TDBCheckBox
+          Left = 152
+          Top = 95
+          Width = 273
+          Height = 17
+          Caption = 'Detener Facturacion si no hay secuencia disponible'
+          DataField = 'PAR_FE_DetenerFacturacion'
+          DataSource = dsParametros
+          TabOrder = 15
+          ValueChecked = 'True'
+          ValueUnchecked = 'False'
+        end
+      end
+      object ts1: TTabSheet
+        Caption = 'eNCF'
+        object grp3: TGroupBox
+          Left = 0
+          Top = 40
+          Width = 470
+          Height = 315
+          Align = alBottom
+          Caption = 'Secuencias (eNCF)'
+          TabOrder = 0
+          object dbgrd1: TDBGrid
+            Left = 2
+            Top = 15
+            Width = 466
+            Height = 298
+            Align = alClient
+            Ctl3D = False
+            DataSource = dseNCF
+            Options = [dgTitles, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+            ParentCtl3D = False
+            TabOrder = 0
+            TitleFont.Charset = ANSI_CHARSET
+            TitleFont.Color = clWindowText
+            TitleFont.Height = -11
+            TitleFont.Name = 'Tahoma'
+            TitleFont.Style = []
+            Columns = <
+              item
+                Expanded = False
+                FieldName = 'Tipo'
+                ReadOnly = True
+                Title.Alignment = taCenter
+                Title.Caption = 'Codigo'
+                Visible = False
+              end
+              item
+                Expanded = False
+                FieldName = 'nombre_dgii'
+                Title.Caption = 'Tipo'
+                Width = 115
+                Visible = True
+              end
+              item
+                Alignment = taCenter
+                Expanded = False
+                FieldName = 'Secuencia_Inicial_DGII'
+                ReadOnly = True
+                Title.Alignment = taCenter
+                Title.Caption = 'eNCF Inicial'
+                Width = 70
+                Visible = True
+              end
+              item
+                Alignment = taCenter
+                Expanded = False
+                FieldName = 'Final'
+                Title.Alignment = taCenter
+                Title.Caption = 'eNCF Final'
+                Width = 70
+                Visible = True
+              end
+              item
+                Alignment = taCenter
+                Expanded = False
+                FieldName = 'Ultima_secuencia_DGII'
+                ReadOnly = True
+                Title.Alignment = taCenter
+                Title.Caption = 'Ultima Sec.'
+                Width = 60
+                Visible = True
+              end
+              item
+                Alignment = taCenter
+                Expanded = False
+                FieldName = 'Activa'
+                ReadOnly = True
+                Title.Alignment = taCenter
+                Title.Caption = 'St.'
+                Visible = False
+              end
+              item
+                Alignment = taCenter
+                Expanded = False
+                FieldName = 'Cantidad'
+                ReadOnly = True
+                Title.Alignment = taCenter
+                Width = 60
+                Visible = True
+              end>
+          end
+        end
+        object btn4: TBitBtn
+          Left = 304
+          Top = 16
+          Width = 83
+          Height = 30
+          Caption = 'Modificar eNCF'
+          TabOrder = 1
+          OnClick = btn4Click
+        end
+      end
     end
   end
   object Search: TQrySearchDlgADO
@@ -11886,6 +12372,85 @@ object frmParametros: TfrmParametros
     object QParametrosPAR_AutorizacionNoRequerida: TBooleanField
       FieldName = 'PAR_AutorizacionNoRequerida'
     end
+    object QParametrosUsa_FacturacionElectronica: TBooleanField
+      FieldName = 'Usa_FacturacionElectronica'
+    end
+    object QParametrosURL_FacturacionElectronica: TStringField
+      FieldName = 'URL_FacturacionElectronica'
+      Size = 200
+    end
+    object QParametrosURL_FCFacturacionElectronica: TStringField
+      FieldName = 'URL_FCFacturacionElectronica'
+      Size = 200
+    end
+    object QParametrosPass_FacturacionElectronica: TStringField
+      FieldName = 'Pass_FacturacionElectronica'
+      Size = 200
+    end
+    object QParametrosImprimirCopia: TBooleanField
+      FieldName = 'ImprimirCopia'
+    end
+    object QParametrosservicio_construccion: TBooleanField
+      FieldName = 'servicio_construccion'
+    end
+    object QParametrosintegracion_luganis: TBooleanField
+      FieldName = 'integracion_luganis'
+    end
+    object QParametrosmesas_abiertas: TBooleanField
+      FieldName = 'mesas_abiertas'
+    end
+    object QParametrospar_luganis_baseurl: TStringField
+      FieldName = 'par_luganis_baseurl'
+      Size = 100
+    end
+    object QParametrospar_luganis_companycode: TStringField
+      FieldName = 'par_luganis_companycode'
+      Size = 100
+    end
+    object QParametrospar_luganis_username: TStringField
+      FieldName = 'par_luganis_username'
+      Size = 100
+    end
+    object QParametrospar_luganis_password: TStringField
+      FieldName = 'par_luganis_password'
+      Size = 100
+    end
+    object QParametrospar_luganis_appversion: TStringField
+      FieldName = 'par_luganis_appversion'
+      Size = 100
+    end
+    object QParametrospar_luganis_os: TStringField
+      FieldName = 'par_luganis_os'
+      Size = 100
+    end
+    object QParametrospar_luganis_deviceid: TStringField
+      FieldName = 'par_luganis_deviceid'
+      Size = 100
+    end
+    object QParametrospar_luganis_latitude: TStringField
+      FieldName = 'par_luganis_latitude'
+      Size = 100
+    end
+    object QParametrospar_luganis_longitude: TStringField
+      FieldName = 'par_luganis_longitude'
+      Size = 100
+    end
+    object QParametrospar_luganis_providerip: TStringField
+      FieldName = 'par_luganis_providerip'
+      Size = 100
+    end
+    object QParametrospar_comision_vend: TBooleanField
+      FieldName = 'par_comision_vend'
+    end
+    object QParametrosPAR_FE_DetenerFacturacion: TBooleanField
+      FieldName = 'PAR_FE_DetenerFacturacion'
+    end
+    object QParametrospar_ImprimirFacturaRestBar: TBooleanField
+      FieldName = 'par_ImprimirFacturaRestBar'
+    end
+    object QParametrospar_ImprimirCopiaRestBar: TBooleanField
+      FieldName = 'par_ImprimirCopiaRestBar'
+    end
   end
   object dsParametros: TDataSource
     AutoEdit = False
@@ -12009,7 +12574,7 @@ object frmParametros: TfrmParametros
         'DIA3LABEL,'
       'PAR_DIA4DESDE, PAR_DIA4HASTA, PAR_DIA4LABEL from PARAMANTIGSALDO'
       'where emp_codigo = :emp_codigo')
-    Left = 56
+    Left = 16
     Top = 104
     object QAntigCliEMP_CODIGO: TIntegerField
       FieldName = 'EMP_CODIGO'
@@ -12095,7 +12660,7 @@ object frmParametros: TfrmParametros
         'PAR_DIA4DESDE, PAR_DIA4HASTA, PAR_DIA4LABEL from PARAMANTIGSALDO' +
         'PROV'
       'where emp_Codigo = :emp_codigo')
-    Left = 88
+    Left = 48
     Top = 104
     object QAntigProvEMP_CODIGO: TIntegerField
       FieldName = 'EMP_CODIGO'
@@ -12187,7 +12752,7 @@ object frmParametros: TfrmParametros
       'PARCONFIGIMP'
       'WHERE EMP_CODIGO = :emp_codigo'
       'AND TFA_CODIGO = :tfa_codigo')
-    Left = 56
+    Left = 24
     Top = 136
     object QConfigImpCAJ: TIBStringField
       FieldName = 'CAJ'
@@ -12258,7 +12823,7 @@ object frmParametros: TfrmParametros
       'FROM'
       'PARCONFIGIMPINV'
       'WHERE EMP_CODIGO = :emp_codigo')
-    Left = 88
+    Left = 56
     Top = 136
     object QConfigImpInvEMP_CODIGO: TIntegerField
       FieldName = 'EMP_CODIGO'
@@ -12346,8 +12911,8 @@ object frmParametros: TfrmParametros
       'CONTPARAMETROS'
       'WHERE '
       'EMP_CODIGO = :emp_codigo')
-    Left = 56
-    Top = 168
+    Left = 24
+    Top = 160
     object QContabEMP_CODIGO: TIntegerField
       FieldName = 'EMP_CODIGO'
       Origin = 'CONTPARAMETROS.EMP_CODIGO'
@@ -12631,8 +13196,8 @@ object frmParametros: TfrmParametros
   end
   object dsContab: TDataSource
     DataSet = QContab
-    Left = 88
-    Top = 168
+    Left = 56
+    Top = 160
   end
   object QBusquedaProd: TADOQuery
     Connection = DM.ADOSigma
@@ -12656,8 +13221,8 @@ object frmParametros: TfrmParametros
       'EMP_CODIGO = :emp_codigo'
       'ORDER BY'
       'BUS_SECUENCIA')
-    Left = 56
-    Top = 200
+    Left = 16
+    Top = 184
     object QBusquedaProdBUS_CAMPO: TIBStringField
       FieldName = 'BUS_CAMPO'
       Origin = 'PRODBUSQUEDA.BUS_CAMPO'
@@ -12678,8 +13243,8 @@ object frmParametros: TfrmParametros
   end
   object dsBusqueda: TDataSource
     DataSet = QBusquedaProd
-    Left = 88
-    Top = 200
+    Left = 16
+    Top = 216
   end
   object QRedondeo: TADOQuery
     Connection = DM.ADOSigma
@@ -12851,8 +13416,8 @@ object frmParametros: TfrmParametros
   end
   object dsNCF: TDataSource
     DataSet = QNCF
-    Left = 120
-    Top = 232
+    Left = 16
+    Top = 248
   end
   object QNCF_Unico: TADOQuery
     Connection = DM.ADOSigma
@@ -12932,8 +13497,8 @@ object frmParametros: TfrmParametros
   end
   object dsNCF_Unico: TDataSource
     DataSet = QNCF_Unico
-    Left = 120
-    Top = 264
+    Left = 304
+    Top = 272
   end
   object QNCF_Menores: TADOQuery
     Connection = DM.ADOSigma
@@ -13013,7 +13578,7 @@ object frmParametros: TfrmParametros
   object dsNCF_Menores: TDataSource
     DataSet = QNCF_Menores
     Left = 120
-    Top = 296
+    Top = 352
   end
   object QParamRH: TADOQuery
     Connection = DM.ADOSigma
@@ -13540,8 +14105,7 @@ object frmParametros: TfrmParametros
       'emp_codigo = :emp_codigo'
       'order by'
       'ban_nombre')
-    Left = 504
-    Top = 192
+    Left = 840
     object IntegerField1: TIntegerField
       FieldName = 'ban_codigo'
     end
@@ -13728,5 +14292,71 @@ object frmParametros: TfrmParametros
     DataSet = qAsignaVerifione
     Left = 88
     Top = 473
+  end
+  object QeNCF: TADOQuery
+    Connection = DM.ADOSigma
+    CursorType = ctStatic
+    LockType = ltBatchOptimistic
+    AfterPost = QNCFAfterPost
+    OnCalcFields = QNCFCalcFields
+    Parameters = <
+      item
+        Name = 'emp'
+        Size = -1
+        Value = Null
+      end>
+    SQL.Strings = (
+      'select'
+      
+        'L.emp_codigo, Tipo, Secuencia_Inicial_DGII, Ultima_secuencia_DGI' +
+        'I,'
+      
+        ' CONVERT(datetime, NULLIF(FechaVencimientoSecuenciaDGII,'#39#39'), 23)' +
+        ' AS FechaVencimientoSecuenciaDGII'
+      ''
+      ', Cantidad, Cantidad as Final,  N.nombre_dgii, cantidad_minima'
+      'from'
+      'SecuenciaDGII L LEFT JOIN TipoNCF N ON N.emp_codigo=L.emp_codigo'
+      'AND CAST(L.Tipo AS varchar(10))= CAST(N.cod_dgii AS varchar(10))'
+      'WHERE L.emp_codigo=:emp')
+    Left = 272
+    Top = 184
+    object QeNCFemp_codigo: TIntegerField
+      FieldName = 'emp_codigo'
+    end
+    object QeNCFSecuencia_Inicial_DGII: TIntegerField
+      FieldName = 'Secuencia_Inicial_DGII'
+    end
+    object QeNCFTipo: TIntegerField
+      FieldName = 'Tipo'
+    end
+    object QeNCFUltima_secuencia_DGII: TIntegerField
+      FieldName = 'Ultima_secuencia_DGII'
+    end
+    object QeNCFCantidad: TIntegerField
+      FieldName = 'Cantidad'
+    end
+    object QeNCFFechaVencimientoSecuenciaDGII: TDateField
+      FieldName = 'FechaVencimientoSecuenciaDGII'
+    end
+    object QeNCFFinal: TIntegerField
+      FieldName = 'Final'
+    end
+    object QeNCFnombre_dgii: TStringField
+      FieldName = 'nombre_dgii'
+    end
+    object QeNCFcantidad_minima: TIntegerField
+      FieldName = 'cantidad_minima'
+    end
+  end
+  object DataSource1: TDataSource
+    DataSet = QBusquedaProd
+    Left = 56
+    Top = 192
+  end
+  object dseNCF: TDataSource
+    DataSet = QeNCF
+    Left = 328
+    Top = 184
   end
 end

@@ -1216,7 +1216,11 @@ end;
     if dm.Query1.FieldByName('bus_campo').AsString = 'PRECIO4' then
       DBGrid1.Columns[a].FieldName := 'pro_precio4';
     if dm.Query1.FieldByName('bus_campo').AsString = 'UBICACION' then
-      DBGrid1.Columns[a].FieldName := 'PRO_UBICACION';
+    begin
+       DBGrid1.Columns[a].FieldName := 'PRO_UBICACION';
+      DBGrid1.Columns[a].Width := DBGrid1.Columns[a].Width + 200;
+    end;
+
     if dm.Query1.FieldByName('bus_campo').AsString = 'TIPO (NUEVO, USADO)' then
       DBGrid1.Columns[a].FieldName := 'Tipo';
     if dm.Query1.FieldByName('bus_campo').AsString = 'FAMILIA' then
@@ -1263,6 +1267,7 @@ end;
     //UNIDAD DE MEDIDA
     if dm.Query1.FieldByName('bus_campo').AsString = 'UNIDAD DE MEDIDA' then
       DBGrid1.Columns[a].FieldName := 'UnidadMedida';
+
 
 
     a := a + 1;

@@ -1,6 +1,6 @@
 object frmConsBoletos: TfrmConsBoletos
-  Left = -80
-  Top = 120
+  Left = 238
+  Top = 112
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Consulta de Boletos'
@@ -603,6 +603,12 @@ object frmConsBoletos: TfrmConsBoletos
         Title.Caption = 'ESTADO'
         Width = 100
         Visible = True
+      end
+      item
+        Expanded = False
+        FieldName = 'usu_nombre'
+        Title.Caption = 'USUARIO'
+        Visible = True
       end>
   end
   object QSucursal: TADOQuery
@@ -708,14 +714,15 @@ object frmConsBoletos: TfrmConsBoletos
         'select b.*, so.suc_nombre suc_origen, sd.suc_nombre suc_destino,' +
         ' comentario_anulado,'
       
-        'case anulado when 1 then '#39'Anulado'#39' else '#39'Vigente'#39' end as Estado ' +
-        'from boleto b'
+        'case anulado when 1 then '#39'Anulado'#39' else '#39'Vigente'#39' end as Estado,' +
+        ' u.usu_nombre from boleto b'
       
         'left join sucursales so on b.suc_cod_origen=so.suc_codigo and b.' +
         'emp_codigo=so.emp_codigo'
       
         'left join sucursales sd on b.suc_cod_destino=sd.suc_codigo and b' +
         '.emp_codigo=sd.emp_codigo'
+      'left join Usuarios u on u.usu_codigo= b.usu_codigo'
       'where b.emp_codigo = :emp'
       '  and b.suc_cod_origen = :suc')
     Left = 240
@@ -814,6 +821,10 @@ object frmConsBoletos: TfrmConsBoletos
     object QBoletosEstado: TStringField
       FieldName = 'Estado'
       Size = 100
+    end
+    object QBoletosusu_nombre: TStringField
+      FieldName = 'usu_nombre'
+      Size = 50
     end
   end
   object dsBoletos: TDataSource

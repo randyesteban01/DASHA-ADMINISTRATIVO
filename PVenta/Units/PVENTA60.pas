@@ -209,7 +209,7 @@ implementation
 
 uses RVENTA11, RVENTA41, SIGMA01, SIGMA00, RVENTA02, PVENTA83, RVENTA71,
   RVENTA105, PVENTA91, RVENTA124, StdConvs, RVENTA126, RVENTA128,
-  RVENTA122, RVENTA115, RVENTA64, RVENTA79, DateUtils;
+  RVENTA122, RVENTA115, RVENTA64, RVENTA79, DateUtils, RVENTA137;
 
 {$R *.dfm}
 
@@ -319,7 +319,7 @@ end;
 procedure TfrmConsCxC.BitBtn1Click(Sender: TObject);
 begin
   //Reparar Balance del cliente
-{  qRepBalanceFact.Close;
+  qRepBalanceFact.Close;
     qRepBalanceFact.Parameters.ParamByName('emp').Value := dm.vp_cia;
     qRepBalanceFact.Parameters.ParamByName('cli').Value := QClienteCLI_CODIGO.Value;
     qRepBalanceFact.ExecSQL;
@@ -327,7 +327,7 @@ begin
     dm.Query1.SQL.Clear;
     dm.Query1.SQL.Add('execute pr_actualiza_bce :emp');
     dm.Query1.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
-    dm.Query1.ExecSQL;  }
+    dm.Query1.ExecSQL;  
 
     
   Application.CreateForm(tREstadoCtaCli, REstadoCtaCli);
@@ -540,7 +540,7 @@ begin
   //punt := QCliente.GetBookmark;
 
   //VERIFICAR NOTAS CREDITO
-  qVerificarNCMontoUsados.ExecSQL;
+ // qVerificarNCMontoUsados.ExecSQL;
 
   if (Trim(edTipo.Text)) = '' then edTipo.Text := '0';
 
@@ -574,6 +574,7 @@ begin
     end;
 
     QCliente.open;
+    
 
   dm.Query1.Close;
   dm.Query1.SQL.Clear;
@@ -793,8 +794,24 @@ begin
                     RFacturaSarita.Destroy;
                     end;
 
-    end;
+    end
+    else if FormatoImp = 3 then
+          begin
+            application.createform(tRFactura, RFactura);
+            RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+            RFactura.QFactura.Parameters.ParamByName('tipo').Value   := QMovimientosTFA_CODIGO.value;
+            RFactura.QFactura.Parameters.ParamByName('forma').Value   := QMovimientosFAC_FORMA.value;
+            RFactura.QFactura.Parameters.ParamByName('numero').Value := QMovimientosMOV_NUMERO.value;
+            RFactura.QFactura.Parameters.ParamByName('suc').Value := QMovimientosSUC_CODIGO.Value;
+            RFactura.QFactura.open;
+            RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+            RFactura.QDetalle.open;
+            RFactura.QFormasPago.open;
+            RFactura.Preview;
+            RFactura.Destroy; 
+          end;
   end;
+  
 end;
 
 procedure TfrmConsCxC.Imp40ColumnasFac;
@@ -1221,8 +1238,8 @@ var
   Total, Vencido : double;
 begin
 
-  dm.ADOSigma.Execute('UPDATE FACTURAS SET FAC_ABONO = ISNULL(FAC_TOTAL,0), FAC_STATUS = '+QuotedStr('PAG')+' WHERE (ISNULL(FAC_TOTAL,0)-ISNULL(FAC_ABONO,0))<1');
-  dm.ADOSigma.Execute('UPDATE MOVIMIENTOS SET MOV_ABONO = ISNULL(MOV_MONTO,0), MOV_STATUS = '+QuotedStr('PAG')+' WHERE (ISNULL(MOV_MONTO,0)-ISNULL(MOV_ABONO,0))<1');
+ // dm.ADOSigma.Execute('UPDATE FACTURAS SET FAC_ABONO = ISNULL(FAC_TOTAL,0), FAC_STATUS = '+QuotedStr('PAG')+' WHERE (ISNULL(FAC_TOTAL,0)-ISNULL(FAC_ABONO,0))<1');
+ // dm.ADOSigma.Execute('UPDATE MOVIMIENTOS SET MOV_ABONO = ISNULL(MOV_MONTO,0), MOV_STATUS = '+QuotedStr('PAG')+' WHERE (ISNULL(MOV_MONTO,0)-ISNULL(MOV_ABONO,0))<1 ');
 
 
   dm.Query1.Close;
@@ -1274,8 +1291,7 @@ if not QSucursal.Active then
   end;
 
 ChkB_cksucursal.Checked := False;
-btRefreshClick(Sender);
-
+btRefreshClick(Sender);   
 
 end;
 
@@ -1650,7 +1666,7 @@ begin
       Rpt_FacOrdTaller.Export(frxPDFExport1);
       EnvioMail2('Fac');
       end;
-      end else if DM.QParametrospar_formato_preimpreso.Value = 'SteelTec' then begin
+      end else if ((DM.QParametrospar_formato_preimpreso.Value = 'SteelTec') ) then begin
       application.createform(TRFacturaSteelTec, RFacturaSteelTec);
       RFacturaSteelTec.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
       RFacturaSteelTec.QFactura.Parameters.ParamByName('tipo').Value   := QMovimientosTFA_CODIGO.Value;
@@ -1668,6 +1684,25 @@ begin
       RFacturaSteelTec.ExportToFilter(TQRPDFDocumentFilter.Create(vl_adjunto1));
       vl_adjunto2 := '';
       EnvioMail(RFacturaSteelTec,'Fac');
+       end else if DM.QParametrospar_formato_preimpreso.Value = 'Construccion' then begin
+      application.createform(TRFacturaSteelTec, RFacturaSteelTec);
+      RFacturaSteelTec.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+      RFacturaSteelTec.QFactura.Parameters.ParamByName('tipo').Value   := QMovimientosTFA_CODIGO.Value;
+      RFacturaSteelTec.QFactura.Parameters.ParamByName('forma').Value  := QMovimientosFAC_FORMA.Value;
+      RFacturaSteelTec.QFactura.Parameters.ParamByName('numero').Value := QMovimientosMOV_NUMERO.Value;
+      RFacturaSteelTec.QFactura.Parameters.ParamByName('suc').Value    := QMovimientosSUC_CODIGO.Value;
+      RFacturaSteelTec.QFactura.open;
+      RFacturaSteelTec.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+      RFacturaSteelTec.QDetalle.open;
+      vl_clienteN := RFacturaSteelTec.QFacturaFAC_NOMBRE.Text;
+      vl_cliente  := RFacturaSteelTec.QFacturaCLI_CODIGO.Value;
+      vl_suc      := RFacturaSteelTec.QFacturaSUC_CODIGO.Value;
+      vl_factnum  := RFacturaSteelTec.QFacturaFAC_NUMERO.Text;
+      vl_adjunto1 := '.\Factura_No_'+vl_factnum+'.PDF';
+      RFacturaSteelTec.ExportToFilter(TQRPDFDocumentFilter.Create(vl_adjunto1));
+      vl_adjunto2 := '';
+      EnvioMail(RFacturaSteelTec,'Fac');
+
     end else
 
     if dm.QParametrospar_formato_preimpreso.Value = 'QClinico' then
@@ -1820,7 +1855,7 @@ begin
       RFacturaSarita.Destroy;
       end;     }
 
-      if DM.QParametrospar_formato_preimpreso.Value = 'SteelTec' then begin
+      if ((DM.QParametrospar_formato_preimpreso.Value = 'SteelTec') ) then begin
       application.createform(TRFacturaSteelTec, RFacturaSteelTec);
       RFacturaSteelTec.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
       RFacturaSteelTec.QFactura.Parameters.ParamByName('tipo').Value   := QMovimientosTFA_CODIGO.Value;
@@ -1838,6 +1873,26 @@ begin
       RFacturaSteelTec.ExportToFilter(TQRPDFDocumentFilter.Create(vl_adjunto1));
       vl_adjunto2 := '';
       EnvioMail(RFacturaSteelTec,'Fac');
+      end;
+
+       if ( (dm.QParametrospar_formato_preimpreso.Value = 'Construccion')) then begin
+      application.createform(TRFacturaConstruccion, RFacturaContruccion);
+      RFacturaContruccion.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+      RFacturaContruccion.QFactura.Parameters.ParamByName('tipo').Value   := QMovimientosTFA_CODIGO.Value;
+      RFacturaContruccion.QFactura.Parameters.ParamByName('forma').Value  := QMovimientosFAC_FORMA.Value;
+      RFacturaContruccion.QFactura.Parameters.ParamByName('numero').Value := QMovimientosMOV_NUMERO.Value;
+      RFacturaContruccion.QFactura.Parameters.ParamByName('suc').Value    := QMovimientosSUC_CODIGO.Value;
+      RFacturaContruccion.QFactura.open;
+      RFacturaContruccion.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+      RFacturaContruccion.QDetalle.open;
+      vl_clienteN := RFacturaContruccion.QFacturaFAC_NOMBRE.Text;
+      vl_cliente  := RFacturaContruccion.QFacturaCLI_CODIGO.Value;
+      vl_suc      := RFacturaContruccion.QFacturaSUC_CODIGO.Value;
+      vl_factnum  := RFacturaContruccion.QFacturaFAC_NUMERO.Text;
+      vl_adjunto1 := '.\Factura_No_'+vl_factnum+'.PDF';
+      RFacturaContruccion.ExportToFilter(TQRPDFDocumentFilter.Create(vl_adjunto1));
+      vl_adjunto2 := '';
+      EnvioMail(RFacturaContruccion,'Fac');
       end;
 
 end;

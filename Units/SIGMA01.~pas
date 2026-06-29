@@ -11,6 +11,21 @@ uses
   QRExport, QRPDFFilt, WinSvc,vmaxFiscal,WinSock,iFiscal, uLkJSON;
 
 type
+  TDatoRncConsulta = record
+    Encontrado: Boolean;
+    RncCedula: string;
+    RazonSocial: string;
+    NombreComercial: string;
+    ActividadEconomica: string;
+    Direccion: string;
+    Numero: string;
+    Urbanizacion: string;
+    Telefono: string;
+    Estatus: string;
+    CliCodigo: Integer;
+    Mensaje: string;
+  end;
+
   TDM = class(TDataModule)
     dsEmpresas: TDataSource;
     dsParametros: TDataSource;
@@ -404,6 +419,23 @@ type
     QParametrosPAR_MESERO: TBooleanField;
     QUsuariosusu_suc_default: TIntegerField;
     QParametrosPAR_cantidadRecibosImprimir: TIntegerField;
+    QParametrosUsa_FacturacionElectronica: TBooleanField;
+    QUsuariosusu_reenvia_dgii: TBooleanField;
+    QParametrosImprimirCopia: TBooleanField;
+    QParametrosservicio_construccion: TBooleanField;
+    QParametrosintegracion_luganis: TBooleanField;
+    QParametrosmesas_abiertas: TBooleanField;
+    QParametrospar_luganis_baseurl: TStringField;
+    QParametrospar_luganis_companycode: TStringField;
+    QParametrospar_luganis_username: TStringField;
+    QParametrospar_luganis_password: TStringField;
+    QParametrospar_luganis_appversion: TStringField;
+    QParametrospar_luganis_os: TStringField;
+    QParametrospar_luganis_deviceid: TStringField;
+    QParametrospar_luganis_latitude: TStringField;
+    QParametrospar_luganis_longitude: TStringField;
+    QParametrospar_luganis_providerip: TStringField;
+    QParametrosPAR_FE_DetenerFacturacion: TBooleanField;
     procedure IBDatabaseAfterConnect(Sender: TObject);
     procedure QEmpresasCalcFields(DataSet: TDataSet);
     procedure DataModuleCreate(Sender: TObject);
@@ -419,7 +451,7 @@ type
     Usuario,suc_default, vl_tipocons, vp_cia: integer;
     NomUsu, NombreEmp, UltBusqueda, UltProducto, lcnombre, lcrnc, lccorreo, lcurl,
     lctelefono, bolImpresora, vp_formactivo, vp_seriallicencia, vp_usuario, vl_exportar  : String;
-    vp_usermailok, vp_solo_conduce : Boolean;
+    vp_usermailok, vp_solo_conduce, usu_reenvia_dgii : Boolean;
     procedure Imp40Columnas(const vARCH: TextFile);
     function GeneraLicencia(): string;
     function numero2Letras(paNumero: DOUBLE): string;
@@ -449,6 +481,8 @@ type
     function Redondear(const Numero: Double; const Digitos: Integer): Double;
     Function GetIPAddress():String;
     function GetProductoAjustado(emp, alm, prod :Integer; fecha:TDateTime):Boolean;
+    function SoloDigitosRnc(const ATexto: string): string;
+    function ConsultarRncCompleto(const ARnc: string): TDatoRncConsulta;
 
 
 
@@ -463,7 +497,7 @@ var
   PCNombre,IP :String;
 implementation
 
-uses SIGMA04, StdCtrls, Printers;
+uses SIGMA04, StdCtrls, Printers, ComObj, Variants;
 
 {$R *.DFM}
 
@@ -1258,7 +1292,7 @@ if not DirectoryExists('C:\Balanza') then
 CreateDir('C:\Balanza');
 AssignFile(F,'C:\Balanza\Productos.txt');
 Rewrite(F);
-Writeln(F,'Código,Nombre del producto,precio');
+Writeln(F,'C?digo,Nombre del producto,precio');
 while not dm.Query1.Eof do begin
 vCodigo := DM.Query1.FieldByName('Codigo').Text;
 vNombre := DM.Query1.FieldByName('Nombre').Text;
@@ -1375,11 +1409,11 @@ begin
         begin
           case PortOpened of
             PORT_ALREADY_OPEN   : result := 'El puerto ya esta abierto'; //= 1;  //Puerto serial abierto.
-            PORT_IN_USE         : result := 'Puerto Serial en uso por otra aplicación. o no existe'; //= 2; //Puerto Serial en uso por otra aplicación. o no existe
+            PORT_IN_USE         : result := 'Puerto Serial en uso por otra aplicaci?n. o no existe'; //= 2; //Puerto Serial en uso por otra aplicaci?n. o no existe
             PORT_NOT_OPEN       : result := 'El puerto no pudo ser abierto'; //=3;
-            INVALID_COM         : result := 'Pueto inválido o no Existe'; //  = 4; //(0x0004) Puerto Serial utilizado en la apertura inválido o inexistente.
-            INVALID_BAUD_RATE   : result := 'Velocidad del Puerto Serial inválido'; //5; // (0x0005) Velocidad del Puerto Serial inválido o no soportada.
-            PRINTER_OFF_OR_DISCONNECTED : result := 'Impresora fuera de línea'; // = 8;  ///Impresora desconectada o fuera de línea.
+            INVALID_COM         : result := 'Pueto inv?lido o no Existe'; //  = 4; //(0x0004) Puerto Serial utilizado en la apertura inv?lido o inexistente.
+            INVALID_BAUD_RATE   : result := 'Velocidad del Puerto Serial inv?lido'; //5; // (0x0005) Velocidad del Puerto Serial inv?lido o no soportada.
+            PRINTER_OFF_OR_DISCONNECTED : result := 'Impresora fuera de l?nea'; // = 8;  ///Impresora desconectada o fuera de l?nea.
           end;
         end;
     end; //--[0]--
@@ -1391,12 +1425,12 @@ end;
 
 function TDM.PAD(Mchar, Alineacion: char; tamano: Integer;
   Numero: String): string;
-{**-[Esta función es para rellenar una cadena con un valor recibido a un
-     tamaño dado recibe como parámetro lo sigte :
+{**-[Esta funci?n es para rellenar una cadena con un valor recibido a un
+     tama?o dado recibe como par?metro lo sigte :
      Mchar:Es un carater cualquiera.
-     Tamaño :Es el tamaño al cual sera combertida la cadena
-     Número :Es la cadena enviada
-     Tiene como resultado una cadena con el tamaño dado < S >  ]-**}
+     Tama?o :Es el tama?o al cual sera combertida la cadena
+     N?mero :Es la cadena enviada
+     Tiene como resultado una cadena con el tama?o dado < S >  ]-**}
 
 var S:String;
 begin
@@ -1503,5 +1537,216 @@ with adoMultiUso do begin
   end;
 end;
 
+function TDM.SoloDigitosRnc(const ATexto: string): string;
+var
+  i: Integer;
+begin
+  Result := '';
+  for i := 1 to Length(ATexto) do
+    if ATexto[i] in ['0'..'9'] then
+      Result := Result + ATexto[i];
+end;
+
+function JsonExtraerCadena(const AJson, AClave: string): string;
+var
+  p, q, r: Integer;
+  sKey: string;
+begin
+  Result := '';
+  sKey := '"' + AClave + '"';
+  p := Pos(LowerCase(sKey), LowerCase(AJson));
+  if p = 0 then Exit;
+  q := p + Length(sKey);
+  while (q <= Length(AJson)) and (AJson[q] in [' ', ':', #9]) do
+    Inc(q);
+  if q > Length(AJson) then Exit;
+  if AJson[q] = '"' then
+  begin
+    Inc(q);
+    r := q;
+    while (r <= Length(AJson)) and (AJson[r] <> '"') do
+      Inc(r);
+    Result := Copy(AJson, q, r - q);
+  end
+  else if SameText(Copy(AJson, q, 4), 'true') then
+    Result := 'true'
+  else if SameText(Copy(AJson, q, 5), 'false') then
+    Result := 'false';
+end;
+
+function JsonExtraerBoolean(const AJson, AClave: string): Boolean;
+begin
+  Result := SameText(JsonExtraerCadena(AJson, AClave), 'true');
+end;
+
+procedure LimpiarDatoRnc(var ADatos: TDatoRncConsulta);
+begin
+  ADatos.Encontrado := False;
+  ADatos.RncCedula := '';
+  ADatos.RazonSocial := '';
+  ADatos.NombreComercial := '';
+  ADatos.ActividadEconomica := '';
+  ADatos.Direccion := '';
+  ADatos.Numero := '';
+  ADatos.Urbanizacion := '';
+  ADatos.Telefono := '';
+  ADatos.Estatus := '';
+  ADatos.CliCodigo := 0;
+  ADatos.Mensaje := '';
+end;
+
+procedure CargarRncLocal(const ARnc: string; var ADatos: TDatoRncConsulta);
+begin
+  LimpiarDatoRnc(ADatos);
+
+  dm.Query1.Close;
+  dm.Query1.SQL.Clear;
+  dm.Query1.SQL.Add('select rnc_cedula, razon_social, nombre_comercial,');
+  dm.Query1.SQL.Add('actividad_economica, direccion, numero, urbanizacion,');
+  dm.Query1.SQL.Add('telefono, estatus from rnc');
+  dm.Query1.SQL.Add('where rnc_cedula = :rnc');
+  dm.Query1.Parameters.ParamByName('rnc').Value := ARnc;
+  dm.Query1.Open;
+
+  if dm.Query1.RecordCount = 0 then
+    Exit;
+
+  ADatos.Encontrado := True;
+  ADatos.RncCedula := dm.Query1.FieldByName('rnc_cedula').AsString;
+  ADatos.RazonSocial := dm.Query1.FieldByName('razon_social').AsString;
+  ADatos.NombreComercial := dm.Query1.FieldByName('nombre_comercial').AsString;
+  ADatos.ActividadEconomica := dm.Query1.FieldByName('actividad_economica').AsString;
+  ADatos.Direccion := dm.Query1.FieldByName('direccion').AsString;
+  ADatos.Numero := dm.Query1.FieldByName('numero').AsString;
+  ADatos.Urbanizacion := dm.Query1.FieldByName('urbanizacion').AsString;
+  ADatos.Telefono := dm.Query1.FieldByName('telefono').AsString;
+  ADatos.Estatus := dm.Query1.FieldByName('estatus').AsString;
+end;
+
+procedure InsertarRncDesdeDirectorio(const ADatos: TDatoRncConsulta);
+begin
+  if Trim(ADatos.RncCedula) = '' then
+    Exit;
+
+  with dm.adoMultiUso do
+  begin
+    Close;
+    SQL.Clear;
+    SQL.Add('insert into rnc (rnc_cedula, razon_social, nombre_comercial,');
+    SQL.Add('actividad_economica, direccion, numero, urbanizacion, telefono, estatus)');
+    SQL.Add('values (:rnc, :razon, :nomcom, :actividad, :dir, :num, :urb, :tel, :estatus)');
+    Parameters.ParamByName('rnc').Value := Trim(ADatos.RncCedula);
+    Parameters.ParamByName('razon').Value := ADatos.RazonSocial;
+    Parameters.ParamByName('nomcom').Value := ADatos.NombreComercial;
+    Parameters.ParamByName('actividad').Value := ADatos.ActividadEconomica;
+    Parameters.ParamByName('dir').Value := ADatos.Direccion;
+    Parameters.ParamByName('num').Value := ADatos.Numero;
+    Parameters.ParamByName('urb').Value := ADatos.Urbanizacion;
+    Parameters.ParamByName('tel').Value := ADatos.Telefono;
+    Parameters.ParamByName('estatus').Value := ADatos.Estatus;
+    ExecSQL;
+    Close;
+  end;
+end;
+
+function ConsultarRncDirectorioDGII(const ARnc: string; var ADatos: TDatoRncConsulta): Boolean;
+var
+  Servicio: OleVariant;
+  ResJSON, ResConfig, RncEmpresa: string;
+  Ok, Encontrado: Boolean;
+  Nombre, RncResp, Mensaje: string;
+begin
+  Result := False;
+  Ok := False;
+  Encontrado := False;
+
+  try
+    Servicio := CreateOleObject('FacturacionElectronicaDGII.FacturaElectronicaService');
+  except
+    ADatos.Mensaje := 'No se pudo conectar con FacturacionElectronicaDGII.dll';
+    Exit;
+  end;
+
+  try
+    RncEmpresa := Trim(dm.QEmpresasEMP_RNC.AsString);
+    if RncEmpresa <> '' then
+    begin
+      ResConfig := Servicio.ConfigurarPorRnc(RncEmpresa);
+      if (ResConfig <> '') and (Pos('OK', UpperCase(ResConfig)) <> 1) then
+      begin
+        ADatos.Mensaje := ResConfig;
+        Exit;
+      end;
+    end;
+
+    ResJSON := Servicio.ConsultarDirectorioPorRnc(
+      ARnc,
+      '',
+      RncEmpresa,
+      '', '', '',
+      IntToStr(dm.vp_cia)
+    );
+
+    Ok := JsonExtraerBoolean(ResJSON, 'ok');
+    Encontrado := JsonExtraerBoolean(ResJSON, 'encontrado');
+    Nombre := JsonExtraerCadena(ResJSON, 'nombre');
+    RncResp := JsonExtraerCadena(ResJSON, 'rnc');
+    Mensaje := JsonExtraerCadena(ResJSON, 'message');
+    if Trim(Mensaje) = '' then
+      Mensaje := JsonExtraerCadena(ResJSON, 'mensaje');
+    if Trim(Nombre) = '' then
+      Nombre := Mensaje;
+
+    if Encontrado or (Ok and (Trim(Nombre) <> '')) then
+    begin
+      RncResp := ARnc;
+      ADatos.Encontrado := True;
+      ADatos.RncCedula := RncResp;
+      ADatos.RazonSocial := Nombre;
+      ADatos.NombreComercial := Nombre;
+      ADatos.ActividadEconomica := '';
+      ADatos.Direccion := '';
+      ADatos.Numero := '';
+      ADatos.Urbanizacion := '';
+      ADatos.Telefono := '';
+      ADatos.Estatus := 'DGII';
+      ADatos.CliCodigo := 0;
+      ADatos.Mensaje := Mensaje;
+      InsertarRncDesdeDirectorio(ADatos);
+      Result := True;
+    end
+    else
+      ADatos.Mensaje := Mensaje;
+  finally
+    Servicio := Unassigned;
+  end;
+end;
+
+function TDM.ConsultarRncCompleto(const ARnc: string): TDatoRncConsulta;
+var
+  RncNorm: string;
+begin
+  LimpiarDatoRnc(Result);
+
+  RncNorm := SoloDigitosRnc(ARnc);
+  if Length(RncNorm) < 9 then
+  begin
+    Result.Mensaje := 'RNC vac?o o inv?lido';
+    Exit;
+  end;
+
+  CargarRncLocal(RncNorm, Result);
+  if Result.Encontrado then
+    Exit;
+
+  ConsultarRncDirectorioDGII(RncNorm, Result);
+  if Result.Encontrado then
+  begin
+    if Trim(Result.RncCedula) <> '' then
+      CargarRncLocal(Result.RncCedula, Result)
+    else
+      CargarRncLocal(RncNorm, Result);
+  end;
+end;
 
 end.

@@ -145,6 +145,14 @@ type
     QNorma201806NCSubTotal: TFloatField;
     QNorma201806NCusu_nombre: TStringField;
     QNorma201806NCNumero: TStringField;
+    Label24: TLabel;
+    DBEdit15: TDBEdit;
+    SpeedButton2: TSpeedButton;
+    tmotivodgi: TEdit;
+    QNotaeNCF: TStringField;
+    QNotamotivo_dgi: TIntegerField;
+    QNotaemp_rnc: TStringField;
+    QNotacli_rnc: TStringField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btCloseClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -180,6 +188,9 @@ type
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
     procedure QNotancr_itbisChange(Sender: TField);
     procedure QNotaNCR_MONTOValidate(Sender: TField);
+    procedure SpeedButton2Click(Sender: TObject);
+    procedure QNotamotivo_dgiGetText(Sender: TField; var Text: String;
+      DisplayText: Boolean);
   private
     { Private declarations }
   public
@@ -190,6 +201,12 @@ type
     TipoMov, Sec : integer;
     procedure Imp40Columnas;
     procedure TotalizaCuentas;
+
+       function ValidarENCFDisponible(
+      AEmp: Integer; ATipo: Integer;
+      out AMsg: string;
+      out ASiguienteCorrelativo: Int64
+    ): Boolean;
   end;
 
 var
@@ -197,9 +214,84 @@ var
 
 implementation
 
-uses RVENTA33, SIGMA01, SIGMA00, SIGMA08;
+uses RVENTA33, SIGMA01, SIGMA00, SIGMA08,FacturacionElectronicaDGII_TLB;
 
 {$R *.DFM}
+
+function TfrmNotasCR.ValidarENCFDisponible(
+  AEmp: Integer; ATipo: Integer;
+  out AMsg: string;
+  out ASiguienteCorrelativo: Int64  // opcional, informativo
+): Boolean;
+var
+  Q: TADOQuery;
+  desde, ultima, cantidad, hasta, siguiente: Int64;
+  vence: TDateTime;
+  activa: Boolean;
+begin
+  Result := False;
+  AMsg := '';
+  ASiguienteCorrelativo := 0;
+
+  Q := dm.Query1; // reutiliza tu query
+  Q.Close;
+  Q.SQL.Clear;
+  Q.SQL.Add('SELECT s.Secuencia_Inicial_DGII, s.Ultima_secuencia_DGII, ');
+  Q.SQL.Add('     CONVERT(datetime, s.FechaVencimientoSecuenciaDGII, 120) AS FechaVencimientoSecuenciaDGII, s.Activa, s.Cantidad');
+  Q.SQL.Add('FROM SecuenciaDGII s');
+  Q.SQL.Add('JOIN TipoNCF t ON t.emp_codigo = s.emp_codigo AND s.Tipo = t.cod_dgii');
+  Q.SQL.Add('WHERE s.emp_codigo = :emp AND t.tip_codigo = :tip');
+  Q.Parameters.ParamByName('emp').Value := AEmp;
+  Q.Parameters.ParamByName('tip').Value := ATipo;
+
+  Q.Open;
+
+  if Q.Eof then
+  begin
+    AMsg := 'SECUENCIA_NO_CONFIGURADA';
+    Exit;
+  end;
+
+  desde    := Q.FieldByName('Secuencia_Inicial_DGII').AsInteger;
+  ultima   := Q.FieldByName('Ultima_secuencia_DGII').AsInteger;
+  cantidad := Q.FieldByName('Cantidad').AsInteger;
+
+  if not Q.FieldByName('FechaVencimientoSecuenciaDGII').IsNull then
+  begin
+    vence := Q.FieldByName('FechaVencimientoSecuenciaDGII').AsDateTime;
+    if Now > vence then
+    begin
+      AMsg := 'La secuencia está vencida.';
+      Exit;
+    end;
+  end;
+
+
+  if not Q.FieldByName('Activa').IsNull then
+  activa := Q.FieldByName('Activa').AsBoolean
+  else
+    activa := False; // por defecto
+
+  hasta     := desde + cantidad - 1;
+  siguiente := ultima + 1;
+
+  if activa = False then
+  begin
+    AMsg := 'SECUENCIA_INACTIVA';
+    Exit;
+  end;
+
+  if siguiente > hasta then
+  begin
+    AMsg := 'SECUENCIA_AGOTADA';
+    Exit;
+  end;
+
+  // Hay secuencia válida y disponible (sin reservar)
+  ASiguienteCorrelativo := siguiente;
+  Result := True;
+end;
+
 
 procedure TfrmNotasCR.FormClose(Sender: TObject;
   var Action: TCloseAction);
@@ -307,8 +399,32 @@ procedure TfrmNotasCR.btPostClick(Sender: TObject);
 var
   mov : string;
   a : integer;
+  Servicio: FacturaElectronicaService;
+  resultado: WideString;
+
+  eNCFFactura: string;
+  TotalFactura: Currency;
+  CausaCodigo: Integer;
+
+  ok: Boolean;
+   msg: string;
+   prox: Int64;
 begin
-  //verificando si el cierre se hizo para esta fecha
+
+        if (DM.QParametrosPAR_FE_DetenerFacturacion.Value and dm.QParametrosUsa_FacturacionElectronica.Value) then
+        begin
+          ok := ValidarENCFDisponible(
+                        dm.vp_cia,
+                        34,
+                        msg, prox);
+          if (not ok) then
+          begin
+            ShowMessage('No hay comprobantes fiscales disponibles para esta devolucion.');
+            Exit;
+          end;
+        end;
+
+  // verificando si el cierre se hizo para esta fecha
   dm.Query1.Close;
   dm.Query1.SQL.Clear;
   dm.Query1.SQL.Add('select cie_fecha from cierre');
@@ -317,39 +433,54 @@ begin
   dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
   dm.Query1.Parameters.ParamByName('fec').Value := QNotaNCR_FECHA.Value;
   dm.Query1.Open;
+
   if dm.Query1.RecordCount > 0 then
   begin
     MessageDlg('LA NOTA NO PUEDE REALIZARSE, DEBIDO A QUE ESTE'+#13+
-               'DIA FUE CERRADO.',mtError,[mbok],0);
+               'DIA FUE CERRADO.', mtError, [mbOk], 0);
   end
   else if (rbTipoNota.ItemIndex = 0) and (Balance > 0) then
   begin
     MessageDlg('PARA REALIZAR ESTA NOTA DE CREDITO DEBE'+#13+
                'ESPECIFICAR UN MOVIMIENTO AL CUAL SE LE'+#13+
-               'VA A APLICAR',mtError,[mbok],0);
+               'VA A APLICAR', mtError, [mbOk], 0);
     edCliente.SetFocus;
   end
   else if lbBaL.Caption <> '0.00' then
   begin
     MessageDlg('LAS CUENTAS CONTABLES DE ESTA FACTURA'+#13+
-               'NO ESTAN CUADRADAS',mtError,[mbok],0);
+               'NO ESTAN CUADRADAS', mtError, [mbOk], 0);
     PageControl1.ActivePageIndex := 1;
     GridCuentas.SetFocus;
   end
   else
   begin
+    // Validación: monto vs saldo
+    if (QNotaNCR_MONTO.Value > TSaldo) and (QMov.RecordCount > 0) then
+    begin
+      ShowMessage('El monto aplicar no puede ser mayor que el saldo....');
+      DBEdit5.SetFocus;
+      Exit;
+    end;
 
-  IF (QNotaNCR_MONTO.Value > TSaldo) and (QMov.RecordCount > 0) THEN begin
-  ShowMessage('El monto aplicar no puede ser mayor que el saldo....');
-  DBEdit5.SetFocus;
-  Exit;
-  end
-  else
-    if messagedlg('TODOS LOS DATOS ESTAN CORECTOS?',mtconfirmation,[mbyes,mbno],0) = mryes then
+    // Validación: motivo DGII (cuando aplica FE y es nota contra factura)
+    if QNotamotivo_dgi.Value = 0 then
+    begin
+      if (dm.QParametrosUsa_FacturacionElectronica.Value) and
+         (rbTipoNota.ItemIndex = 1) then
+      begin
+        ShowMessage('DEBE INDICAR EL MOTIVO DE LA NOTA DE CREDITO');
+        Abort;
+      end;
+    end;
+
+    // Confirmación final
+    if MessageDlg('TODOS LOS DATOS ESTAN CORECTOS?',
+                  mtConfirmation, [mbYes, mbNo], 0) = mrYes then
     begin
       if rbTipoNota.ItemIndex = 1 then
       begin
-        QNotaNCR_MONTOUSADO.value := QNotaNCR_MONTO.Value;
+        QNotaNCR_MONTOUSADO.Value := QNotaNCR_MONTO.Value;
         dm.Query1.Close;
         dm.Query1.SQL.Clear;
         dm.Query1.SQL.Add('select tmo_siglas');
@@ -370,30 +501,30 @@ begin
         begin
           QNotaNCR_TIPO.Value := 'NDE';
           QNotaFAC_FORMA.Value := 'X';
-          QNotaTFA_CODIGO.value := 0;
-          QNotaFAC_NUMERO.clear;
+          QNotaTFA_CODIGO.Value := 0;
+          QNotaFAC_NUMERO.Clear;
         end;
         QNotaFAC_NUMERO.Value  := QMovMOV_NUMERO.Value;
       end
       else
       begin
-        QNotaNCR_MONTOUSADO.value := 0;
-        QNotaFAC_FORMA.clear;
-        QNotaTFA_CODIGO.clear;
-        QNotaFAC_NUMERO.clear;
+        QNotaNCR_MONTOUSADO.Value := 0;
+        QNotaFAC_FORMA.Clear;
+        QNotaTFA_CODIGO.Clear;
+        QNotaFAC_NUMERO.Clear;
       end;
 
       if rbTipoNota.ItemIndex = 1 then
       begin
-        dm.Query1.close;
-        dm.Query1.sql.clear;
-        dm.Query1.sql.add('select tmo_codigo from tiposmov');
-        dm.Query1.sql.add('where emp_codigo = :emp');
-        dm.Query1.sql.add('and tmo_siglas = :sig');
-        dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
-        dm.Query1.Parameters.parambyname('sig').Value  := QMovMOV_TIPO.Value;
+        dm.Query1.Close;
+        dm.Query1.SQL.Clear;
+        dm.Query1.SQL.Add('select tmo_codigo from tiposmov');
+        dm.Query1.SQL.Add('where emp_codigo = :emp');
+        dm.Query1.SQL.Add('and tmo_siglas = :sig');
+        dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+        dm.Query1.Parameters.ParamByName('sig').Value := QMovMOV_TIPO.Value;
         dm.Query1.Open;
-        TipoMov := dm.Query1.FieldbyName('tmo_codigo').AsInteger;
+        TipoMov := dm.Query1.FieldByName('tmo_codigo').AsInteger;
         mov     := QMovMOV_TIPO.Value;
 
         QNotaMOV_TIPO.Value := mov;
@@ -402,79 +533,79 @@ begin
       QNotaDET_CUOTA.Value := QMovMOV_CUOTA.Value;
       QNotaMOV_CUOTA.Value := QMovMOV_SECUENCIA.Value;
       //QNotaNCR_MONTO.Value := QNotaNCR_MONTO.Value  + QNotancr_itbis.Value;
-      
+
       QNota.Post;
       QNota.UpdateBatch;
 
-      if not QNotaFAC_NUMERO.isnull then
+      if not QNotaFAC_NUMERO.IsNull then
       begin
-        dm.Query1.close;
-        dm.Query1.sql.clear;
-        dm.Query1.sql.add('execute pr_balance_mov :emp, :suc, :tipo,');
-        dm.Query1.sql.add(':numero, '+#39+'resta'+#39+', :monto, :forma, :tipofac, :sec');
-        dm.Query1.Parameters.parambyname('emp').Value      := dm.vp_cia;
-        dm.Query1.Parameters.parambyname('tipo').Value     := Mov;
-        dm.Query1.Parameters.parambyname('numero').Value   := QNotaFAC_NUMERO.Value;
-        dm.Query1.Parameters.parambyname('monto').Value    := QNotaNCR_MONTO.value+QNotancr_itbis.Value;
-        dm.Query1.Parameters.parambyname('forma').Value    := QNotaFAC_FORMA.Value;
-        dm.Query1.Parameters.parambyname('tipofac').Value  := QNotaTFA_CODIGO.Value;
-        dm.Query1.Parameters.parambyname('sec').Value      := QMovMOV_SECUENCIA.Value;
-        dm.Query1.Parameters.parambyname('suc').Value      := QNotaSUC_CODIGO.Value;
+        dm.Query1.Close;
+        dm.Query1.SQL.Clear;
+        dm.Query1.SQL.Add('execute pr_balance_mov :emp, :suc, :tipo,');
+        dm.Query1.SQL.Add(':numero, '+#39+'resta'+#39+', :monto, :forma, :tipofac, :sec');
+        dm.Query1.Parameters.ParamByName('emp').Value      := dm.vp_cia;
+        dm.Query1.Parameters.ParamByName('tipo').Value     := mov;
+        dm.Query1.Parameters.ParamByName('numero').Value   := QNotaFAC_NUMERO.Value;
+        dm.Query1.Parameters.ParamByName('monto').Value    := QNotaNCR_MONTO.Value + QNotancr_itbis.Value;
+        dm.Query1.Parameters.ParamByName('forma').Value    := QNotaFAC_FORMA.Value;
+        dm.Query1.Parameters.ParamByName('tipofac').Value  := QNotaTFA_CODIGO.Value;
+        dm.Query1.Parameters.ParamByName('sec').Value      := QMovMOV_SECUENCIA.Value;
+        dm.Query1.Parameters.ParamByName('suc').Value      := QNotaSUC_CODIGO.Value;
         dm.Query1.ExecSQL;
 
-        //insertanto el detalle de la nota de credito
-        dm.Query1.close;
-        dm.Query1.sql.clear;
-        dm.Query1.sql.add('insert into det_notacredito (emp_codigo, suc_codigo, ncr_numero,');
-        dm.Query1.sql.add('det_secuencia, mov_tipo, mov_numero, det_monto, fac_forma,');
-        dm.Query1.sql.add('tfa_codigo, mov_cuota, det_cuota)');
-        dm.Query1.sql.add('values (:emp, :suc, :ncr, :sec, :mov, :num, :mon, :for, :tfa,');
-        dm.Query1.sql.add(':msec, :cuo)');
-        dm.Query1.Parameters.parambyname('emp').Value  := dm.vp_cia;
-        dm.Query1.Parameters.parambyname('ncr').Value  := QNotaNCR_NUMERO.Value;
-        dm.Query1.Parameters.parambyname('mov').Value  := Mov;
-        dm.Query1.Parameters.parambyname('num').Value  := QNotaFAC_NUMERO.Value;
-        dm.Query1.Parameters.parambyname('mon').Value  := QNotaNCR_MONTO.value+QNotancr_itbis.Value;
-        dm.Query1.Parameters.parambyname('for').Value  := QNotaFAC_FORMA.Value;
-        dm.Query1.Parameters.parambyname('tfa').Value  := QNotaTFA_CODIGO.Value;
-        dm.Query1.Parameters.parambyname('sec').Value  := QMovMOV_SECUENCIA.Value;
-        dm.Query1.Parameters.parambyname('msec').Value := QMovMOV_SECUENCIA.Value;
-        dm.Query1.Parameters.parambyname('cuo').Value  := QMovMOV_CUOTA.Value;
-        dm.Query1.Parameters.parambyname('suc').Value  := QNotaSUC_CODIGO.Value;
+        // insertando el detalle de la nota de credito
+        dm.Query1.Close;
+        dm.Query1.SQL.Clear;
+        dm.Query1.SQL.Add('insert into det_notacredito (emp_codigo, suc_codigo, ncr_numero,');
+        dm.Query1.SQL.Add('det_secuencia, mov_tipo, mov_numero, det_monto, fac_forma,');
+        dm.Query1.SQL.Add('tfa_codigo, mov_cuota, det_cuota)');
+        dm.Query1.SQL.Add('values (:emp, :suc, :ncr, :sec, :mov, :num, :mon, :for, :tfa,');
+        dm.Query1.SQL.Add(':msec, :cuo)');
+        dm.Query1.Parameters.ParamByName('emp').Value  := dm.vp_cia;
+        dm.Query1.Parameters.ParamByName('ncr').Value  := QNotaNCR_NUMERO.Value;
+        dm.Query1.Parameters.ParamByName('mov').Value  := mov;
+        dm.Query1.Parameters.ParamByName('num').Value  := QNotaFAC_NUMERO.Value;
+        dm.Query1.Parameters.ParamByName('mon').Value  := QNotaNCR_MONTO.Value + QNotancr_itbis.Value;
+        dm.Query1.Parameters.ParamByName('for').Value  := QNotaFAC_FORMA.Value;
+        dm.Query1.Parameters.ParamByName('tfa').Value  := QNotaTFA_CODIGO.Value;
+        dm.Query1.Parameters.ParamByName('sec').Value  := QMovMOV_SECUENCIA.Value;
+        dm.Query1.Parameters.ParamByName('msec').Value := QMovMOV_SECUENCIA.Value;
+        dm.Query1.Parameters.ParamByName('cuo').Value  := QMovMOV_CUOTA.Value;
+        dm.Query1.Parameters.ParamByName('suc').Value  := QNotaSUC_CODIGO.Value;
         dm.Query1.ExecSQL;
       end
       else
       begin
-        //Actualizando balance del cliente
-        dm.Query1.close;
-        dm.Query1.sql.clear;
-        dm.Query1.sql.add('execute pr_balance_cte :emp, :cli, :ope, :monto');
-        dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
-        dm.Query1.Parameters.parambyname('cli').Value := QNotaCLI_CODIGO.value;
-        dm.Query1.Parameters.parambyname('ope').Value  := 'resta';
-        dm.Query1.Parameters.parambyname('monto').Value := QNotaNCR_MONTO.value+QNotancr_itbis.Value;
+        // Actualizando balance del cliente
+        dm.Query1.Close;
+        dm.Query1.SQL.Clear;
+        dm.Query1.SQL.Add('execute pr_balance_cte :emp, :cli, :ope, :monto');
+        dm.Query1.Parameters.ParamByName('emp').Value   := dm.vp_cia;
+        dm.Query1.Parameters.ParamByName('cli').Value   := QNotaCLI_CODIGO.Value;
+        dm.Query1.Parameters.ParamByName('ope').Value   := 'resta';
+        dm.Query1.Parameters.ParamByName('monto').Value := QNotaNCR_MONTO.Value + QNotancr_itbis.Value;
         dm.Query1.ExecSQL;
       end;
 
-      dm.Query1.close;
-      dm.Query1.sql.clear;
-      dm.Query1.sql.add('execute pr_graba_nc :emp, :suc, :nc');
-      dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
-      dm.Query1.Parameters.parambyname('nc').Value  := QNotaNCR_NUMERO.value;
-      dm.Query1.Parameters.parambyname('suc').Value := QNotaSUC_CODIGO.Value;
+      dm.Query1.Close;
+      dm.Query1.SQL.Clear;
+      dm.Query1.SQL.Add('execute pr_graba_nc :emp, :suc, :nc');
+      dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+      dm.Query1.Parameters.ParamByName('nc').Value  := QNotaNCR_NUMERO.Value;
+      dm.Query1.Parameters.ParamByName('suc').Value := QNotaSUC_CODIGO.Value;
       dm.Query1.ExecSQL;
 
-      dm.Query1.close;
-      dm.Query1.sql.clear;
-      dm.Query1.sql.add('execute pr_graba_nc_monto :emp, :suc, :nc');
-      dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
-      dm.Query1.Parameters.parambyname('nc').Value  := QNotaNCR_NUMERO.value;
-      dm.Query1.Parameters.parambyname('suc').Value := QNotaSUC_CODIGO.Value;
+      dm.Query1.Close;
+      dm.Query1.SQL.Clear;
+      dm.Query1.SQL.Add('execute pr_graba_nc_monto :emp, :suc, :nc');
+      dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+      dm.Query1.Parameters.ParamByName('nc').Value  := QNotaNCR_NUMERO.Value;
+      dm.Query1.Parameters.ParamByName('suc').Value := QNotaSUC_CODIGO.Value;
       dm.Query1.ExecSQL;
 
       Totaliza := False;
 
-      //Cuentas contables
+      // Cuentas contables
       QDetalle.First;
       QDetalle.DisableControls;
       a := 0;
@@ -492,7 +623,7 @@ begin
       QDetalle.EnableControls;
       QDetalle.UpdateBatch;
 
-      //Centros de Costo
+      // Centros de Costo
       QCentro.First;
       QCentro.DisableControls;
       a := 0;
@@ -510,50 +641,208 @@ begin
       QCentro.EnableControls;
       QCentro.UpdateBatch;
 
-      if MessageDlg('SE HA GENERADO LA NOTA DE CREDITO NUMERO '+inttostr(QNotaNCR_NUMERO.value)+#13+
-                    'DESEA IMPRIMIRLA?',mtConfirmation,[mbyes,mbno],0) = mryes then
+      // Facturación electrónica – envío de nota de crédito
+      if dm.QParametrosUsa_FacturacionElectronica.Value then
       begin
-         if dm.QParametrosPAR_FORMATONC.Value = 2 then
+        if (rbTipoNota.ItemIndex = 1) and (QNotaNCR_TIPO.Value = 'FAC') then
+        begin
+          QNota.Edit;
+
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('select emp_rnc');
+          dm.Query1.SQL.Add('from empresas');
+          dm.Query1.SQL.Add('where emp_codigo = :emp');
+          dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+          dm.Query1.Open;
+          QNotaemp_rnc.Value := dm.Query1.FieldByName('emp_rnc').AsString;
+
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('select cli_rnc');
+          dm.Query1.SQL.Add('from Clientes');
+          dm.Query1.SQL.Add('where cli_codigo = :sup');
+          dm.Query1.SQL.Add(' and emp_codigo = :emp');
+          dm.Query1.Parameters.ParamByName('sup').Value := QNotaCLI_CODIGO.Value;
+          dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+          dm.Query1.Open;
+          QNotacli_rnc.Value := dm.Query1.FieldByName('cli_rnc').AsString;
+
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('select eNCF');
+          dm.Query1.SQL.Add('from NOTASCREDITO');
+          dm.Query1.SQL.Add('where emp_codigo = :emp');
+          dm.Query1.SQL.Add('and NCR_NUMERO = :numero');
+          dm.Query1.SQL.Add('and suc_codigo = :suc');
+          dm.Query1.SQL.Add('and NCR_STATUS <> :status');
+
+          dm.Query1.Parameters.ParamByName('emp').Value    := QNotaEMP_CODIGO.Value;
+          dm.Query1.Parameters.ParamByName('suc').Value    := QNotaSUC_CODIGO.Value;
+          dm.Query1.Parameters.ParamByName('numero').Value := QNotaNCR_NUMERO.Value;
+          dm.Query1.Parameters.ParamByName('status').Value := 'ANU';
+          dm.Query1.Open;
+          QNotaeNCF.Value := dm.Query1.FieldByName('eNCF').AsString;
+
+          // ================= VALIDACIONES NUEVAS (FACTURA ASOCIADA) =================
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('select eNCF, fac_total, AceptadoDGII');
+          dm.Query1.SQL.Add('from Facturas');
+          dm.Query1.SQL.Add('where emp_codigo = :emp');
+          dm.Query1.SQL.Add('  and suc_codigo = :suc');
+          dm.Query1.SQL.Add('  and fac_numero = :num');
+          dm.Query1.SQL.Add('  and tfa_codigo = :tfa'); // llave incluye TFA_CODIGO
+
+          dm.Query1.Parameters.ParamByName('emp').Value := QNotaEMP_CODIGO.Value;
+          dm.Query1.Parameters.ParamByName('suc').Value := QNotaSUC_CODIGO.Value;
+          dm.Query1.Parameters.ParamByName('num').Value := QNotaFAC_NUMERO.Value;   // AJUSTA si se llama distinto
+          dm.Query1.Parameters.ParamByName('tfa').Value := QNotaTFA_CODIGO.Value;   // AJUSTA si se llama distinto
+          dm.Query1.Open;
+
+          if dm.Query1.IsEmpty then
           begin
-         if ((DM.QParametrospar_fac_preimpresa.Value = 'true') and
-            (Trim(dm.QParametrospar_formato_preimpreso.Value) = 'Norma 201806 Normal')) then
-         begin
-          //Norma 201806 Normal
-          with QNorma201806NC do begin
-          Close;
-          Parameters.ParamByName('emp').Value    := dm.vp_cia;
-          Parameters.ParamByName('numero').Value := QNotaNCR_NUMERO.Value;
-          Parameters.ParamByName('suc').Value    := QNotaSUC_CODIGO.Value;
-          Open;
-          if not IsEmpty then
-          Rpt_NC.ShowReport();
+            ShowMessage('No se encontró la FACTURA asociada. No se enviará la nota de crédito a la DGII.');
+            Exit;
           end;
+
+          eNCFFactura  := Trim(dm.Query1.FieldByName('eNCF').AsString);
+          TotalFactura := dm.Query1.FieldByName('fac_total').AsCurrency;
+
+          // 1) Debe estar aceptada por DGII
+          if not dm.Query1.FieldByName('AceptadoDGII').AsBoolean then
+          begin
+            ShowMessage(
+              'La factura asociada no ha sido aceptada por la DGII. ' +
+              'No se enviará la nota de crédito a la DGII.'
+            );
+            Exit;
+          end;
+           // 2) Debe tener eNCF
+          if eNCFFactura = '' then
+          begin
+            ShowMessage('La factura asociada no tiene eNCF. No se enviará la nota de crédito a la DGII.');
+            Exit;
+          end;
+
+           // 3) Validar motivo DGII (1,2,3) vs montos
+          CausaCodigo := StrToIntDef(Trim(QNotamotivo_dgi.AsString), 0); // AJUSTA si el campo se llama distinto
+
+          case CausaCodigo of
+            1: // Anulación total
+              begin
+                if Abs(QNotaNCR_MONTO.Value - TotalFactura) > 0.01 then
+                begin
+                  ShowMessage(
+                    'Para la causa "1 - Anulación total", el monto de la nota de crédito (' +
+                    CurrToStr(QNotaNCR_MONTO.Value) +
+                    ') debe ser igual al monto de la factura (' +
+                    CurrToStr(TotalFactura) + ').'
+                  );
+                  Exit;
+                end;
+              end;
+
+            3: // Corrección montos
+              begin
+                if (QNotaNCR_MONTO.Value <= 0) or
+                   (QNotaNCR_MONTO.Value > TotalFactura) then
+                begin
+                  ShowMessage(
+                    'Para la causa "3 - Corrección montos", el monto de la nota de crédito debe ser ' +
+                    'mayor que 0 y menor o igual al monto de la factura (' +
+                    CurrToStr(TotalFactura) + ').'
+                  );
+                  Exit;
+                end;
+              end;
+
+            2: // Corrección texto
+              begin
+                if Abs(QNotaNCR_MONTO.Value) > 0.01 then
+                begin
+                  ShowMessage(
+                    'Para la causa "2 - Corrección texto", el monto de la nota de crédito debe ser 0.00.'
+                  );
+                  Exit;
+                end;
+              end;
+          else
+            begin
+              ShowMessage('Motivo DGII inválido o no soportado. No se enviará la nota de crédito.');
+              Exit;
+            end;
+          end;
+          // ================= FIN VALIDACIONES NUEVAS =================
+
+          Servicio := CoFacturaElectronicaService.Create;
+          resultado := Servicio.EnviarNotasCredito(
+                          IntToStr(QNotaEMP_CODIGO.Value),
+                          IntToStr(QNotaSUC_CODIGO.Value),
+                          '',
+                          IntToStr(QNotaNCR_NUMERO.Value),
+                          QNotaemp_rnc.Value,
+                          '',
+                          QNotacli_rnc.Value,
+                          '',
+                          '',
+                          '34'
+                        );
+        end;
+      end;
+
+      if MessageDlg('SE HA GENERADO LA NOTA DE CREDITO NUMERO '+
+                    IntToStr(QNotaNCR_NUMERO.Value)+#13+
+                    'DESEA IMPRIMIRLA?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+      begin
+        if dm.QParametrosPAR_FORMATONC.Value = 2 then
+        begin
+          if ((dm.QParametrospar_fac_preimpresa.Value = 'true') and
+             (Trim(dm.QParametrospar_formato_preimpreso.Value) = 'Norma 201806 Normal')) then
+          begin
+            // Norma 201806 Normal
+            with QNorma201806NC do
+            begin
+              Close;
+              Parameters.ParamByName('emp').Value    := dm.vp_cia;
+              Parameters.ParamByName('numero').Value := QNotaNCR_NUMERO.Value;
+              Parameters.ParamByName('suc').Value    := QNotaSUC_CODIGO.Value;
+              Open;
+              if not IsEmpty then
+                Rpt_NC.ShowReport();
+            end;
           end
           else
           begin
-          Application.CreateForm(tRNotaCredito, RNotaCredito);
-          RNotaCredito.QNota.Parameters.ParamByName('numero').Value := QNotaNCR_NUMERO.Value;
-          RNotaCredito.QNota.Parameters.ParamByName('suc').Value := QNotaSUC_CODIGO.Value;
-          RNotaCredito.QNota.Open;
-          RNotaCredito.PrinterSetup;
-          RNotaCredito.Print;
-          RNotaCredito.Destroy;
-        end;
-        END
+            Application.CreateForm(tRNotaCredito, RNotaCredito);
+            RNotaCredito.QNota.Parameters.ParamByName('numero').Value := QNotaNCR_NUMERO.Value;
+            RNotaCredito.QNota.Parameters.ParamByName('suc').Value    := QNotaSUC_CODIGO.Value;
+            RNotaCredito.QNota.Open;
+            RNotaCredito.PrinterSetup;
+            RNotaCredito.Print;
+            RNotaCredito.Destroy;
+          end;
+        end
         else
           Imp40Columnas;
       end;
-      QNota.close;
-      QNota.Parameters.parambyname('emp').Value := dm.vp_cia;
-      QNota.Parameters.parambyname('numero').Value := -1;
-      QNota.Parameters.parambyname('suc').Value := -1;
-      QNota.open;
-      QNota.insert;
+
+      QNota.Close;
+      QNota.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+      QNota.Parameters.ParamByName('numero').Value := -1;
+      QNota.Parameters.ParamByName('suc').Value    := -1;
+      QNota.Open;
+      QNota.Insert;
     end;
-    edCliente.setfocus;
+
+    edCliente.SetFocus;
   end;
 end;
 
+function RedondearDosDecimales(Valor: Double): Double;
+begin
+  Result := Round(Valor * 100) / 100;
+end;
 
 procedure TfrmNotasCR.QNotaBeforePost(DataSet: TDataSet);
 var
@@ -561,12 +850,21 @@ var
   monto : double;
   forma : string;
 begin
-  if QNotancr_itbis.Value > (QNotaNCR_MONTO.Value * (18/100.0)) then
+
+   if RedondearDosDecimales(QNotancr_itbis.Value) > RedondearDosDecimales(QNotaNCR_MONTO.Value * (18 / 100.0)) then 
+    begin
+      ShowMessage('EL ITBIS NO PUEDE SER MAYOR AL 18%');
+      DBEdit4.SetFocus;
+      Abort;
+    end;
+
+
+  {if QNotancr_itbis.Value > (QNotaNCR_MONTO.Value * (18/100.0)) then
      begin
       ShowMessage('EL ITBIS NO PUEDE SER MAYOR AL 18%');
       DBEdit4.SetFocus;
       Abort;
-     end; 
+     end;          }
 
   if QNotaCLI_CODIGO.IsNull then
   begin
@@ -853,7 +1151,10 @@ begin
   writeln(arch, 'Fecha   : '+DateToStr(QNotaNCR_FECHA.Value));
   writeln(arch, 'Concepto: '+QNotaNCR_CONCEPTO.value);
   writeln(arch, ' ');
-  writeln(arch, 'MONTO   : '+chr(27)+chr(52)+Format('%n',[QNotaNCR_MONTO.value+QNotancr_itbis.Value])+chr(27)+chr(53));
+  writeln(arch, 'MONTO   : ' +
+  FormatFloat('#,##0.00', QNotaNCR_MONTO.Value + QNotancr_itbis.Value));
+
+ // writeln(arch, 'MONTO   : '+chr(27)+chr(52)+Format('%n',[QNotaNCR_MONTO.value+QNotancr_itbis.Value])+chr(27)+chr(53));
 
   writeln(arch, ' ');
   writeln(arch, ' ');
@@ -1259,6 +1560,42 @@ ShowMessage('El monto aplicar no puede ser mayor que el saldo....');
 DBEdit5.SetFocus;
 end;
 
+end;
+
+procedure TfrmNotasCR.SpeedButton2Click(Sender: TObject);
+begin
+  search.Query.clear;
+  search.AliasFields.clear;
+  search.Query.add('select nombre, Codigo');
+  search.Query.add('from catAnulacioneNCF');
+  search.AliasFields.add('Nombre');
+  search.AliasFields.add('Código');
+  search.ResultField := 'Codigo';
+  search.Title := 'Motivos de Devolucion para la DGII';
+  if search.execute then
+  begin
+    QNotamotivo_dgi.Value := StrToInt(search.valuefield);
+    DBEdit15.SetFocus;
+end;
+end;
+
+procedure TfrmNotasCR.QNotamotivo_dgiGetText(Sender: TField;
+  var Text: String; DisplayText: Boolean);
+begin
+if not QNotamotivo_dgi.IsNull then
+  begin
+    Text := IntToStr(QNotamotivo_dgi.Value);
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('select nombre from catAnulacioneNCF');
+    dm.Query1.SQL.Add('where codigo = :cod');
+    dm.Query1.Parameters.ParamByName('cod').Value := QNotamotivo_dgi.Value;
+    dm.Query1.Open;
+    if dm.Query1.RecordCount > 0 then
+      tmotivodgi.Text := dm.Query1.FieldByName('nombre').AsString
+    else
+      tmotivodgi.Text := '';
+  end;
 end;
 
 end.

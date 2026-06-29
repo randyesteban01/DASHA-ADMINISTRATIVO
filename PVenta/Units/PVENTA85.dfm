@@ -1,6 +1,6 @@
 object frmRepProdVendidos: TfrmRepProdVendidos
-  Left = 321
-  Top = 474
+  Left = 408
+  Top = 599
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Reporte de productos vendidos'

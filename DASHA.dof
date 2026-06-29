@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=E:\Ejecutables
+OutputDir=C:\Users\Lenovo1\Desktop\delphi\Ejecutables
 UnitOutputDir=
 PackageDLLOutputDir=
 PackageDCPOutputDir=
@@ -134,3 +134,21 @@ OriginalFilename=DASHA
 ProductName=DASHA ADMINISTRATIVO
 ProductVersion=1.0.0.1
 Comments=
+[Excluded Packages]
+C:\Users\Lenovo1\Desktop\delphi\Components\Components\_D7Bpl\dclrx7.bpl=RX Library Controls and Tools
+C:\Users\Lenovo1\Desktop\delphi\Components\Components\_D7Bpl\dclrxdb7.bpl=RX Library Database Components
+C:\Users\Lenovo1\Desktop\delphi\Components\Components\_D7Bpl\dclrxbd7.bpl=RX Library BDE Database Components
+C:\Users\Lenovo1\Desktop\delphi\Components\Components\QExportev\Delphi7\QExportDT_D7.bpl=EMS QuickExport Component Suite 2.0
+C:\Users\Lenovo1\Desktop\delphi\Components\Components\_D7Bpl\QR5DesignD7.bpl=QuickReport 5.02 Components Delphi 7
+C:\Users\Lenovo1\Desktop\delphi\Components\Components\_D7Bpl\cxPageControlVCLD7.bpl=Express XP Theme Manager by Developer Express Inc.
+C:\Users\Lenovo1\Desktop\delphi\Components\Components\_D7Bpl\dxNavBarD7.bpl=ExpressNavBar by Developer Express Inc.
+C:\Users\Lenovo1\Desktop\delphi\Components\Components\_D7Bpl\dcldxNavBarD7.bpl=ExpressNavBar by Developer Express Inc.
+[HistoryLists\hlUnitAliases]
+Count=1
+Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlSearchPath]
+Count=1
+Item0=$(DELPHI)\Lib\Debug
+[HistoryLists\hlOutputDirectorry]
+Count=1
+Item0=C:\Users\Lenovo1\Desktop\delphi\Ejecutables

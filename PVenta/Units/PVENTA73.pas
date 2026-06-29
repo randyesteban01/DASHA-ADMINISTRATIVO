@@ -55,6 +55,7 @@ type
     mmoCliente0: TMemo;
     mmoClientemas0: TMemo;
     mmoClientemenos0: TMemo;
+    qBuscar: TADOQuery;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btVendedorClick(Sender: TObject);
     procedure edVendedorChange(Sender: TObject);
@@ -340,9 +341,38 @@ begin
 end;
 
 procedure TfrmEstadoCtaCli.btPrintClick(Sender: TObject);
+var
+  cliDesde, cliHasta : string;
 begin
   ckMovClick(Sender);
   try
+  with qBuscar do begin
+  Close;
+  SQL.Clear;
+  SQL.Add('SELECT MIN(CLI_REFERENCIA)DESDEREF, MAX(CLI_REFERENCIA)HASTAREF,');
+  SQL.Add('MIN(CLI_CODIGO)DESDECOD, MAX(CLI_CODIGO)HASTACOD FROM CLIENTES');
+  SQL.Add('WHERE EMP_CODIGO = '+IntToStr(dm.vp_cia));
+  if DM.QParametrosPAR_CODIGOCLIENTE.Text = 'R' then
+  SQL.Add('AND CLI_REFERENCIA BETWEEN '+QuotedStr(edDesde.Text)+ ' AND '+QuotedStr(edHasta.Text)) ELSE
+  SQL.Add('AND CLI_CODIGO BETWEEN '+QuotedStr(edDesde.Text)+ ' AND '+QuotedStr(edHasta.Text));
+  Open;
+  IF IsEmpty then BEGIN
+  ShowMessage('No existen clientes con estos codigos.....');
+  Exit;
+  end
+  else
+  if DM.QParametrosPAR_CODIGOCLIENTE.Text = 'R' then BEGIN
+  cliDesde := fieldbyname('DESDEREF').AsString;
+  cliHasta := fieldbyname('HASTAREF').AsString;
+  end
+  ELSE
+  BEGIN
+  cliDesde := fieldbyname('DESDECOD').AsString;
+  cliHasta := fieldbyname('HASTACOD').AsString;
+  end;
+  end;
+
+
   Application.CreateForm(tREstadoCtaCli, REstadoCtaCli);
   if not ChkB_cksucursal.Checked then
   REstadoCtaCli.suc := 0 else
@@ -368,12 +398,22 @@ begin
   1:REstadoCtaCli.QClientes.SQL.Add('and cli_status = '+QuotedStr('ACT'));
   2:REstadoCtaCli.QClientes.SQL.Add('and cli_status = '+QuotedStr('INA'));
   end;
+  if DM.QParametrosPAR_CODIGOCLIENTE.Text = 'I' then begin
   if ((Trim(edDesde.Text)<>'') and (Trim(edHasta.Text)='')) then
-  REstadoCtaCli.QClientes.SQL.Add('and cli_codigo = '+edDesde.Text);
+  REstadoCtaCli.QClientes.SQL.Add('and cli_codigo = '+cliDesde);
   if ((Trim(edDesde.Text)='') and (Trim(edHasta.Text)<>'')) then
-  REstadoCtaCli.QClientes.SQL.Add('and cli_codigo = '+edHasta.Text);
+  REstadoCtaCli.QClientes.SQL.Add('and cli_codigo = '+cliDesde);
   if ((Trim(edDesde.Text)<>'') and (Trim(edHasta.Text)<>'')) then
-  REstadoCtaCli.QClientes.SQL.Add('and cli_codigo between '+edDesde.Text + ' and '+edHasta.Text);
+  REstadoCtaCli.QClientes.SQL.Add('and cli_codigo between '+cliDesde + ' and '+cliHasta);
+  end;
+  if DM.QParametrosPAR_CODIGOCLIENTE.Text = 'R' then begin
+  if ((Trim(edDesde.Text)<>'') and (Trim(edHasta.Text)='')) then
+  REstadoCtaCli.QClientes.SQL.Add('and cli_referencia = '+cliDesde);
+  if ((Trim(edDesde.Text)='') and (Trim(edHasta.Text)<>'')) then
+  REstadoCtaCli.QClientes.SQL.Add('and cli_referencia = '+cliHasta);
+  if ((Trim(edDesde.Text)<>'') and (Trim(edHasta.Text)<>'')) then
+  REstadoCtaCli.QClientes.SQL.Add('and cli_referencia between '+cliDesde + ' and '+cliHasta);
+  end;
   if Trim(edVendedor.Text)<>'' then
   REstadoCtaCli.QClientes.SQL.Add('and ven_codigo = '+edVendedor.Text);
   case cbBalance.ItemIndex of
@@ -415,7 +455,13 @@ begin
   REstadoCtaCli.QDocs.SQL.Add('(ISNULL((SELECT SUM(MOV_MONTO) FROM PR_CONS_PAGOS_NC_FACTURA(M.EMP_CODIGO,M.suc_codigo,M.tfa_codigo, M.fac_forma, M.MOV_NUMERO, @FECHA)');
   REstadoCtaCli.QDocs.SQL.Add('where MOV_FECHA <= @fecha),0)) ABONO,');
   REstadoCtaCli.QDocs.SQL.Add('M.MON_CODIGO');
-  REstadoCtaCli.QDocs.SQL.Add('FROM  Movimientos M WHERE M.TFA_CODIGO <> 1 AND CLI_CODIGO = :CLI_CODIGO AND EMP_CODIGO = :EMP_CODIGO AND MOV_STATUS <> ''ANU'')  AS TEMP');
+  REstadoCtaCli.QDocs.SQL.Add('FROM  Movimientos M WHERE M.TFA_CODIGO <> 1 ');
+  if DM.QParametrosPAR_CODIGOCLIENTE.Text = 'R' then
+  REstadoCtaCli.QDocs.SQL.Add('AND CLI_CODIGO BETWEEN (SELECT MIN(CLI_CODIGO) FROM CLIENTES WHERE EMP_CODIGO = '+IntToStr(DM.vp_cia)+' AND CLI_REFERENCIA = '+QuotedStr(cliDesde)+') AND '+
+                                                       '(SELECT MAX(CLI_CODIGO) FROM CLIENTES WHERE EMP_CODIGO = '+IntToStr(DM.vp_cia)+' AND CLI_REFERENCIA = '+QuotedStr(cliHasta)+')') ELSE
+  REstadoCtaCli.QDocs.SQL.Add('AND CLI_CODIGO BETWEEN (SELECT MIN(CLI_CODIGO) FROM CLIENTES WHERE EMP_CODIGO = '+IntToStr(DM.vp_cia)+' AND CLI_CODIGO = '+QuotedStr(cliDesde)+') AND '+
+                                                       '(SELECT MAX(CLI_CODIGO) FROM CLIENTES WHERE EMP_CODIGO = '+IntToStr(DM.vp_cia)+' AND CLI_CODIGO = '+QuotedStr(cliHasta)+')');
+  REstadoCtaCli.QDocs.SQL.Add('AND EMP_CODIGO = :EMP_CODIGO AND MOV_STATUS <> ''ANU'')  AS TEMP');
   REstadoCtaCli.QDocs.SQL.Add('WHERE MOV_FECHA <= @FECHA');
   CASE cbBalance.ItemIndex OF
   1:REstadoCtaCli.QDocs.SQL.Add('AND (((MOV_MONTO-ABONO)=0) OR ((ROUND(CASE WHEN MOV_TASA = 1 THEN 0 ELSE MOV_MONTO/MOV_TASA END,2) -ROUND(CASE WHEN MOV_TASA = 1 THEN 0 ELSE ABONO/MOV_TASA END,2))=0))');
@@ -433,10 +479,11 @@ begin
   REstadoCtaCli.QDocs.Parameters.ParamByName('fecha').DataType := ftDate;
   REstadoCtaCli.QDocs.Parameters.ParamByName('fecha').Value := Fecha.Date;
   REstadoCtaCli.QDocs.Parameters.ParamByName('emp_codigo').DataType := ftInteger;
-  REstadoCtaCli.QDocs.Parameters.ParamByName('cli_codigo').DataType := ftInteger;
+
+  //REstadoCtaCli.QDocs.Parameters.ParamByName('cli_codigo').DataType := ftInteger;
+
   IF ChkB_cksucursal.Checked = true THEN
-  REstadoCtaCli.QDocs.Parameters.ParamByName('SUC').Value         := REstadoCtaCli.suc;
-  REstadoCtaCli.QDocs.SQL.SaveToFile('.\DOC.TXT');
+  REstadoCtaCli.QDocs.Parameters.ParamByName('SUC').Value := REstadoCtaCli.suc;
   REstadoCtaCli.QDocs.Open;
   {REstadoCtaCli.QDocs.Close;
   REstadoCtaCli.QDocs.SQL.Clear;
@@ -489,10 +536,10 @@ IF ChkB_cksucursal.Checked = True then
   REstadoCtaCli.QNC.Parameters.ParamByName('SUC_CODIGO').DataType := ftInteger;
   REstadoCtaCli.QNC.Parameters.ParamByName('CLI_CODIGO').DataType := ftInteger;
   REstadoCtaCli.QNC.Open;
-  REstadoCtaCli.QCredito.Close;
+  {REstadoCtaCli.QCredito.Close;
   REstadoCtaCli.QCredito.Parameters.ParamByName('fecha').DataType := ftDate;
   REstadoCtaCli.QCredito.Parameters.ParamByName('fecha').Value    := Fecha.Date;
-  REstadoCtaCli.QCredito.Open;
+  REstadoCtaCli.QCredito.Open;  }
   REstadoCtaCli.QDepositos.Close;
   REstadoCtaCli.QDepositos.Parameters.ParamByName('fecha').DataType := ftDate;
   REstadoCtaCli.QDepositos.Open;

@@ -13,7 +13,6 @@ type
     QPedidoPED_TIPO: TIBStringField;
     QPedidoPED_NUMERO: TIntegerField;
     QPedidoPED_FECHA: TDateTimeField;
-    QPedidoPED_COTIZACION: TIntegerField;
     QPedidoCLI_CODIGO: TIntegerField;
     QPedidoCLI_REFERENCIA: TIBStringField;
     QPedidoPED_DIRECCION: TIBStringField;
@@ -100,7 +99,6 @@ type
     lbReimpresion: TQRLabel;
     QRLabel15: TQRLabel;
     QRDBText9: TQRDBText;
-    QPedidoped_solicitud_compra: TIntegerField;
     QDetalleValor2: TFloatField;
     QPedidosup_codigo: TIntegerField;
     lbTitulo: TQRLabel;
@@ -138,11 +136,30 @@ type
     ChildBand1: TQRChildBand;
     QRRichText1: TQRRichText;
     QDetalleDET_NOTA: TMemoField;
+    qSucursal: TADOQuery;
+    IntegerField1: TIntegerField;
+    StringField1: TStringField;
+    StringField2: TStringField;
+    StringField3: TStringField;
+    StringField4: TStringField;
+    StringField5: TStringField;
+    StringField6: TStringField;
+    StringField7: TStringField;
+    StringField8: TStringField;
+    StringField9: TStringField;
+    StringField10: TStringField;
+    StringField11: TStringField;
+    StringField12: TStringField;
+    BlobField1: TBlobField;
+    dsSucursal: TDataSource;
+    QPedidoPED_COTIZACION: TStringField;
+    QPedidoped_solicitud_compra: TStringField;
     procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
       var PrintReport: Boolean);
     procedure QDetalleCalcFields(DataSet: TDataSet);
     procedure ChildBand1BeforePrint(Sender: TQRCustomBand;
       var PrintBand: Boolean);
+    procedure QPedidoAfterOpen(DataSet: TDataSet);
   private
 
   public
@@ -164,13 +181,13 @@ procedure TRPedidoSup.QuickRepBeforePrint(Sender: TCustomQuickRep;
 var
   ger : integer;
 begin
-  if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'I' then
+  {if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'I' then
      lbProd.DataField := 'PRO_CODIGO'
   else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'F' then
      lbProd.DataField := 'PRO_RFABRIC'
   else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'O' then
      lbProd.DataField := 'PRO_RORIGINAL';
-
+}
   dm.Query1.Close;
   dm.Query1.SQL.Clear;
   dm.Query1.SQL.Add('select cpa_nombre from condiciones');
@@ -313,6 +330,11 @@ begin
 
   if QRRichText1.Lines.Count = 0 then
     ChildBand1.Height := 20;
+end;
+
+procedure TRPedidoSup.QPedidoAfterOpen(DataSet: TDataSet);
+begin
+qSucursal.Open;
 end;
 
 end.

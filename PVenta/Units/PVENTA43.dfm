@@ -1,6 +1,6 @@
 object frmFormaPagoFac: TfrmFormaPagoFac
-  Left = 402
-  Top = 199
+  Left = 545
+  Top = 305
   ActiveControl = DBGrid1
   BorderIcons = []
   BorderStyle = bsSingle

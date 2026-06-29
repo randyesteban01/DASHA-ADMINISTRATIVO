@@ -358,7 +358,6 @@ type
     Label42: TLabel;
     TabSheet8: TTabSheet;
     QContactos: TADOQuery;
-    dsContactos: TDataSource;
     QContactosemp_codigo: TIntegerField;
     QContactoscli_codigo: TIntegerField;
     QContactoscontacto_nombre: TStringField;
@@ -462,6 +461,71 @@ type
     btfactura2: TSpeedButton;
     tfactura2: TEdit;
     cbbcli_buroestatus: TComboBox;
+    tsCondominio: TTabSheet;
+    Label57: TLabel;
+    dbedtMtrsApto: TDBEdit;
+    Label58: TLabel;
+    dbedtApto: TDBEdit;
+    QCondicion: TADOQuery;
+    QCondicioncpa_codigo: TIntegerField;
+    QCondicioncpa_nombre: TStringField;
+    dsCondicion: TDataSource;
+    QCajeros: TADOQuery;
+    QCajeroscaj_codigo: TIntegerField;
+    QCajeroscaj_nombre: TStringField;
+    dsCajeros: TDataSource;
+    QCajas: TADOQuery;
+    QCajascaj_codigo: TIntegerField;
+    QCajascaj_nombre: TStringField;
+    dsCajas: TDataSource;
+    Label56: TLabel;
+    dbedtcond_mon_codigo: TDBEdit;
+    btnCondmoneda: TSpeedButton;
+    edtCondMoneda: TEdit;
+    Label59: TLabel;
+    dbedtcond_tip_codigo: TDBEdit;
+    btnCondTipoNCF: TSpeedButton;
+    edtContTipoNCF: TEdit;
+    Label60: TLabel;
+    dbedtcond_fac_caja: TDBEdit;
+    btnCondbtcaja: TSpeedButton;
+    edtCondCaja: TEdit;
+    Label61: TLabel;
+    dbedtcond_ven_codigo: TDBEdit;
+    btnCondVendedor: TSpeedButton;
+    edtCondVendedor: TEdit;
+    edtCondPago: TEdit;
+    btnCondTipoPago: TSpeedButton;
+    dbedtcond_cpa_codigo: TDBEdit;
+    Label62: TLabel;
+    edtCondCajero: TEdit;
+    btnCondCajero: TSpeedButton;
+    dbedtcond_caj_codigo: TDBEdit;
+    Label63: TLabel;
+    Label64: TLabel;
+    dbedtcond_pro_codigo: TDBEdit;
+    edtCondProducto: TEdit;
+    btnCondProducto: TSpeedButton;
+    QClientescond_Apto: TStringField;
+    QClientescond_MtrsApto: TCurrencyField;
+    QClientescond_mon_codigo: TIntegerField;
+    QClientescond_cpa_codigo: TIntegerField;
+    QClientescond_fac_nota: TMemoField;
+    QClientescond_ven_codigo: TIntegerField;
+    QClientescond_caj_codigo: TIntegerField;
+    QClientescond_fac_caja: TIntegerField;
+    QClientescond_tip_codigo: TIntegerField;
+    QClientescond_pro_codigo: TIntegerField;
+    dbmmoNotas: TDBMemo;
+    lblNotas: TLabel;
+    QClientescond_tfa_codigo: TIntegerField;
+    Label65: TLabel;
+    btnCondTipoFactura: TSpeedButton;
+    edtCondTFactura: TEdit;
+    dbedtcond_tfa_codigo: TDBEdit;
+    QClientescond_monto: TCurrencyField;
+    dbedtcond_monto: TDBEdit;
+    Label66: TLabel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btCloseClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -569,8 +633,26 @@ type
     procedure btfactura2Click(Sender: TObject);
     procedure QClientesfacturaid2GetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
+    procedure btnCondbtcajaClick(Sender: TObject);
+    procedure btnCondCajeroClick(Sender: TObject);
+    procedure btnCondTipoNCFClick(Sender: TObject);
+    procedure btnCondmonedaClick(Sender: TObject);
+    procedure btnCondVendedorClick(Sender: TObject);
+    procedure btnCondTipoPagoClick(Sender: TObject);
+    procedure btnCondProductoClick(Sender: TObject);
+    procedure btnCondTipoFacturaClick(Sender: TObject);
+    procedure dbedtcond_fac_cajaChange(Sender: TObject);
+    procedure dbedtcond_caj_codigoChange(Sender: TObject);
+    procedure dbedtcond_pro_codigoChange(Sender: TObject);
+    procedure dbedtcond_tfa_codigoChange(Sender: TObject);
+    procedure dbedtcond_mon_codigoChange(Sender: TObject);
+    procedure dbedtcond_tip_codigoChange(Sender: TObject);
+    procedure dbedtcond_ven_codigoChange(Sender: TObject);
+    procedure dbedtcond_cpa_codigoChange(Sender: TObject);
   private
     { Private declarations }
+    CargandoDatosRnc: Boolean;
+    procedure CargarDatosRnc(const ARnc: string);
   public
     { Public declarations }
     accion : integer;
@@ -759,6 +841,10 @@ begin
     QListado.SQL.Add('and cli_nombre like '+#39+'%'+#39);
     QListado.SQL.Add('order by cli_nombre');
     QListado.Open;
+
+    QCajas.Open;
+    QCajeros.Open;
+    QCondicion.Open;
   end;
   frmMain.ExportXLS.Sheets[0].DBGrid := DBGrid6;
   frmMain.ExportXLS.Sheets[0].Exported := True;
@@ -813,8 +899,8 @@ begin
   Search.AliasFields.Add('Nombre');
   Search.AliasFields.Add('Referencia');
   Search.AliasFields.Add('Telefono');
-  Search.AliasFields.Add('Cédula');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½dula');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.query.clear;
   Search.query.add('select ');
   Search.query.add('COALESCE(cli_nombre, '''') as cli_nombre, ');
@@ -835,7 +921,7 @@ begin
     end
     else
     begin
-      ShowMessage('El valor de búsqueda es nulo o vacío.');
+      ShowMessage('El valor de bï¿½squeda es nulo o vacï¿½o.');
     end;
   end;
 
@@ -894,6 +980,19 @@ begin
   pbtPost.enabled    := pbtInsert.enabled;
   pbtCancel.enabled  := pbtInsert.enabled;
   btProducto.enabled := pbtInsert.enabled;
+
+  //Condominio
+  btnCondbtcaja.enabled      := not btInsert.enabled;
+  btnCondCajero.enabled      := not btInsert.enabled;
+  btnCondProducto.enabled    := not btInsert.enabled;
+  btnCondTipoFactura.enabled := not btInsert.enabled;
+  btnCondmoneda.enabled      := not btInsert.enabled;
+  btnCondTipoNCF.enabled     := not btInsert.enabled;
+  btnCondVendedor.enabled    := not btInsert.enabled;
+  btnCondTipoPago.enabled    := not btInsert.enabled;
+
+  
+
 
 
 end;
@@ -1007,7 +1106,7 @@ begin
   Search.ResultField := 'tcl_codigo';
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.query.clear;
   Search.query.add('select tcl_nombre, tcl_codigo');
   Search.query.add('from tipoclientes');
@@ -1034,7 +1133,7 @@ begin
   Search.ResultField := 'cpa_codigo';
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.query.clear;
   Search.query.add('select cpa_nombre, cpa_codigo');
   Search.query.add('from condiciones');
@@ -1109,7 +1208,7 @@ begin
   Search.Title := 'Familias de productos';
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.ResultField := 'fam_codigo';
   Search.query.clear;
   Search.query.add('select fam_nombre, fam_codigo');
@@ -1210,7 +1309,7 @@ begin
   Search.AliasFields.Add('Nombre');
   Search.AliasFields.Add('R. Original');
   Search.AliasFields.Add('R. Fabric');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.ResultField := 'pro_codigo';
   Search.query.clear;
   Search.query.add('select pro_nombre, pro_roriginal, pro_rfabric, pro_codigo');
@@ -1274,7 +1373,7 @@ procedure TfrmClientes.btVendedorClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.Query.clear;
   Search.Query.add('select ven_nombre, ven_codigo');
   Search.Query.add('from vendedores');
@@ -1366,7 +1465,7 @@ begin
   Search.ResultField := 'fpa_codigo';
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.query.clear;
   Search.query.add('select fpa_nombre, fpa_codigo');
   Search.query.add('from formaspago');
@@ -1620,7 +1719,7 @@ procedure TfrmClientes.btProvinciaClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.Query.clear;
   Search.Query.add('select pro_nombre, pro_codigo');
   Search.Query.add('from Provincias');
@@ -1683,7 +1782,7 @@ procedure TfrmClientes.bttipofacturaClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.Query.clear;
   Search.Query.add('select tip_nombre, tip_codigo');
   Search.Query.add('from tiponcf');
@@ -1722,35 +1821,41 @@ end;
 
 procedure TfrmClientes.btrncClick(Sender: TObject);
 begin
-  Application.CreateForm(tfrmInformacionNCF, frmInformacionNCF);
-  frmInformacionNCF.rnc := DBEdit3.Text;
-  frmInformacionNCF.ShowModal;
-  if MessageDlg('Desea actualizar los datos del cliente?',mtConfirmation,[mbyes,mbno],0) = mryes then
-  begin
-    QClientescli_NOMBRE.Value := frmInformacionNCF.Query1.FieldByName('razon_social').AsString;
-    QClientescli_DIRECCION.Value := frmInformacionNCF.Query1.FieldByName('direccion').AsString;
-    QClientescli_LOCALIDAD.Value := frmInformacionNCF.Query1.FieldByName('urbanizacion').AsString+
-                                       frmInformacionNCF.Query1.FieldByName('numero').AsString;
-    QClientescli_TELEFONO.Value  := frmInformacionNCF.Query1.FieldByName('telefono').AsString;
-  end;
-  frmInformacionNCF.Release;
+  CargarDatosRnc(DBEdit3.Text);
 end;
 
 procedure TfrmClientes.btcedulaClick(Sender: TObject);
 begin
-  Application.CreateForm(tfrmInformacionNCF, frmInformacionNCF);
-  frmInformacionNCF.rnc := DBEdit10.Text;
-  frmInformacionNCF.ShowModal;
-  if MessageDlg('Desea actualizar los datos del cliente?',mtConfirmation,[mbyes,mbno],0) = mryes then
-  begin
-    QClientescli_NOMBRE.Value := frmInformacionNCF.Query1.FieldByName('razon_social').AsString;
-    QClientescli_DIRECCION.Value := frmInformacionNCF.Query1.FieldByName('direccion').AsString;
-    QClientescli_LOCALIDAD.Value := frmInformacionNCF.Query1.FieldByName('urbanizacion').AsString+
-                                       frmInformacionNCF.Query1.FieldByName('numero').AsString;
-    QClientescli_TELEFONO.Value  := frmInformacionNCF.Query1.FieldByName('telefono').AsString;
-  end;
-  frmInformacionNCF.Release;
+  CargarDatosRnc(QClientesCLI_CEDULA.AsString);
 
+end;
+
+procedure TfrmClientes.CargarDatosRnc(const ARnc: string);
+var
+  D: TDatoRncConsulta;
+begin
+  D := dm.ConsultarRncCompleto(ARnc);
+  if not D.Encontrado then
+  begin
+    if D.Mensaje <> '' then
+      MessageDlg(D.Mensaje, mtInformation, [mbok], 0);
+    Exit;
+  end;
+
+  if MessageDlg('Desea actualizar los datos del cliente con '+D.RazonSocial+'?',mtConfirmation,[mbyes,mbno],0) = mryes then
+  begin
+    CargandoDatosRnc := True;
+    try
+      if Trim(D.RncCedula) <> '' then
+        QClientesCLI_RNC.Value := D.RncCedula;
+      QClientescli_NOMBRE.Value := D.RazonSocial;
+      QClientescli_DIRECCION.Value := D.Direccion;
+      QClientescli_LOCALIDAD.Value := Trim(D.Urbanizacion)+Trim(D.Numero);
+      QClientescli_TELEFONO.Value := D.Telefono;
+    finally
+      CargandoDatosRnc := False;
+    end;
+  end;
 end;
 
 procedure TfrmClientes.QContactosBeforePost(DataSet: TDataSet);
@@ -1843,7 +1948,7 @@ begin
   Search.Query.add('from factura_automatica');
   Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
   Search.ResultField := 'facturaid';
-  Search.Title := 'Facturación automática';
+  Search.Title := 'Facturaciï¿½n automï¿½tica';
   if Search.execute then
   begin
     QClientesfacturaid.value := strtoint(Search.ValueField);
@@ -1902,6 +2007,9 @@ end;
 
 procedure TfrmClientes.QClientesCLI_RNCChange(Sender: TField);
 begin
+  if CargandoDatosRnc then
+    Exit;
+
   IF Trim(DBEdit3.Text) <> '' then begin
   if not QClientesCLI_RNC.IsNull then
   begin
@@ -1932,7 +2040,7 @@ begin
   Search.ResultField := 'cli_codigo';
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.query.clear;
   Search.query.add('select cli_nombre, cli_codigo');
   Search.query.add('from clientes');
@@ -1983,7 +2091,7 @@ begin
   if dsClientes.State in [dsEdit, dsInsert] then begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.Query.clear;
   Search.Query.add('select aseg_nombre, aseg_codigo');
   Search.Query.add('from Aseguradoras');
@@ -2049,7 +2157,7 @@ begin
   Search.Query.add('from factura_automatica');
   Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
   Search.ResultField := 'facturaid';
-  Search.Title := 'Facturación automática';
+  Search.Title := 'Facturaciï¿½n automï¿½tica';
   if Search.execute then
   begin
     QClientesfacturaid2.value := strtoint(Search.ValueField);
@@ -2078,6 +2186,360 @@ begin
   end
   else
     tfactura2.text := '';
+end;
+
+procedure TfrmClientes.btnCondbtcajaClick(Sender: TObject);
+begin
+  Search.AliasFields.clear;
+  Search.AliasFields.add('Nombre');
+  Search.AliasFields.add('Codigo');
+  Search.Query.clear;
+  Search.Query.add('select caj_nombre, caj_codigo');
+  Search.Query.add('from cajas');
+  Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
+  Search.ResultField := 'caj_Codigo';
+  Search.Title := 'Listado de Cajas';
+  if Search.execute then
+  begin
+    QClientescond_fac_caja.value := strtoint(Search.ValueField);
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select caj_nombre, caj_codigo from cajas');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and caj_codigo = :caj');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('caj').Value := QClientescond_fac_caja.Value;
+    dm.Query1.open;
+    edtCondCaja.Text := dm.Query1.FieldByName('caj_nombre').AsString;
+  end;
+end;
+
+procedure TfrmClientes.btnCondCajeroClick(Sender: TObject);
+begin
+  Search.AliasFields.clear;
+  Search.AliasFields.add('Nombre');
+  Search.AliasFields.add('Codigo');
+  Search.Query.clear;
+  Search.Query.add('select caj_nombre, caj_codigo');
+  Search.Query.add('from cajeros');
+  Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
+  Search.ResultField := 'caj_codigo';
+  Search.Title := 'Listado de Cajeros';
+  if Search.execute then
+  begin
+    QClientescond_caj_codigo.value := strtoint(Search.ValueField);
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select caj_nombre from cajeros');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and caj_codigo = :caj');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('caj').Value := QClientescond_caj_codigo.Value;
+    dm.Query1.open;
+    edtCondCajero.Text := dm.Query1.FieldByName('caj_nombre').AsString;
+  end;
+end;
+
+procedure TfrmClientes.btnCondTipoNCFClick(Sender: TObject);
+begin
+ Search.AliasFields.clear;
+  Search.AliasFields.add('Cï¿½digo');
+  Search.AliasFields.add('Nombre');
+  Search.AliasFields.add('Cï¿½digo DGII');
+  Search.Query.Clear;
+  Search.Query.Add('select tip_codigo, (nombre_dgii) as tip_nombre, cod_dgii');
+  Search.Query.Add('from vwTipoNCF');
+  Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
+  Search.ResultField := 'tip_codigo';
+  Search.Title := 'Tipos de Comprobantes';
+  if Search.execute then
+  begin
+    QClientescond_tip_codigo.value := strtoint(Search.ValueField);
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select nombre_dgii tip_nombre');
+    dm.Query1.sql.Add('from vwTipoNCF');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and tip_codigo = :tip');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('tip').Value := QClientescond_tip_codigo.Value;
+    dm.Query1.open;
+    edtContTipoNCF.Text := dm.Query1.FieldByName('tip_nombre').AsString;
+  end;
+end;
+
+procedure TfrmClientes.btnCondmonedaClick(Sender: TObject);
+begin
+  Search.AliasFields.clear;
+  Search.AliasFields.add('Nombre');
+  Search.AliasFields.add('Cï¿½digo');
+  Search.Query.clear;
+  Search.Query.add('select mon_nombre, mon_codigo');
+  Search.Query.add('from moneda');
+  Search.Query.add('where emp_codigo = '+inttostr(dm.QParametrosPAR_INVEMPRESA.value));
+  Search.ResultField := 'mon_Codigo';
+  Search.Title := 'Tipo de moneda';
+  if Search.execute then
+  begin
+    QClientescond_mon_codigo.value := strtoint(Search.ValueField);
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select mon_sigla from moneda');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and mon_codigo = :mon');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('mon').Value := QClientescond_mon_codigo.Value;
+    dm.Query1.open;
+    edtCondMoneda.Text := dm.Query1.FieldByName('mon_sigla').AsString;
+  end;
+end;
+
+procedure TfrmClientes.btnCondVendedorClick(Sender: TObject);
+begin
+  Search.AliasFields.clear;
+  Search.AliasFields.add('Nombre');
+  Search.AliasFields.add('Codigo');
+  Search.Query.clear;
+  Search.Query.add('select ven_nombre, ven_codigo');
+  Search.Query.add('from Vendedores');
+  Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
+  Search.Query.add('and ven_status ='+QuotedStr('ACT'));
+  Search.ResultField := 'ven_Codigo';
+  Search.Title := 'Vendedores';
+  if Search.execute then
+  begin
+    QClientescond_ven_codigo.value := strtoint(Search.ValueField);
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select ven_nombre, ven_codigo');
+    dm.Query1.sql.add('from Vendedores');
+    dm.Query1.sql.add('where emp_codigo = :emp and ven_codigo = :ven');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('ven').Value := QClientescond_ven_codigo.Value;
+    dm.Query1.open;
+    edtCondVendedor.Text := dm.Query1.FieldByName('ven_nombre').AsString;
+  end;
+end;
+
+procedure TfrmClientes.btnCondTipoPagoClick(Sender: TObject);
+begin
+  Search.Title := 'Condiciones de Pago';
+  Search.ResultField := 'cpa_codigo';
+  Search.AliasFields.Clear;
+  Search.AliasFields.Add('Nombre');
+  Search.AliasFields.Add('Cï¿½digo');
+  Search.query.clear;
+  Search.query.add('select cpa_nombre, cpa_codigo');
+  Search.query.add('from condiciones');
+  Search.query.add('where emp_codigo = '+inttostr(dm.vp_cia));
+  if search.execute then
+  begin
+    QClientescond_cpa_codigo.value := strtoint(search.valuefield);
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select cpa_nombre, cpa_codigo');
+    dm.Query1.sql.add('from condiciones');
+    dm.Query1.sql.add('where emp_codigo = :emp and cpa_codigo = :cond');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('cond').Value := QClientescond_cpa_codigo.Value;
+    dm.Query1.open;
+    edtCondPago.Text := dm.Query1.FieldByName('cpa_nombre').AsString;
+  end;
+
+end;
+
+procedure TfrmClientes.btnCondProductoClick(Sender: TObject);
+begin
+  Search.AliasFields.clear;
+  Search.AliasFields.add('Nombre');
+  Search.AliasFields.add('Codigo');
+  Search.AliasFields.add('Tipo');
+  Search.Query.clear;
+  Search.Query.add('select pro_codigo, pro_nombre, pro_servicio');
+  Search.Query.add('from productos');
+  Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
+  Search.Query.add('and pro_servicio  = '+QuotedStr('True'));
+  Search.ResultField := 'pro_codigo';
+  Search.Title := 'Listado de Productos';
+  if Search.execute then
+  begin
+    QClientescond_pro_codigo.value := strtoint(Search.ValueField);
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select pro_nombre from productos');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and pro_codigo = :pro');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('pro').Value := QClientescond_pro_codigo.Value;
+    dm.Query1.open;
+    edtCondProducto.Text := dm.Query1.FieldByName('pro_nombre').AsString;
+  end;
+end;
+
+procedure TfrmClientes.btnCondTipoFacturaClick(Sender: TObject);
+begin
+  Search.AliasFields.clear;
+  Search.AliasFields.add('Nombre');
+  Search.AliasFields.add('Codigo');
+  Search.Query.clear;
+  Search.Query.add('select tfa_codigo, tfa_nombre');
+  Search.Query.add('from TiposFactura');
+  Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
+  Search.ResultField := 'tfa_codigo';
+  Search.Title := 'Listado de Tipo Facturas';
+  if Search.execute then
+  begin
+    QClientescond_tfa_codigo.value := strtoint(Search.ValueField);
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select tfa_nombre from TiposFactura');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and tfa_codigo = :tfact');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('tfact').Value := QClientescond_tfa_codigo.Value;
+    dm.Query1.open;
+    edtCondTFactura.Text := dm.Query1.FieldByName('tfa_nombre').AsString;
+  end;
+end;
+
+procedure TfrmClientes.dbedtcond_fac_cajaChange(Sender: TObject);
+begin
+IF  dbedtcond_fac_caja.Text = '' then
+edtCondCaja.Clear else
+begin
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select caj_nombre, caj_codigo from cajas');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and caj_codigo = :caj');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('caj').Value := QClientescond_fac_caja.Value;
+    dm.Query1.open;
+    edtCondCaja.Text := dm.Query1.FieldByName('caj_nombre').AsString;
+  end;
+end;
+
+
+procedure TfrmClientes.dbedtcond_caj_codigoChange(Sender: TObject);
+begin
+IF  dbedtcond_caj_codigo.Text = '' then
+edtCondCajero.Clear else
+begin
+  dm.Query1.close;
+  dm.Query1.sql.clear;
+  dm.Query1.sql.add('select caj_nombre from cajeros');
+  dm.Query1.sql.add('where emp_codigo = :emp');
+  dm.Query1.sql.add('and caj_codigo = :caj');
+  dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+  dm.Query1.Parameters.parambyname('caj').Value := QClientescond_caj_codigo.Value;
+  dm.Query1.open;
+  edtCondCajero.Text := dm.Query1.FieldByName('caj_nombre').AsString;
+end;
+
+end;
+
+procedure TfrmClientes.dbedtcond_pro_codigoChange(Sender: TObject);
+begin
+if dbedtcond_pro_codigo.Text = '' then
+   edtCondProducto.Clear else
+   begin
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select pro_nombre from productos');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and pro_codigo = :pro');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('pro').Value := QClientescond_pro_codigo.Value;
+    dm.Query1.open;
+    edtCondProducto.Text := dm.Query1.FieldByName('pro_nombre').AsString;
+   end;
+end;
+
+procedure TfrmClientes.dbedtcond_tfa_codigoChange(Sender: TObject);
+begin
+if dbedtcond_tfa_codigo.Text = '' then
+edtCondTFactura.Clear else
+   begin
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select tfa_nombre from TiposFactura');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and tfa_codigo = :tfact');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('tfact').Value := QClientescond_tfa_codigo.Value;
+    dm.Query1.open;
+    edtCondTFactura.Text := dm.Query1.FieldByName('tfa_nombre').AsString;
+   end;
+end;
+
+procedure TfrmClientes.dbedtcond_mon_codigoChange(Sender: TObject);
+begin
+if dbedtcond_mon_codigo.Text = '' then
+   edtCondMoneda.Clear else
+   begin
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select mon_sigla from moneda');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and mon_codigo = :mon');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('mon').Value := QClientescond_mon_codigo.Value;
+    dm.Query1.open;
+    edtCondMoneda.Text := dm.Query1.FieldByName('mon_sigla').AsString;
+   end;
+end;
+
+procedure TfrmClientes.dbedtcond_tip_codigoChange(Sender: TObject);
+begin
+if dbedtcond_tip_codigo.Text = '' then
+   edtContTipoNCF.Clear else
+   begin
+   dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select nombre_dgii tip_nombre');
+    dm.Query1.sql.Add('from vwTipoNCF');
+    dm.Query1.sql.add('where emp_codigo = :emp');
+    dm.Query1.sql.add('and tip_codigo = :tip');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('tip').Value := QClientescond_tip_codigo.Value;
+    dm.Query1.open;
+    edtContTipoNCF.Text := dm.Query1.FieldByName('tip_nombre').AsString;
+   end;
+
+end;
+
+procedure TfrmClientes.dbedtcond_ven_codigoChange(Sender: TObject);
+begin
+if dbedtcond_ven_codigo.Text = '' then
+   edtCondVendedor.Clear else
+   begin
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select ven_nombre, ven_codigo');
+    dm.Query1.sql.add('from Vendedores');
+    dm.Query1.sql.add('where emp_codigo = :emp and ven_codigo = :ven');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('ven').Value := QClientescond_ven_codigo.Value;
+    dm.Query1.open;
+    edtCondVendedor.Text := dm.Query1.FieldByName('ven_nombre').AsString;
+   end;
+end;
+
+procedure TfrmClientes.dbedtcond_cpa_codigoChange(Sender: TObject);
+begin
+if dbedtcond_cpa_codigo.Text = '' then
+   edtCondPago.Clear else
+   begin
+    dm.Query1.close;
+    dm.Query1.sql.clear;
+    dm.Query1.sql.add('select cpa_nombre, cpa_codigo');
+    dm.Query1.sql.add('from condiciones');
+    dm.Query1.sql.add('where emp_codigo = :emp and cpa_codigo = :cond');
+    dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.parambyname('cond').Value := QClientescond_cpa_codigo.Value;
+    dm.Query1.open;
+    edtCondPago.Text := dm.Query1.FieldByName('cpa_nombre').AsString;
+   end;
 end;
 
 end.

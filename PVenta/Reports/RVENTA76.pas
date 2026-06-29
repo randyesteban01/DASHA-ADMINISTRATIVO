@@ -3,7 +3,7 @@ unit RVENTA76;
 interface
 
 uses Windows, SysUtils, Messages, Classes, Graphics, Controls,
-  StdCtrls, ExtCtrls, Forms, QuickRpt, QRPDFFilt, QRExport, QRCtrls, DB, ADODB;
+  StdCtrls, ExtCtrls, Forms, QuickRpt, QRPDFFilt, QRExport, QRCtrls, DB, ADODB,DelphiZXingQRCode;
 
 type
   TRFacturaProvee = class(TQuickRep)
@@ -205,6 +205,16 @@ type
     BlobField1: TBlobField;
     dsSucursal: TDataSource;
     QFacturasuc_codigo: TIntegerField;
+    QFacturaeNCF: TStringField;
+    qrImgQRCode: TQRImage;
+    QFacturaUrlCodigoQR: TMemoField;
+    lblcodigoseg: TQRLabel;
+    QRDBText40: TQRDBText;
+    lblFirmaDigital: TQRLabel;
+    QFacturacodigoseguridad: TStringField;
+    QFacturafechafirma: TStringField;
+    QRDBText42: TQRDBText;
+    QFacturaAceptadoDGII: TBooleanField;
     procedure QCuentasCalcFields(DataSet: TDataSet);
     procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
       var PrintReport: Boolean);
@@ -217,7 +227,7 @@ type
   private
 
   public
-
+    procedure GenerarCodigoQR(const Texto: string; Imagen: TQRImage);
   end;
 
 var
@@ -269,6 +279,26 @@ begin
 
   qrlUsuario.Caption :='Impreso por :'+ dm.getNombreUsuario(DM.Usuario) +
                        ' Fecha/Hora ' + FormatDateTime('dd/mm/yyyy hh:mm:ss AM/PM',now);
+  if  dm.QParametrosUsa_FacturacionElectronica.Value  then
+    begin
+    GenerarCodigoQR(QFacturaUrlCodigoQR.Value, qrImgQRCode)  end
+    else 
+    begin
+      qrImgQRCode.Visible:=False;
+      lblcodigoseg.Caption:= '';
+      lblFirmaDigital.Caption:='';
+      QRDBText40.Visible:=False;
+      QRDBText42.Visible:=False;
+    end;
+
+    if not QFacturaAceptadoDGII.Value then
+   begin
+      lblcodigoseg.Caption:= '';
+      lblFirmaDigital.Caption:='';
+      QRDBText40.Visible:=False;
+      QRDBText42.Visible:=False;
+   end;
+
 end;
 
 procedure TRFacturaProvee.QFacturaCalcFields(DataSet: TDataSet);
@@ -283,6 +313,56 @@ begin
   else
     QFacturaNumeroNCF.Value := ' ';
 end;
+
+
+procedure TRFacturaProvee.GenerarCodigoQR(const Texto: string; Imagen: TQRImage);
+var
+  QRCode: TDelphiZXingQRCode;
+  Bitmap: TBitmap;
+  QRSize: Integer;
+  ModuleSize: Integer;
+  i, j: Integer;
+begin
+  QRCode := TDelphiZXingQRCode.Create;
+  try
+    QRCode.Data := Texto;
+    QRCode.QuietZone := 4;
+
+    // Calculamos el tamaño basado en módulos
+    ModuleSize := 5; // Cada módulo mide 5 píxeles (puedes ajustar)
+    QRSize := (QRCode.Rows + QRCode.QuietZone * 2) * ModuleSize;
+
+    Bitmap := TBitmap.Create;
+    try
+      Bitmap.Width := QRSize;
+      Bitmap.Height := QRSize;
+
+      Bitmap.Canvas.Brush.Color := clWhite;
+      Bitmap.Canvas.FillRect(Rect(0, 0, Bitmap.Width, Bitmap.Height));
+
+      Bitmap.Canvas.Brush.Color := clBlack;
+      for i := 0 to QRCode.Rows - 1 do
+        for j := 0 to QRCode.Columns - 1 do
+          if QRCode.IsBlack[i, j] then
+            Bitmap.Canvas.FillRect(Rect(
+              (j + QRCode.QuietZone) * ModuleSize,
+              (i + QRCode.QuietZone) * ModuleSize,
+              (j + QRCode.QuietZone + 1) * ModuleSize,
+              (i + QRCode.QuietZone + 1) * ModuleSize
+            ));
+
+      // Escalar para llenar el tamaño del QRImage
+      Imagen.Picture.Bitmap.Width := Imagen.Width;
+      Imagen.Picture.Bitmap.Height := Imagen.Height;
+      Imagen.Picture.Bitmap.Canvas.StretchDraw(Rect(0, 0, Imagen.Width, Imagen.Height), Bitmap);
+    finally
+      Bitmap.Free;
+    end;
+  finally
+    QRCode.Free;
+  end;
+end;
+
 
 procedure TRFacturaProvee.QRSubDetail2BeforePrint(Sender: TQRCustomBand;
   var PrintBand: Boolean);

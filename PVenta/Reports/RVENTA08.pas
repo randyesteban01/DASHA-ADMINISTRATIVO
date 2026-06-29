@@ -4,7 +4,7 @@ interface
 
 uses Windows, SysUtils, Messages, Classes, Graphics, Controls,
   StdCtrls, ExtCtrls, Forms, QuickRpt, QRPDFFilt, QRExport, QRCtrls, DB, IBCustomDataSet,
-  IBQuery, ADODB;
+  IBQuery, ADODB,DelphiZXingQRCode;
 
 type
   TRConsDev = class(TQuickRep)
@@ -77,11 +77,12 @@ type
     QRLabel12: TQRLabel;
     QDevncf_modifica: TStringField;
     QDevdev_fecha_factura: TDateTimeField;
-    QDevNCF: TStringField;
     QRDBText6: TQRDBText;
     QRDBText7: TQRDBText;
     QRDBText10: TQRDBText;
     QRExpr1: TQRExpr;
+    QDevNCF: TStringField;
+    QDeveNCF: TStringField;
   private
 
   public

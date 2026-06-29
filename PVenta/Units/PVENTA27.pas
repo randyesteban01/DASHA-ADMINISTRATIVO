@@ -378,7 +378,7 @@ begin
   Totaliza := True;
   QEntradaSUC_CODIGO.Value := QSucursalsuc_codigo.Value;
   QEntradaEMP_CODIGO.value := dm.vp_cia;
-  DBEdit5.ReadOnly :=  False;
+  //DBEdit5.ReadOnly :=  False;
   QEntradaENT_FECHA.value  := date;
   QEntradaENT_FECHA_HORA.Value := DM.getFechaBDA;
   QEntradaENT_STATUS.value := 'EMI';
@@ -622,7 +622,15 @@ begin
       else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'F' then
          QDetallePRO_RFABRIC.value := frmBuscaProducto.QProductosPRO_RFABRIC.value
       else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'O' then
-         QDetallePRO_RORIGINAL.value := frmBuscaProducto.QProductosPRO_RORIGINAL.value;
+      begin
+          if (frmBuscaProducto.QProductosPRO_RORIGINAL.value ='') then
+          begin
+            //QDetallePRO_RORIGINAL.value := frmBuscaProducto.QProductosPRO_RORIGINAL.value;
+            QDetallePRO_CODIGO.value := frmBuscaProducto.QProductosPRO_CODIGO.value
+          end
+          else QDetallePRO_RORIGINAL.value := frmBuscaProducto.QProductosPRO_RORIGINAL.value;
+      end;
+
 
       QDetallepro_serializado.value := frmBuscaProducto.QProductosPRO_serializado.value;
       if frmBuscaProducto.ckactiva.Checked then
@@ -657,6 +665,26 @@ begin
       end;
     end;
   end;
+  {else
+  begin
+    if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'O' then
+    begin
+      if (not QDetallePRO_CODIGO.isnull) and (QDetallePRO_RORIGINAL.value ='') then
+      begin
+        BuscaProd('I');
+        if Lista.Items.IndexOf(QDetallePRO_CODIGO.AsString) >= 0 then
+        begin
+          if MessageDlg('Ya este producto existe en la lista, desea continuar?', mtConfirmation, [mbYes, mbNo], 0) = mrNo then
+          begin
+            cod := QDetallePRO_CODIGO.Value;
+            QDetalle.Cancel;
+            QDetalle.Locate('pro_codigo', cod, []);
+          end;
+        end;
+      end;
+    end;
+
+  end;   }
 end;
 
 procedure TfrmEntradas.QDetallePRO_RFABRICChange(Sender: TField);
@@ -1093,16 +1121,17 @@ begin
   Suc := DBLookupComboBox2.KeyValue;
   Search.Query.clear;
   Search.AliasFields.clear;
-  Search.Query.add('select ent_numero, ent_fecha, ent_concepto');
-  Search.Query.add('from entradainv');
-  Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
+  Search.Query.add('select ent_numero, ent_fecha, ent_concepto, p.sup_nombre');
+  Search.Query.add('from entradainv e inner join Proveedores p on e.sup_codigo= p.sup_codigo ');
+  Search.Query.add('where e.emp_codigo = '+inttostr(dm.vp_cia));
   Search.Query.add('and ent_status = '+#39+'EMI'+#39);
   if trim(edProveedor.Text) <> '' then
-     Search.Query.add('and sup_codigo = '+trim(edProveedor.Text));
-  Search.Query.add('and suc_codigo = '+IntToStr(Suc));
+     Search.Query.add('and e.sup_codigo = '+trim(edProveedor.Text));
+  Search.Query.add('and e.suc_codigo = '+IntToStr(Suc));
   Search.AliasFields.add('Número');
   Search.AliasFields.add('Fecha');
   Search.AliasFields.add('Concepto');
+  Search.AliasFields.add('Proveedor');
   Search.Title := 'Entradas de Almacen';
   Search.ResultField := 'ent_numero';
   if Search.execute then
@@ -2144,8 +2173,16 @@ begin
   end
   else if campo = 'O' then
   begin
-    qBuscaProd.sql.add('and pro_roriginal = :cod');
-    qBuscaProd.Parameters.parambyname('cod').Value := QDetallePRO_RORIGINAL.value;
+    if QDetallePRO_RORIGINAL.value='' then
+    begin
+      qBuscaProd.sql.add('and pro_codigo = :cod');
+      qBuscaProd.Parameters.parambyname('cod').Value := QDetallePRO_CODIGO.value;
+    end
+    else
+    begin
+      qBuscaProd.sql.add('and pro_roriginal = :cod');
+      qBuscaProd.Parameters.parambyname('cod').Value := QDetallePRO_RORIGINAL.value;
+    end;
   end;
   qBuscaProd.Parameters.parambyname('emp').Value := dm.QParametrosPAR_INVEMPRESA.Value;
   qBuscaProd.open;

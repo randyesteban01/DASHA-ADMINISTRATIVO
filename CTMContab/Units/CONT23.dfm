@@ -1,6 +1,6 @@
 object frmRepMayorGeneral: TfrmRepMayorGeneral
-  Left = 187
-  Top = 128
+  Left = 389
+  Top = 175
   ActiveControl = Fecha1
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -289,6 +289,7 @@ object frmRepMayorGeneral: TfrmRepMayorGeneral
     TabOrder = 0
   end
   object Search: TQrySearchDlgADO
+    AliasName = DM.ADOSigma
     Left = 432
     Top = 88
   end

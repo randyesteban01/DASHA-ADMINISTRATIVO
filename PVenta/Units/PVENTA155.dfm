@@ -1,6 +1,6 @@
 object frmRepHistorialCliente: TfrmRepHistorialCliente
-  Left = 338
-  Top = 439
+  Left = 423
+  Top = 549
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Historial del Cliente'

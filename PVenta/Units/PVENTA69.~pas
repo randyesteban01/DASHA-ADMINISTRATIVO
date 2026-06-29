@@ -229,9 +229,19 @@ uses RVENTA02, RVENTA00, RVENTA01, RVENTA03, RVENTA32, RVENTA33,
   RVENTA34, RVENTA35, RVENTA36, RVENTA37, RVENTA38, RVENTA39, PVENTA83,
   SIGMA01, RVENTA64, RVENTA65, RVENTA67, RVENTA68, SIGMA00, RVENTA71,
   RVENTA72, RSERV00, RVENTA79, RVENTA85, RVENTA88, RVENTA100, RVENTA115,
-  RVENTA122, RVENTA126, RVENTA127, RVENTA128, RVENTA130, RVENTA134;
+  RVENTA122, RVENTA126, RVENTA127, RVENTA128, RVENTA130, RVENTA134, RVENTA137;
 
 {$R *.dfm}
+// --- Helpers ESC/POS ---
+function ESC(const b: Byte): AnsiString;
+begin
+  Result := AnsiChar(#27) + AnsiChar(b);
+end;
+
+function GS(const b: Byte): AnsiString;
+begin
+  Result := AnsiChar(#29) + AnsiChar(b);
+end;
 
 procedure TfrmReimpresion.btTipoClick(Sender: TObject);
 begin
@@ -457,8 +467,9 @@ begin
             end;
       end;
 
-      if ((dm.QParametrospar_fac_preimpresa.Value = 'True') AND (dm.QParametrospar_formato_preimpreso.Value = 'SteelTec')) then
-          begin
+      if ((dm.QParametrospar_fac_preimpresa.Value = 'True') and
+       ((dm.QParametrospar_formato_preimpreso.Value = 'SteelTec') )) then
+        begin
               application.createform(tRFacturaSteelTec, RFacturaSteelTec);
               RFacturaSteelTec.QFactura.Close;
               RFacturaSteelTec.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
@@ -489,7 +500,42 @@ begin
             end;
             end;
       end;
-      
+
+      if ((dm.QParametrospar_fac_preimpresa.Value = 'True') and
+       (
+        (dm.QParametrospar_formato_preimpreso.Value = 'Construccion'))) then
+        begin
+              application.createform(TRFacturaConstruccion, RFacturaContruccion);
+              RFacturaContruccion.QFactura.Close;
+              RFacturaContruccion.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+              RFacturaContruccion.QFactura.Parameters.ParamByName('tipo').Value   := edTipo.Text;
+              RFacturaContruccion.QFactura.Parameters.ParamByName('forma').Value  := 'A';
+              RFacturaContruccion.QFactura.Parameters.ParamByName('numero').Value := edNumero.Text;
+              RFacturaContruccion.QFactura.Parameters.ParamByName('suc').Value    := DBLookupComboBox2.KeyValue;
+              RFacturaContruccion.QFactura.open;
+              RFacturaContruccion.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+              RFacturaContruccion.QDetalle.open;
+              RFacturaContruccion.lbReimpresion.Enabled := True;
+            case cbDestino.ItemIndex of
+            0:begin
+            RFacturaContruccion.PrinterSetup;
+            RFacturaContruccion.Preview;
+            RFacturaContruccion.Destroy;
+            end;
+            1:begin
+            RFacturaContruccion.PrinterSetup;
+            RFacturaContruccion.Print;
+            RFacturaContruccion.Destroy;
+            end;
+            2:begin
+            vl_cliente := GetCliente('Facturas','fac_numero');
+            vl_atach := 'Factura_No_'+edNumero.Text+'.PDF';
+            RFacturaContruccion.ExportToFilter(TQRPDFDocumentFilter.Create('.\'+vl_atach));
+            EnvioMail(RFacturaContruccion,'Factura');
+            end;
+            end;
+      end;
+
 
       if ((dm.QParametrospar_fac_preimpresa.Value = 'True') AND (dm.QParametrospar_formato_preimpreso.Value = 'Caceres&Equipos')) then
           begin
@@ -561,7 +607,7 @@ begin
         if (dm.QParametrospar_fac_preimpresa.Value = 'True') and (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados')
         and (dm.QParametrospar_formato_preimpreso.Value <> 'Grabado_Exento') and
         ((DM.QParametrospar_formato_preimpreso.Value <> 'Sarita & Asociados') or
-         (dm.QParametrospar_formato_preimpreso.Value = 'SteelTec')) then
+         (dm.QParametrospar_formato_preimpreso.Value = 'SteelTec')  ) then
         begin
           application.CreateForm(tRFacturaPreImpresa, RFacturaPreImpresa);
           RFacturaPreImpresa.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
@@ -1231,8 +1277,8 @@ begin
         RNotaDebito.destroy;
       end;
   5 : begin //Devolucion
-        if dm.QParametrospar_fac_preimpresa.Value = 'False' then
-        begin
+       // if (dm.QParametrospar_fac_preimpresa.Value = 'False') or (dm.QParametrosintegracion_luganis.AsBoolean) then
+      //  begin
           application.createform(tRDevolucion, RDevolucion);
           RDevolucion.QDevolucion.Close;
           RDevolucion.QDevolucion.Parameters.ParamByName('emp_codigo').Value := dm.vp_cia;
@@ -1278,8 +1324,8 @@ begin
             end;
           end;
           RDevolucion.Destroy;
-          end
-        else
+         // end
+        {else
         begin
           application.createform(tRDevolucionPreImpresa, RDevolucionPreImpresa);
           RDevolucionPreImpresa.QDevolucion.Parameters.ParamByName('numero').Value := StrToInt(Trim(edNumero.Text));
@@ -1297,7 +1343,7 @@ begin
             //2:EnvioMail(RDevolucionPreImpresa.QRBB,'Devolucion');
             end;
            RDevolucionPreImpresa.Release;
-        end;
+        end;    }
       end;
   6 : if Trim(edNumero.Text) = '' then
          ShowMessage('DEBE INGRESAR UN NUMERO DE RECIBO')
@@ -3384,6 +3430,33 @@ with DM.Query1 do begin
 end;
 end;
 
+// Imprime QR nativo ESC/POS (module 1..16, EC: 48=L,49=M,50=Q,51=H)
+procedure WriteQR(var F: TextFile; const Data: AnsiString; ModuleSize: Byte = 6; ECLevel: Byte = 48);
+var pL, pH: AnsiChar;
+begin
+  // centrar
+  Write(F, ESC($61) + AnsiChar(#1));              // ESC a 1
+
+  // modelo
+  Write(F, GS($28) + 'k' + #04#00 + #49#65#50#00); // GS ( k 4 0 1 41 2 0
+  // tamaño de módulo
+  Write(F, GS($28) + 'k' + #03#00 + #49#67 + AnsiChar(ModuleSize));
+  // nivel de corrección
+  Write(F, GS($28) + 'k' + #03#00 + #49#69 + AnsiChar(ECLevel));
+
+  // almacenar datos
+  pL := AnsiChar((Length(Data)+3) and $FF);
+  pH := AnsiChar((Length(Data)+3) shr 8);
+  Write(F, GS($28) + 'k' + pL + pH + #49#80#48 + Data);
+
+  // imprimir
+  Write(F, GS($28) + 'k' + #03#00 + #49#81 + #48);
+
+  // salto y volver a izquierda
+  Writeln(F); Writeln(F);
+  Write(F, ESC($61) + AnsiChar(#0));              // ESC a 0
+end;
+
 
 procedure TfrmReimpresion.Imp40ColumnasFac;
 var
@@ -3392,6 +3465,10 @@ var
   Tfac, Saldo, TDesc : double;
   puerto, lbitbis, impcodigo, pro_codigo, Unidad, codigoabre, t, copias, Recibido, Devuelta : string;
   a : integer;
+  qrData: AnsiString;
+  qrURL, codSeg, fechaFirma, codDGII: string;
+  aceptado: Boolean;
+
 begin
   QFactura.Close;
   QFactura.Parameters.ParamByName('emp').Value := dm.vp_cia;
@@ -3558,10 +3635,10 @@ end;
     writeln(arch, 'Cajero: '+copy(dm.Query1.FieldByName('caj_nombre').asstring,1,13)+s+'Hora: '+RFactura.QFacturaFAC_HORA.AsString);
   end;
 
-  if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
+  if Trim(RFactura.QFacturaeNCF.Value) <> '' then
   begin
     writeln(arch, ' ');
-    writeln(arch, 'NCF: '+RFactura.QFacturaNumeroCF.Value);
+    writeln(arch, 'eNCF: '+RFactura.QFacturaeNCF.Value);
   //buscar vencimiento
       with QDatos do begin
       Close;
@@ -4059,9 +4136,6 @@ end;
   writeln(arch, ' ');
   writeln(arch, ' ');
   writeln(arch, ' ');
-  writeln(arch, ' ');
-  writeln(arch, ' ');
-  writeln(arch, ' ');
 
 //  dm.Query1.Close;
 //  dm.Query1.SQL.Clear;
@@ -4073,9 +4147,77 @@ end;
 
 
 
-
+    {
  if codigoabre = 'Termica' then
-  writeln(arch,chr(27)+chr(109));
+  writeln(arch,chr(27)+chr(109));      }
+
+  //Informacion necesaria para el codigo QR
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('select ');
+    dm.Query1.SQL.Add('(select top 1 UrlCodigoQR from vwFacturasXMLRptCodigoBarra cb ');
+    dm.Query1.SQL.Add(' where cb.emp_codigo=f.emp_codigo and cb.fac_numero=f.fac_numero ');
+    dm.Query1.SQL.Add(' and cb.tfa_codigo=f.tfa_codigo and cb.fac_forma=f.fac_forma) as UrlCodigoQR,');
+    dm.Query1.SQL.Add('f.codigoseguridad, ');
+    dm.Query1.SQL.Add('CONVERT(varchar(23), f.fechafirma, 121) AS fechafirma,');
+    dm.Query1.SQL.Add('(select top 1 tf.cod_dgii from TipoNCF tf where tf.tip_codigo=f.tip_codigo) as cod_dgii,');
+    dm.Query1.SQL.Add('ISNULL(f.AceptadoDGII,0) AS AceptadoDGII ');
+    dm.Query1.SQL.Add('from FACTURAS f ');
+    dm.Query1.SQL.Add('where f.emp_codigo=:emp and f.tfa_codigo=:tipo ');
+    dm.Query1.SQL.Add('and f.fac_numero=:numero and f.fac_forma=:forma ');
+    dm.Query1.SQL.Add('and f.suc_codigo=:suc');
+    dm.Query1.Parameters.ParamByName('emp').Value    := DM.vp_cia;
+    dm.Query1.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+    dm.Query1.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+    dm.Query1.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+    dm.Query1.Parameters.ParamByName('suc').Value    := QFacturaSUC_CODIGO.Value;
+    dm.Query1.Open;
+
+    qrURL      := dm.Query1.FieldByName('UrlCodigoQR').AsString;
+    codSeg     := dm.Query1.FieldByName('codigoseguridad').AsString;
+    fechaFirma := dm.Query1.FieldByName('fechafirma').AsString;
+    codDGII    := dm.Query1.FieldByName('cod_dgii').AsString;
+
+   if dm.Query1.FieldByName('AceptadoDGII').AsBoolean
+     and (Trim(qrURL) <> '') then
+  begin
+     // ---- QR DGII / timbre ----
+
+     qrData := AnsiString(Trim(qrURL));
+    {qrData := AnsiString(
+      // Usa tu función/campo que arma la URL del timbre:
+      // Ejemplo:
+      'https://timbre.dgii.gov.do/consulta?encf=' + RFactura.QFacturaNumeroCF.AsString +
+      '&rn=' + QSucursalsuc_rnc.AsString
+    );  }
+    WriteQR(arch, qrData, 6, 48);   // módulo 6, nivel L (rápido y legible)
+    Writeln(arch, 'Fecha firma: ' + fechaFirma);
+    Writeln(arch, 'Cod. seguridad: ' + codSeg);
+    
+     {
+    qrData := AnsiString(qrURL);
+    WriteQR(arch, qrData, 6, 48);  // módulo 6, nivel L
+    Writeln(arch, 'Fecha firma: ' + fechaFirma);
+    Writeln(arch, 'Cod. seguridad: ' + codSeg);   
+    Writeln(arch); // línea en blanco antes del corte
+    }
+  end
+  else
+  begin
+    // No imprimas QR ni datos; si quieres, puedes mostrar un aviso:
+    // Writeln(arch, 'Documento pendiente de aceptación DGII');
+  end;
+  writeln(arch, ' ');
+  // Mensaje final opcional
+  Writeln(arch, dm.Centro('¡Gracias por su compra!'));
+  writeln(arch, ' ');
+  writeln(arch, ' ');
+  writeln(arch, ' ');
+  Writeln(arch);
+
+  // ---- Corte de papel ----
+  Write(arch, GS($56) + AnsiChar(#66) + AnsiChar(#0));  // GS V B 0  (corte parcial)
+  Writeln(arch);   
 
 
   CloseFile(arch);

@@ -1,6 +1,6 @@
 object frmCargosBanco: TfrmCargosBanco
-  Left = 633
-  Top = 298
+  Left = 375
+  Top = 249
   ActiveControl = DBEdit1
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -1112,7 +1112,6 @@ object frmCargosBanco: TfrmCargosBanco
     AfterInsert = QCargosAfterInsert
     AfterEdit = QCargosAfterEdit
     OnNewRecord = QCargosNewRecord
-    DataSource = DM.dsEmpresas
     Parameters = <
       item
         Name = 'EMP_CODIGO'

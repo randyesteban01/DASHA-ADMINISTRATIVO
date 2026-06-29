@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, Mask, DBCtrls, Buttons, DB, IBCustomDataSet, IBQuery,
   IBUpdateSQL, Grids, DBGrids, ADODB, QuerySearchDlgADO, ComCtrls,
-  DBGridObj, ToolEdit, CurrEdit, dxmdaset, Menus;
+  DBGridObj, ToolEdit, CurrEdit, dxmdaset, Menus,Variants;
 
 type
   TfrmDesembolsos = class(TForm)
@@ -169,6 +169,18 @@ type
     QCentrosub_secuencia: TIntegerField;
     QCentrodes_numero: TIntegerField;
     QCentrosuc_codigo: TIntegerField;
+    QVerificarFP: TADOQuery;
+    StringField1: TStringField;
+    IntegerField1: TIntegerField;
+    IBStringField1: TIBStringField;
+    FloatField1: TFloatField;
+    IntegerField2: TIntegerField;
+    IntegerField3: TIntegerField;
+    IntegerField4: TIntegerField;
+    dsVerificarFP: TDataSource;
+    QDesememp_rnc: TStringField;
+    QDesemcli_rnc: TStringField;
+    QDesemeNCF: TStringField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -262,7 +274,7 @@ var
 
 implementation
 
-uses PVENTA37, RVENTA35, SIGMA01, SIGMA00, SIGMA08, Math;
+uses PVENTA37, RVENTA35, SIGMA01, SIGMA00, SIGMA08, Math,FacturacionElectronicaDGII_TLB;
 
 {$R *.DFM}
 
@@ -510,7 +522,7 @@ begin
   writeln(arch, 'Fecha   : '+DateToStr(QDesemDES_FECHA.Value));
   writeln(arch, 'Concepto: '+QdesemDES_CONCEPTO.value);
   writeln(arch, ' ');
-  writeln(arch, 'MONTO   : '+chr(27)+chr(52)+Format('%n',[QDesemDES_MONTO.value])+chr(27)+chr(53));
+  writeln(arch, 'MONTO   : '+Format('%n',[QDesemDES_MONTO.value]));
 
   writeln(arch, ' ');
   writeln(arch, ' ');
@@ -639,7 +651,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and cat_movimiento = '+#39+'S'+#39);
-  Search.AliasFields.Add('Descripción');
+  Search.AliasFields.Add('Descripciï¿½n');
   Search.AliasFields.Add('Cuenta');
   Search.ResultField := 'cat_cuenta';
   Search.Title := 'Catalogo de Cuentas';
@@ -706,6 +718,9 @@ procedure TfrmDesembolsos.btGrabarClick(Sender: TObject);
 var
   a : integer;
   repetido : boolean;
+  Servicio: FacturaElectronicaService;
+  resultado: WideString;
+
 begin
   repetido := false;
 
@@ -803,6 +818,7 @@ begin
       QDesem.UpdateBatch;
 
       Totaliza := False;
+
       //Formas de Pago
       QFormasPago.DisableControls;
       QFormasPago.First;
@@ -910,6 +926,61 @@ begin
       dm.Query1.Parameters.ParamByName('num').Value := QDesemDES_NUMERO.Value;
       dm.Query1.Parameters.ParamByName('suc').Value := QDesemSUC_CODIGO.Value;
       dm.Query1.ExecSQL;
+
+       if  dm.QParametrosUsa_FacturacionElectronica.Value  then
+          begin
+         if QDesemdes_gasto_menor.AsString='True'   then
+         begin
+          QDesem.Edit;
+                  dm.Query1.close;
+                  dm.Query1.sql.clear;
+                  dm.Query1.sql.add('select emp_rnc');
+                  dm.Query1.sql.add('from empresas');
+                  dm.Query1.sql.add('where emp_codigo = :emp');
+                  dm.Query1.Parameters.parambyname('emp').Value  := dm.vp_cia;
+                  dm.Query1.open;
+                  QDesememp_rnc.value := dm.Query1.fieldbyname('emp_rnc').AsString;
+
+                  dm.Query1.close;
+                  dm.Query1.sql.clear;
+                  dm.Query1.sql.add('select cli_rnc');
+                  dm.Query1.sql.add('from Clientes');
+                  dm.Query1.sql.add('where cli_rnc = :sup');
+                  dm.Query1.sql.add(' and emp_codigo = :emp');
+                  dm.Query1.Parameters.parambyname('sup').Value  := QDesemCLI_CODIGO.Value;
+                  dm.Query1.Parameters.parambyname('emp').Value  := dm.vp_cia;
+                  dm.Query1.open;
+                  QDesemcli_rnc.value := dm.Query1.fieldbyname('cli_rnc').AsString;
+
+                  dm.Query1.close;
+                  dm.Query1.sql.clear;
+                  dm.Query1.sql.add('select eNCF');
+                  dm.Query1.sql.add('from Desembolsos');
+                  dm.Query1.sql.add('where emp_codigo = :emp');
+                  dm.Query1.sql.add('and des_numero = :numero');
+                  dm.Query1.sql.add('and suc_codigo = :suc');
+
+                  dm.Query1.Parameters.parambyname('emp').Value    := QDesemEMP_CODIGO.value;
+                  dm.Query1.Parameters.parambyname('suc').Value    := QDesemSUC_CODIGO.Value;
+                  dm.Query1.Parameters.parambyname('numero').Value := QDesemDES_NUMERO.value;
+                  dm.Query1.open;
+                  QDesemeNCF.value := dm.Query1.fieldbyname('eNCF').AsString;
+
+                  Servicio := CoFacturaElectronicaService.Create;
+                      resultado := Servicio.EnviarGastosMenores(
+                      IntToStr(QDesemEMP_CODIGO.Value),
+                      IntToStr(QDesemSUC_CODIGO.Value),
+                     '',
+                      IntToStr(QDesemDES_NUMERO.Value),
+                      QDesememp_rnc.Value,
+                     '',
+                      QDesemcli_rnc.Value,
+                      '',
+                      '' ,'43'
+                    );
+                    end;
+
+          end;
 
       if MessageDlg('SE HA GENERADO EL DESEMBOLSO NUMERO '+inttostr(QDesemDES_NUMERO.value)+#13+
                     'DESEA IMPRIMIR ESTE DESEMBOLSO?',mtConfirmation,[mbyes,mbno],0) = mryes then
@@ -1032,7 +1103,7 @@ procedure TfrmDesembolsos.btCajaClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.query.clear;
   Search.query.add('select caj_nombre, caj_codigo');
   Search.query.add('from cajas');
@@ -1102,7 +1173,7 @@ begin
     Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
     Search.Query.Add('and sup_balance > 0');
     Search.AliasFields.Add('Nombre');
-    Search.AliasFields.Add('Código');
+    Search.AliasFields.Add('Cï¿½digo');
     Search.ResultField := 'sup_codigo';
     Search.Title := 'Proveedores';
     if Search.execute then
@@ -1191,8 +1262,8 @@ begin
     Search.Query.Add('and emp_status = '+QuotedStr('ACT'));
     Search.AliasFields.Add('Nombre');
     Search.AliasFields.Add('Apellido');
-    Search.AliasFields.Add('Cédula');
-    Search.AliasFields.Add('Código');
+    Search.AliasFields.Add('Cï¿½dula');
+    Search.AliasFields.Add('Cï¿½digo');
     Search.ResultField := 'emp_numero';
     Search.Title := 'Empleados';
     if Search.execute then
@@ -1235,7 +1306,7 @@ begin
     Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
     Search.Query.Add('and cli_status = '+QuotedStr('ACT'));
     Search.AliasFields.Add('Nombre');
-    Search.AliasFields.Add('Código');
+    Search.AliasFields.Add('Cï¿½digo');
     Search.ResultField := 'cli_codigo';
     Search.Title := 'Clientes';
     if Search.execute then
@@ -1465,7 +1536,7 @@ procedure TfrmDesembolsos.btTipoClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.Query.clear;
   Search.Query.add('select tip_nombre, tip_codigo');
   Search.ResultField := 'tip_codigo';
@@ -1508,7 +1579,7 @@ begin
   Search.Query.Add('from conceptos');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.ResultField := 'con_codigo';
   Search.Title := 'Conceptos';
   if Search.execute then
@@ -1734,17 +1805,15 @@ Begin
 end;
 
 procedure TfrmDesembolsos.QDesemrnc_empresaChange(Sender: TField);
+var
+  D: TDatoRncConsulta;
 begin
-  if not QDesemrnc_empresa.IsNull then
-  begin
-    dm.Query1.Close;
-    dm.Query1.SQL.Clear;
-    dm.Query1.SQL.Add('select razon_social from rnc where rnc_cedula = :rnc');
-    dm.Query1.Parameters.ParamByName('rnc').Value := QDesemrnc_empresa.AsString;
-    dm.Query1.Open;
-    if dm.Query1.RecordCount > 0 then
-      QDesemDES_BENEFICIARIO.Value := dm.Query1.FieldByName('razon_social').AsString;
-  end;
+  if QDesemrnc_empresa.IsNull then
+    Exit;
+
+  D := dm.ConsultarRncCompleto(QDesemrnc_empresa.AsString);
+  if D.Encontrado then
+    QDesemDES_BENEFICIARIO.Value := D.RazonSocial;
 end;
 
 procedure TfrmDesembolsos.QDesemdes_itbisChange(Sender: TField);
@@ -1831,7 +1900,7 @@ begin
   search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('Cï¿½digo');
   search.ResultField := 'tfa_codigo';
   search.Title := 'Tipos de factura';
   if search.execute then

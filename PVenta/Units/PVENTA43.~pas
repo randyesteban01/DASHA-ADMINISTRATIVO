@@ -183,7 +183,7 @@ var
   efec : double;
 begin
    totalizar;
-  if lbPendiente.caption <> '0.0000' then
+  if lbPendiente.caption <> '0.00' then
   begin
     showmessage('EL MONTO PAGADO DIFIERE DEL MONTO TOTAL');
     DBGrid1.SetFocus;
@@ -240,12 +240,6 @@ begin
       break;
     end;
   end;
-
-    frmFactura.QCuentas.First;
-    while not frmFactura.QCuentas.Eof do begin
-    IF frmFactura.QCuentasdet_origen.Value = 'Debito' then
-    frmFactura.QCuentas.Delete;
-    end;
 
   Totalizar;
   DBGrid1.SetFocus;
@@ -317,12 +311,12 @@ begin
     QNota.enablecontrols;
 
     Pendiente := Total - Pagado;
-    if Pendiente <=0.02 then
+    {if Pendiente <=0.02 then
     Pendiente := 0 else
-    Pendiente := Pendiente;
+    Pendiente := Pendiente;}
     Pagado := Pagado;
-    lbPendiente.caption := FormatCurr('#,0.0000',Pendiente);
-    lbPagado.caption := FormatCurr('#,0.0000',Pagado);
+    lbPendiente.caption := FormatCurr('#,0.00',Pendiente);
+    lbPagado.caption := FormatCurr('#,0.00',Pagado);
   //end;
 end;
 
@@ -422,13 +416,13 @@ begin
       showmessage('ESTA NOTA DE CREDITO ESTA ANULADA');
       abort;
     end
-    else if format('%10.2f',[Query1.fieldbyname('ncr_montousado').asfloat]) >=
+    {else if format('%10.2f',[Query1.fieldbyname('ncr_montousado').asfloat]) >=
     format('%10.2f',[Query1.fieldbyname('ncr_monto').asfloat]) then
     begin
       QNotaNCR_NUMERO.clear;
       showmessage('ESTA NOTA DE CREDITO YA FUE USADA');
       abort;
-    end
+    end}
     else if Query1.fieldbyname('cli_codigo').asinteger <> frmFactura.QFacturaCLI_CODIGO.value then
     begin
       QNotaNCR_NUMERO.clear;
@@ -618,7 +612,7 @@ begin
     begin
       QFormaPago.Append;
       QFormaPagoFPA_CODIGO.Value := QFormaFPA_CODIGO.Value;
-      QFormaPagoFOR_MONTO.Value := StrToFloat(Trim(frmMontoFPago.edMonto.Text));
+      QFormaPagoFOR_MONTO.Value := ROUNDTO(StrToFloat(Trim(frmMontoFPago.edMonto.Text)),-2);
       QFormaPagoFOR_DESCRIPCION.Value := Trim(frmMontoFPago.edDescrip.Text);
       QFormaPagofor_veriphone_desc.Value := vl_respverifone;
       QFormaPago.Post;

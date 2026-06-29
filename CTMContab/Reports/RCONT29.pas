@@ -20,8 +20,8 @@ type
     QRLabel22: TQRLabel;
     QRLabel31: TQRLabel;
     QRBand3: TQRBand;
-    QRDBText9: TQRDBText;
-    QRDBText14: TQRDBText;
+    DBFecha: TQRDBText;
+    DBTotal: TQRDBText;
     QRLabel3: TQRLabel;
     QRDBText1: TQRDBText;
     QRDBText2: TQRDBText;
@@ -33,13 +33,13 @@ type
     QRDBText4: TQRDBText;
     QRDBText5: TQRDBText;
     QRLabel19: TQRLabel;
-    QRLabel5: TQRLabel;
+    QRHasta: TQRLabel;
     QRLabel4: TQRLabel;
-    QRDBText6: TQRDBText;
-    QRDBText7: TQRDBText;
-    QRDBText8: TQRDBText;
-    QRDBText10: TQRDBText;
-    QRDBText11: TQRDBText;
+    DBDesde: TQRDBText;
+    DBHasta: TQRDBText;
+    DBGrabado: TQRDBText;
+    DBItbis: TQRDBText;
+    DBExento: TQRDBText;
     QRBand4: TQRBand;
     QRLabel29: TQRLabel;
     QRLabel30: TQRLabel;
@@ -62,11 +62,10 @@ type
     QRLabel50: TQRLabel;
     QRLabel51: TQRLabel;
     QRLabel52: TQRLabel;
-    QRLabel53: TQRLabel;
-    QRLabel54: TQRLabel;
-    QRLabel55: TQRLabel;
-    QRLabel56: TQRLabel;
-    QRLabel57: TQRLabel;
+    QLB01_E31: TQRLabel;
+    QLB02_E32: TQRLabel;
+    QLB04_E34: TQRLabel;
+    QLB14_E44: TQRLabel;
     QRLabel58: TQRLabel;
     QRLExento: TQRLabel;
     QRLGrabadas: TQRLabel;
@@ -99,15 +98,16 @@ type
     QRLOTRAS: TQRLabel;
     QRLabel8: TQRLabel;
     QRLPropina: TQRLabel;
+    QLB15_E45: TQRLabel;
     procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
       var PrintReport: Boolean);
-    procedure QRBand3AfterPrint(Sender: TQRCustomBand;
-      BandPrinted: Boolean);
+    procedure QRBand3BeforePrint(Sender: TQRCustomBand;
+      var PrintBand: Boolean);
   private
     vl_exento, vl_grabado, vl_descuento, vl_propina, vl_itbis, vl_total, vl_itbis0,
     vl_itbis8, vl_itbis11, vl_itbis16, vl_itbis18, vl_itbis13, vl_itbisnc,
     vl_efectivo, vl_ckdep, vl_tctd, vl_credito, vl_totalpag, vl_montob1,
-    vl_montob2, vl_montob4, vl_montob14, vl_montob15, vl_otras : Currency;
+    vl_montob2, vl_montob4, vl_montob14, vl_montob15, vl_otras, vl_totalnc : Currency;
     vl_cantb1, vl_cantb2, vl_cantb4, vl_cantb14, vl_cantb15 : Integer;
 
 
@@ -116,7 +116,7 @@ type
   end;
 
 var
-  RComprobantes: TRComprobantes;
+    RComprobantes: TRComprobantes;
 
 implementation
 
@@ -160,17 +160,20 @@ vl_cantb2    := 0;
 vl_cantb4    := 0;
 vl_cantb14   := 0;
 vl_cantb15   := 0;
+vl_totalnc   := 0;
 end;
 
-procedure TRComprobantes.QRBand3AfterPrint(Sender: TQRCustomBand;
-  BandPrinted: Boolean);
+procedure TRComprobantes.QRBand3BeforePrint(Sender: TQRCustomBand;
+  var PrintBand: Boolean);
 begin
-if frmConsComprobantes.QComprobantesTIPO.Value <> 'B04' THEN begin
+if frmConsComprobantes.PageControl1.ActivePageIndex = 0 then begin
 vl_exento    := vl_exento + frmConsComprobantes.QComprobantesExento.Value;
 vl_grabado   := vl_grabado + frmConsComprobantes.QComprobantesGrabado.Value;
 vl_descuento := vl_descuento + frmConsComprobantes.QComprobantesDescuento.Value;
 vl_propina   := vl_propina + frmConsComprobantes.QComprobantesPropina.Value;
 vl_itbis     := vl_itbis + frmConsComprobantes.QComprobantesItbis.Value;
+if not ((frmConsComprobantes.QComprobantesTIPO.Value = 'B04') and
+            (frmConsComprobantes.QComprobantesTIPO.Value = 'E34')) THEN begin
 vl_itbis0    := vl_itbis0 + frmConsComprobantes.QComprobantesItbis0.Value;
 vl_itbis8    := vl_itbis8 + frmConsComprobantes.QComprobantesItbis8.Value;
 vl_itbis11   := vl_itbis11 + frmConsComprobantes.QComprobantesItbis11.Value;
@@ -178,16 +181,32 @@ vl_itbis13   := vl_itbis13 + frmConsComprobantes.QComprobantesItbis13.Value;
 vl_itbis16   := vl_itbis16 + frmConsComprobantes.QComprobantesItbis16.Value;
 vl_itbis18   := vl_itbis18 + frmConsComprobantes.QComprobantesItbis18.Value;
 end;
+if  ((frmConsComprobantes.QComprobantesTIPO.Value = 'B04') or
+            (frmConsComprobantes.QComprobantesTIPO.Value = 'E34')) THEN begin
 vl_itbisnc   := vl_itbisnc + frmConsComprobantes.QComprobantesItbisNC.Value;
+end;
+
+
 vl_efectivo  := vl_efectivo + frmConsComprobantes.QComprobantesefectivo.Value;
-vl_otras     := vl_otras + frmConsComprobantes.QComprobantesotras.Value;
 vl_ckdep     := vl_ckdep + frmConsComprobantes.QComprobantesckdep.Value;
 vl_tctd      := vl_tctd + frmConsComprobantes.QComprobantestarjetas.Value;
 vl_credito   := vl_credito + frmConsComprobantes.QComprobantescredito.Value;
+vl_otras     := vl_otras + frmConsComprobantes.QComprobantesotras.Value;
 vl_totalpag  := vl_efectivo + vl_ckdep + vl_tctd + vl_credito + vl_otras;
 
-if frmConsComprobantes.QComprobantesTIPO.Value <> 'B04' THEN
-vl_total     := vl_total + frmConsComprobantes.QComprobantesTotal.Value;
+if not ((frmConsComprobantes.QComprobantesTIPO.Value = 'B04') or
+            (frmConsComprobantes.QComprobantesTIPO.Value = 'E34')) THEN
+vl_total     := vl_total + frmConsComprobantes.QComprobantesTotal.Value else
+vl_totalnc     := vl_totalnc + frmConsComprobantes.QComprobantesTotal.Value;
+
+
+
+if dm.QParametrosUsa_FacturacionElectronica.Value = False then begin
+QLB01_E31.Caption := 'B01';
+QLB02_E32.Caption := 'B02';
+QLB04_E34.Caption := 'B04';
+QLB14_E44.Caption := 'B14';
+QLB15_E45.Caption := 'B15';
 
 
 if frmConsComprobantes.QComprobantesTIPO.Value = 'B01' THEN
@@ -217,12 +236,79 @@ if frmConsComprobantes.QComprobantesTIPO.Value = 'B15' THEN
 vl_montob15    := vl_montob15 + frmConsComprobantes.QComprobantesTotal.Value -
                             frmConsComprobantes.QComprobantesItbis.Value;
 
+QRLCANTB01.Caption   := FormatCurr('#,0.00',vl_cantb1);
+QRLMONTOB1.Caption   := FormatCurr('#,0.00',vl_montob1);
+QRLCANTB2.Caption   := FormatCurr('#,0.00',vl_cantb2);
+QRLMONTOb2.Caption   := FormatCurr('#,0.00',vl_montob2);
+QRLCANTB4.Caption   := FormatCurr('#,0.00',vl_cantb4);
+QRLMONTOB4.Caption   := FormatCurr('#,0.00',vl_montob4);
+QRLCANTB14.Caption   := FormatCurr('#,0.00',vl_cantb14);
+QRLMONTOB14.Caption   := FormatCurr('#,0.00',vl_montob14);
+QRLCANTB15.Caption   := FormatCurr('#,0.00',vl_cantb15);
+QRLMONTOB15.Caption   := FormatCurr('#,0.00',vl_montob15);
+end
+ELSE
+if dm.QParametrosUsa_FacturacionElectronica.Value = True then begin
+QLB01_E31.Caption  := 'E31';
+QLB02_E32.Caption  := 'E32';
+QLB04_E34.Caption := 'E34';
+QLB14_E44.Caption := 'E44';
+QLB15_E45.Caption := 'E45';
+
+
+
+if frmConsComprobantes.QComprobantesTIPO.Value = 'E31' THEN
+vl_cantb1    := vl_cantb1 + frmConsComprobantes.QComprobantesCANT.Value;
+if frmConsComprobantes.QComprobantesTIPO.Value = 'E32' THEN
+vl_cantb2    := vl_cantb2 + frmConsComprobantes.QComprobantesCANT.Value;
+if frmConsComprobantes.QComprobantesTIPO.Value = 'E34' THEN
+vl_cantb4    := vl_cantb4 + frmConsComprobantes.QComprobantesCANT.Value;
+if frmConsComprobantes.QComprobantesTIPO.Value = 'E44' THEN
+vl_cantb14    := vl_cantb14 + frmConsComprobantes.QComprobantesCANT.Value;
+if frmConsComprobantes.QComprobantesTIPO.Value = 'E45' THEN
+vl_cantb15    := vl_cantb15 + frmConsComprobantes.QComprobantesCANT.Value;
+
+if frmConsComprobantes.QComprobantesTIPO.Value = 'E31' THEN
+vl_montob1    := vl_montob1 + frmConsComprobantes.QComprobantesTotal.Value -
+                            frmConsComprobantes.QComprobantesItbis.Value;
+if frmConsComprobantes.QComprobantesTIPO.Value = 'E32' THEN
+vl_montob2    := vl_montob2 + frmConsComprobantes.QComprobantesTotal.Value -
+                            frmConsComprobantes.QComprobantesItbis.Value;
+if frmConsComprobantes.QComprobantesTIPO.Value = 'E34' THEN
+vl_montob4    := vl_montob4 + frmConsComprobantes.QComprobantesTotal.Value -
+                            frmConsComprobantes.QComprobantesItbisNC.Value;
+if frmConsComprobantes.QComprobantesTIPO.Value = 'E44' THEN
+vl_montob14    := vl_montob14 + frmConsComprobantes.QComprobantesTotal.Value -
+                            frmConsComprobantes.QComprobantesItbis.Value;
+if frmConsComprobantes.QComprobantesTIPO.Value = 'E45' THEN
+vl_montob15    := vl_montob15 + frmConsComprobantes.QComprobantesTotal.Value -
+                            frmConsComprobantes.QComprobantesItbis.Value;
+
+QRLCANTB01.Caption   := FormatCurr('#,0.00',vl_cantb1);
+QRLMONTOB1.Caption   := FormatCurr('#,0.00',vl_montob1);
+QRLCANTB2.Caption   := FormatCurr('#,0.00',vl_cantb2);
+QRLMONTOb2.Caption   := FormatCurr('#,0.00',vl_montob2);
+QRLCANTB4.Caption   := FormatCurr('#,0.00',vl_cantb4);
+QRLMONTOB4.Caption   := FormatCurr('#,0.00',vl_montob4);
+QRLCANTB14.Caption   := FormatCurr('#,0.00',vl_cantb14);
+QRLMONTOB14.Caption   := FormatCurr('#,0.00',vl_montob14);
+QRLCANTB15.Caption   := FormatCurr('#,0.00',vl_cantb15);
+QRLMONTOB15.Caption   := FormatCurr('#,0.00',vl_montob15);
+end;
+
 QRLGrabadas.Caption  := FormatCurr('#,0.00',vl_grabado);
 QRLExento.Caption    := FormatCurr('#,0.00',vl_exento);
 QRLDescuento.Caption := FormatCurr('#,0.00',vl_descuento);
 QRLPropina.Caption   := FormatCurr('#,0.00',vl_propina);
+if not ((frmConsComprobantes.QComprobantesTIPO.Value = 'B04') or
+            (frmConsComprobantes.QComprobantesTIPO.Value = 'E34')) THEN begin
 QRLItbis.Caption     := FormatCurr('#,0.00',vl_itbis);
-QRLTotal.Caption     := FormatCurr('#,0.00',vl_total);
+QRLTotal.Caption     := FormatCurr('#,0.00',vl_total)
+end else
+begin
+QRLItbis.Caption     := FormatCurr('#,0.00',vl_itbisnc);
+QRLTotal.Caption     := FormatCurr('#,0.00',vl_totalnc)
+end;
 QRLItbis0.Caption    := FormatCurr('#,0.00',vl_itbis0);
 QRLItbis8.Caption    := FormatCurr('#,0.00',vl_itbis8);
 QRLItbis11.Caption   := FormatCurr('#,0.00',vl_itbis11);
@@ -236,6 +322,79 @@ QRLCKDEP.Caption     := FormatCurr('#,0.00',vl_ckdep);
 QRLTCTD.Caption      := FormatCurr('#,0.00',vl_tctd);
 QRLCREDITO.Caption   := FormatCurr('#,0.00',vl_credito);
 QRLTOTALPAG.Caption  := FormatCurr('#,0.00',vl_totalpag);
+end
+else
+begin
+//Detallados
+vl_exento    := vl_exento + frmConsComprobantes.QListadoExento.Value;
+vl_grabado   := vl_grabado + frmConsComprobantes.QListadoGrabado.Value;
+vl_descuento := vl_descuento + frmConsComprobantes.QListadoDescuento.Value;
+vl_propina   := vl_propina + frmConsComprobantes.QListadoPropina.Value;
+vl_itbis     := vl_itbis + frmConsComprobantes.QListadoItbis.Value;
+if not ((frmConsComprobantes.QListadoTIPO.Value = 'B04') and
+            (frmConsComprobantes.QListadoTIPO.Value = 'E34')) THEN begin
+vl_itbis0    := vl_itbis0 + frmConsComprobantes.QListadoItbis0.Value;
+vl_itbis8    := vl_itbis8 + frmConsComprobantes.QListadoItbis8.Value;
+vl_itbis11   := vl_itbis11 + frmConsComprobantes.QListadoItbis11.Value;
+vl_itbis13   := vl_itbis13 + frmConsComprobantes.QListadoItbis13.Value;
+vl_itbis16   := vl_itbis16 + frmConsComprobantes.QListadoItbis16.Value;
+vl_itbis18   := vl_itbis18 + frmConsComprobantes.QListadoItbis18.Value;
+end;
+if  ((frmConsComprobantes.QListadoTIPO.Value = 'B04') or
+            (frmConsComprobantes.QListadoTIPO.Value = 'E34')) THEN begin
+vl_itbisnc   := vl_itbisnc + frmConsComprobantes.QListadoItbisNC.Value;
+end;
+
+
+vl_efectivo  := vl_efectivo + frmConsComprobantes.QListadoefectivo.Value;
+vl_ckdep     := vl_ckdep + frmConsComprobantes.QListadockdep.Value;
+vl_tctd      := vl_tctd + frmConsComprobantes.QListadotarjetas.Value;
+vl_credito   := vl_credito + frmConsComprobantes.QListadocredito.Value;
+vl_otras     := vl_otras + frmConsComprobantes.QListadootras.Value;
+vl_totalpag  := vl_efectivo + vl_ckdep + vl_tctd + vl_credito + vl_otras;
+
+if not ((frmConsComprobantes.QListadoTIPO.Value = 'B04') or
+            (frmConsComprobantes.QListadoTIPO.Value = 'E34')) THEN
+vl_total     := vl_total + frmConsComprobantes.QListadoTotal.Value else
+vl_totalnc     := vl_totalnc + frmConsComprobantes.QListadoTotal.Value;
+
+
+
+if dm.QParametrosUsa_FacturacionElectronica.Value = False then begin
+QLB01_E31.Caption := 'B01';
+QLB02_E32.Caption := 'B02';
+QLB04_E34.Caption := 'B04';
+QLB14_E44.Caption := 'B14';
+QLB15_E45.Caption := 'B15';
+
+
+if frmConsComprobantes.QListadoTIPO.Value = 'B01' THEN
+vl_cantb1    := vl_cantb1 + frmConsComprobantes.QListadoCANT.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'B02' THEN
+vl_cantb2    := vl_cantb2 + frmConsComprobantes.QListadoCANT.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'B04' THEN
+vl_cantb4    := vl_cantb4 + frmConsComprobantes.QListadoCANT.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'B14' THEN
+vl_cantb14    := vl_cantb14 + frmConsComprobantes.QListadoCANT.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'B15' THEN
+vl_cantb15    := vl_cantb15 + frmConsComprobantes.QListadoCANT.Value;
+
+if frmConsComprobantes.QListadoTIPO.Value = 'B01' THEN
+vl_montob1    := vl_montob1 + frmConsComprobantes.QListadoTotal.Value -
+                            frmConsComprobantes.QListadoItbis.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'B02' THEN
+vl_montob2    := vl_montob2 + frmConsComprobantes.QListadoTotal.Value -
+                            frmConsComprobantes.QListadoItbis.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'B04' THEN
+vl_montob4    := vl_montob4 + frmConsComprobantes.QListadoTotal.Value -
+                            frmConsComprobantes.QListadoItbis.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'B14' THEN
+vl_montob14    := vl_montob14 + frmConsComprobantes.QListadoTotal.Value -
+                            frmConsComprobantes.QListadoItbis.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'B15' THEN
+vl_montob15    := vl_montob15 + frmConsComprobantes.QListadoTotal.Value -
+                            frmConsComprobantes.QListadoItbis.Value;
+
 QRLCANTB01.Caption   := FormatCurr('#,0.00',vl_cantb1);
 QRLMONTOB1.Caption   := FormatCurr('#,0.00',vl_montob1);
 QRLCANTB2.Caption   := FormatCurr('#,0.00',vl_cantb2);
@@ -246,20 +405,83 @@ QRLCANTB14.Caption   := FormatCurr('#,0.00',vl_cantb14);
 QRLMONTOB14.Caption   := FormatCurr('#,0.00',vl_montob14);
 QRLCANTB15.Caption   := FormatCurr('#,0.00',vl_cantb15);
 QRLMONTOB15.Caption   := FormatCurr('#,0.00',vl_montob15);
+end
+ELSE
+if dm.QParametrosUsa_FacturacionElectronica.Value = True then begin
+QLB01_E31.Caption  := 'E31';
+QLB02_E32.Caption  := 'E32';
+QLB04_E34.Caption := 'E34';
+QLB14_E44.Caption := 'E44';
+QLB15_E45.Caption := 'E45';
 
 
 
+if frmConsComprobantes.QListadoTIPO.Value = 'E31' THEN
+vl_cantb1    := vl_cantb1 + frmConsComprobantes.QListadoCANT.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'E32' THEN
+vl_cantb2    := vl_cantb2 + frmConsComprobantes.QListadoCANT.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'E34' THEN
+vl_cantb4    := vl_cantb4 + frmConsComprobantes.QListadoCANT.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'E44' THEN
+vl_cantb14    := vl_cantb14 + frmConsComprobantes.QListadoCANT.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'E45' THEN
+vl_cantb15    := vl_cantb15 + frmConsComprobantes.QListadoCANT.Value;
 
+if frmConsComprobantes.QListadoTIPO.Value = 'E31' THEN
+vl_montob1    := vl_montob1 + frmConsComprobantes.QListadoTotal.Value -
+                            frmConsComprobantes.QListadoItbis.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'E32' THEN
+vl_montob2    := vl_montob2 + frmConsComprobantes.QListadoTotal.Value -
+                            frmConsComprobantes.QListadoItbis.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'E34' THEN
+vl_montob4    := vl_montob4 + frmConsComprobantes.QListadoTotal.Value -
+                            frmConsComprobantes.QListadoItbisNC.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'E44' THEN
+vl_montob14    := vl_montob14 + frmConsComprobantes.QListadoTotal.Value -
+                            frmConsComprobantes.QListadoItbis.Value;
+if frmConsComprobantes.QListadoTIPO.Value = 'E45' THEN
+vl_montob15    := vl_montob15 + frmConsComprobantes.QListadoTotal.Value -
+                            frmConsComprobantes.QListadoItbis.Value;
 
+QRLCANTB01.Caption   := FormatCurr('#,0.00',vl_cantb1);
+QRLMONTOB1.Caption   := FormatCurr('#,0.00',vl_montob1);
+QRLCANTB2.Caption   := FormatCurr('#,0.00',vl_cantb2);
+QRLMONTOb2.Caption   := FormatCurr('#,0.00',vl_montob2);
+QRLCANTB4.Caption   := FormatCurr('#,0.00',vl_cantb4);
+QRLMONTOB4.Caption   := FormatCurr('#,0.00',vl_montob4);
+QRLCANTB14.Caption   := FormatCurr('#,0.00',vl_cantb14);
+QRLMONTOB14.Caption   := FormatCurr('#,0.00',vl_montob14);
+QRLCANTB15.Caption   := FormatCurr('#,0.00',vl_cantb15);
+QRLMONTOB15.Caption   := FormatCurr('#,0.00',vl_montob15);
+end;
 
-
-
-
-
-
-
-
-
+QRLGrabadas.Caption  := FormatCurr('#,0.00',vl_grabado);
+QRLExento.Caption    := FormatCurr('#,0.00',vl_exento);
+QRLDescuento.Caption := FormatCurr('#,0.00',vl_descuento);
+QRLPropina.Caption   := FormatCurr('#,0.00',vl_propina);
+if not ((frmConsComprobantes.QListadoTIPO.Value = 'B04') or
+            (frmConsComprobantes.QListadoTIPO.Value = 'E34')) THEN begin
+QRLItbis.Caption     := FormatCurr('#,0.00',vl_itbis);
+QRLTotal.Caption     := FormatCurr('#,0.00',vl_total)
+end else
+begin
+QRLItbis.Caption     := FormatCurr('#,0.00',vl_itbisnc);
+QRLTotal.Caption     := FormatCurr('#,0.00',vl_totalnc)
+end;
+QRLItbis0.Caption    := FormatCurr('#,0.00',vl_itbis0);
+QRLItbis8.Caption    := FormatCurr('#,0.00',vl_itbis8);
+QRLItbis11.Caption   := FormatCurr('#,0.00',vl_itbis11);
+QRLItbis13.Caption   := FormatCurr('#,0.00',vl_itbis13);
+QRLItbis16.Caption   := FormatCurr('#,0.00',vl_itbis16);
+QRLItbis18.Caption   := FormatCurr('#,0.00',vl_itbis18);
+QRLItbisNC.Caption   := FormatCurr('#,0.00',vl_itbisnc);
+QRLEfectivo.Caption  := FormatCurr('#,0.00',vl_efectivo);
+QRLOTRAS.Caption     := FormatCurr('#,0.00',vl_otras);
+QRLCKDEP.Caption     := FormatCurr('#,0.00',vl_ckdep);
+QRLTCTD.Caption      := FormatCurr('#,0.00',vl_tctd);
+QRLCREDITO.Caption   := FormatCurr('#,0.00',vl_credito);
+QRLTOTALPAG.Caption  := FormatCurr('#,0.00',vl_totalpag);
+end;
 end;
 
 end.

@@ -1,6 +1,6 @@
 object frmCotizacion: TfrmCotizacion
   Left = 576
-  Top = 176
+  Top = 95
   ActiveControl = DBEdit5
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -739,6 +739,9 @@ object frmCotizacion: TfrmCotizacion
     Font.Style = []
     ParentFont = False
     TabOrder = 3
+    DesignSize = (
+      759
+      169)
     object Label11: TLabel
       Left = 592
       Top = 6
@@ -865,6 +868,20 @@ object frmCotizacion: TfrmCotizacion
       Caption = '[ F9 ] - Buscar una cotizaci'#243'n para grabarla con un n'#250'mero nuevo'
       OnClick = btnuevonumeroClick
     end
+    object lblLbTotalUS: TLabel
+      Left = 574
+      Top = 76
+      Width = 60
+      Height = 16
+      Anchors = [akTop, akRight]
+      Caption = 'Total US$'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
     object DBEdit6: TDBEdit
       Tag = 1
       Left = 640
@@ -914,9 +931,9 @@ object frmCotizacion: TfrmCotizacion
     object DBEdit10: TDBEdit
       Tag = 1
       Left = 184
-      Top = 88
+      Top = 91
       Width = 555
-      Height = 81
+      Height = 77
       TabStop = False
       AutoSelect = False
       BevelKind = bkFlat
@@ -1000,6 +1017,31 @@ object frmCotizacion: TfrmCotizacion
           Width = 37
           Visible = True
         end>
+    end
+    object EDT_COT_TOTALUS: TDBEdit
+      Tag = 1
+      Left = 639
+      Top = 72
+      Width = 100
+      Height = 21
+      TabStop = False
+      Anchors = [akTop, akRight]
+      AutoSelect = False
+      BevelKind = bkFlat
+      BorderStyle = bsNone
+      Color = clInfoBk
+      DataField = 'COT_TOTALUS'
+      DataSource = dsCotizacion
+      Enabled = False
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ReadOnly = True
+      TabOrder = 5
+      OnEnter = DBEdit6Enter
     end
   end
   object Grid: TDBGrid
@@ -1338,6 +1380,11 @@ object frmCotizacion: TfrmCotizacion
     object QCotizaciondep_codigo: TIntegerField
       FieldName = 'dep_codigo'
       OnValidate = QCotizaciondep_codigoValidate
+    end
+    object QCotizacionCOT_TOTALUS: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'COT_TOTALUS'
+      Calculated = True
     end
   end
   object dsCotizacion: TDataSource

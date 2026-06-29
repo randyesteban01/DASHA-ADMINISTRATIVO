@@ -216,9 +216,6 @@ type
     qMoraUS: TADOQuery;
     qMoraUScli_codigo: TIntegerField;
     qMoraUSTOTALMORA: TCurrencyField;
-    qUptNC: TADOQuery;
-    IntegerField1: TIntegerField;
-    CurrencyField1: TCurrencyField;
     QNCBalance: TCurrencyField;
     qActBalNC: TADOQuery;
     QDepositosDEP_TASA: TCurrencyField;

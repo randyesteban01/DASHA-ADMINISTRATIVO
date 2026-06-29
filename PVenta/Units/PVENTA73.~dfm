@@ -1,6 +1,6 @@
 object frmEstadoCtaCli: TfrmEstadoCtaCli
-  Left = 491
-  Top = 271
+  Left = 614
+  Top = 339
   ActiveControl = edTipo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -777,5 +777,12 @@ object frmEstadoCtaCli: TfrmEstadoCtaCli
     DataSet = QSucursal
     Left = 64
     Top = 184
+  end
+  object qBuscar: TADOQuery
+    Connection = DM.ADOSigma
+    LockType = ltReadOnly
+    Parameters = <>
+    Left = 32
+    Top = 232
   end
 end

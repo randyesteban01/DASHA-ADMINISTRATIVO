@@ -1,6 +1,6 @@
 object frmRecibos: TfrmRecibos
-  Left = 443
-  Top = 290
+  Left = 342
+  Top = 157
   ActiveControl = edCliente
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -320,7 +320,7 @@ object frmRecibos: TfrmRecibos
       820
       459)
     object SpeedButton2: TSpeedButton
-      Left = 116
+      Left = 164
       Top = 62
       Width = 23
       Height = 22
@@ -486,7 +486,7 @@ object frmRecibos: TfrmRecibos
     object edCliente: TEdit
       Left = 64
       Top = 62
-      Width = 49
+      Width = 97
       Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
@@ -583,7 +583,7 @@ object frmRecibos: TfrmRecibos
       Columns = <
         item
           Expanded = False
-          FieldName = 'forma'
+          FieldName = 'FORMA'
           Title.Caption = 'Forma pago'
           Width = 96
           Visible = True
@@ -622,9 +622,9 @@ object frmRecibos: TfrmRecibos
       TabOrder = 9
     end
     object DBEdit7: TDBEdit
-      Left = 144
+      Left = 192
       Top = 62
-      Width = 257
+      Width = 209
       Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
@@ -1255,6 +1255,7 @@ object frmRecibos: TfrmRecibos
       ParentFont = False
       TabOrder = 0
       TabStop = False
+      OnCloseUp = DBLookupComboBox2CloseUp
     end
     object DBEdit10: TDBEdit
       Left = 296
@@ -1459,8 +1460,8 @@ object frmRecibos: TfrmRecibos
         object DBGrid1: TDBGrid
           Left = 0
           Top = 0
-          Width = 368
-          Height = 97
+          Width = 369
+          Height = 98
           Align = alClient
           BorderStyle = bsNone
           DataSource = dsDocPendiente
@@ -1653,23 +1654,21 @@ object frmRecibos: TfrmRecibos
       Origin = 'RECIBOS.REC_CONCEPTO'
       Size = 60
     end
-    object QRecibosREC_DESCUENTO: TFloatField
-      FieldName = 'REC_DESCUENTO'
-      Origin = 'RECIBOS.REC_DESCUENTO'
-      OnChange = QRecibosREC_DESCUENTOChange
-      currency = True
-    end
     object QRecibosREC_FECHA: TDateTimeField
       FieldName = 'REC_FECHA'
       Origin = 'RECIBOS.REC_FECHA'
       EditMask = 'cc-cc-cccc'
+    end
+    object QRecibosREC_DESCUENTO: TFloatField
+      FieldName = 'REC_DESCUENTO'
+      Origin = 'RECIBOS.REC_DESCUENTO'
+      OnChange = QRecibosREC_DESCUENTOChange
     end
     object QRecibosREC_MONTO: TIBBCDField
       FieldName = 'REC_MONTO'
       Origin = 'RECIBOS.REC_MONTO'
       OnChange = QRecibosREC_MONTOChange
       DisplayFormat = '#,0.00'
-      currency = True
       Precision = 9
       Size = 2
     end
@@ -1722,7 +1721,6 @@ object frmRecibos: TfrmRecibos
       FieldName = 'REC_PORCCOMISION'
       Origin = 'RECIBOS.REC_PORCCOMISION'
       DisplayFormat = '#,0.00'
-      currency = True
     end
     object QRecibosREC_CONCEPTO2: TIBStringField
       FieldName = 'REC_CONCEPTO2'
@@ -1750,7 +1748,6 @@ object frmRecibos: TfrmRecibos
       FieldName = 'rec_porc_descuento'
       OnChange = QRecibosrec_porc_descuentoChange
       DisplayFormat = '#,0.00'
-      currency = True
       Precision = 15
       Size = 2
     end
@@ -1767,14 +1764,12 @@ object frmRecibos: TfrmRecibos
     object QRecibosrec_tasa: TBCDField
       FieldName = 'rec_tasa'
       DisplayFormat = '#,0.00'
-      currency = True
       Precision = 15
       Size = 2
     end
     object QRecibosrec_retencion: TBCDField
       FieldName = 'rec_retencion'
       DisplayFormat = '#,0.00'
-      currency = True
       Precision = 15
       Size = 2
     end
@@ -1782,7 +1777,6 @@ object frmRecibos: TfrmRecibos
       FieldName = 'rec_interes'
       OnChange = QRecibosrec_interesChange
       DisplayFormat = '#,0.00'
-      currency = True
       Precision = 15
       Size = 2
     end
@@ -1801,6 +1795,7 @@ object frmRecibos: TfrmRecibos
     Connection = DM.ADOSigma
     CursorType = ctStatic
     LockType = ltBatchOptimistic
+    BeforeOpen = QFormasPagoBeforeOpen
     AfterInsert = QFormasPagoAfterInsert
     AfterPost = QFormasPagoAfterPost
     BeforeDelete = QFormasPagoBeforeDelete
@@ -1830,48 +1825,43 @@ object frmRecibos: TfrmRecibos
         Value = Null
       end>
     SQL.Strings = (
-      'select EMP_CODIGO, FOR_DESCRIPCION, FOR_MONTO, '
-      'FPA_CODIGO, REC_NUMERO, SUC_CODIGO '
-      'from RECFORMAPAGO'
-      'where emp_codigo = :emp'
-      'and rec_numero = :numero'
-      'and suc_codigo = :suc')
+      'select FP.EMP_CODIGO, FP.FOR_DESCRIPCION, FP.FOR_MONTO, '
+      'FP.FPA_CODIGO, FP.REC_NUMERO, FP.SUC_CODIGO'
+      'from RECFORMAPAGO FP'
+      'where FP.emp_codigo = :emp'
+      'and FP.rec_numero = :numero'
+      'and FP.suc_codigo = :suc')
     Left = 112
     Top = 384
     object QFormasPagoEMP_CODIGO: TIntegerField
       FieldName = 'EMP_CODIGO'
-      Origin = 'RECFORMAPAGO.EMP_CODIGO'
     end
     object QFormasPagoFOR_DESCRIPCION: TIBStringField
       DisplayWidth = 60
       FieldName = 'FOR_DESCRIPCION'
-      Origin = 'RECFORMAPAGO.FOR_DESCRIPCION'
       Size = 40
     end
     object QFormasPagoFOR_MONTO: TFloatField
       FieldName = 'FOR_MONTO'
-      Origin = 'RECFORMAPAGO.FOR_MONTO'
       currency = True
     end
     object QFormasPagoFPA_CODIGO: TIntegerField
       FieldName = 'FPA_CODIGO'
-      Origin = 'RECFORMAPAGO.FPA_CODIGO'
     end
     object QFormasPagoREC_NUMERO: TIntegerField
       FieldName = 'REC_NUMERO'
-      Origin = 'RECFORMAPAGO.REC_NUMERO'
     end
     object QFormasPagoSUC_CODIGO: TIntegerField
       FieldName = 'SUC_CODIGO'
     end
-    object QFormasPagoforma: TStringField
+    object QFormasPagoFORMA: TStringField
       FieldKind = fkLookup
-      FieldName = 'forma'
+      FieldName = 'FORMA'
       LookupDataSet = QForma
       LookupKeyFields = 'FPA_CODIGO'
       LookupResultField = 'FPA_NOMBRE'
       KeyFields = 'FPA_CODIGO'
-      Size = 60
+      Size = 255
       Lookup = True
     end
   end
@@ -1933,7 +1923,6 @@ object frmRecibos: TfrmRecibos
     object QDocDET_PENDIENTE: TFloatField
       FieldName = 'DET_PENDIENTE'
       Origin = 'DET_RECIBO.DET_PENDIENTE'
-      currency = True
     end
     object QDocDET_SECUENCIA: TIntegerField
       FieldName = 'DET_SECUENCIA'
@@ -2030,7 +2019,6 @@ object frmRecibos: TfrmRecibos
     end
     object QDocdet_interes: TBCDField
       FieldName = 'det_interes'
-      currency = True
       Precision = 8
       Size = 2
     end
@@ -2064,7 +2052,7 @@ object frmRecibos: TfrmRecibos
   object QForma: TADOQuery
     Connection = DM.ADOSigma
     CursorType = ctStatic
-    DataSource = DM.dsEmpresas
+    BeforeOpen = QFormaBeforeOpen
     Parameters = <
       item
         Name = 'emp_codigo'
@@ -2452,6 +2440,7 @@ object frmRecibos: TfrmRecibos
   object QDocPendiente: TADOQuery
     Connection = DM.ADOSigma
     CursorType = ctStatic
+    BeforeOpen = QDocPendienteBeforeOpen
     DataSource = DM.dsEmpresas
     Parameters = <
       item
@@ -2469,6 +2458,12 @@ object frmRecibos: TfrmRecibos
         Precision = 10
         Size = 4
         Value = Null
+      end
+      item
+        Name = 'SUC'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
       end>
     SQL.Strings = (
       'SELECT t.tmo_nombre, count(m.mov_tipo) cantida'
@@ -2477,6 +2472,7 @@ object frmRecibos: TfrmRecibos
       '   AND m.EMP_CODIGO = :EMP_CODIGO'
       '   AND CLI_CODIGO = :CLI_CODIGO'
       '   AND MOV_STATUS = '#39'PEN'#39
+      '   AND SUC_CODIGO = :SUC'
       '   AND MOV_FECHAVENCE <= getdate()'
       'group by m.mov_tipo,t.tmo_nombre;')
     Left = 176
@@ -3830,35 +3826,98 @@ object frmRecibos: TfrmRecibos
         DataType = ftInteger
         Size = -1
         Value = Null
+      end
+      item
+        Name = 'SUC'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
       end>
     SQL.Strings = (
       
         'DECLARE @SUC INT, @FAC INT, @tipo INT, @FORMA CHAR(1), @PAGO NUM' +
         'ERIC(18,2), @CLI INT, @EMPRESA INT, @SUP INT, @FACSUP VARCHAR(20' +
-        ')'
+        '), @NC INT, @SEC INT, @MOVTIPO CHAR(5), @MOVCUOTA int, @MONTONC ' +
+        'NUMERIC(18,2)'
       ''
       'SET @EMPRESA = :EMP'
       'SET @CLI           = :CLI'
+      'SET @SUC          = :SUC'
       ''
       ''
       ''
       'DECLARE Cr_Actualiza_CXC CURSOR FOR '
       
-        'SELECT F.EMP_CODIGO, F.suc_codigo SUC, F.FAC_numero FAC, F.cli_c' +
-        'odigo CLI, F.tfa_codigo TFAC, F.fac_forma FORMA'
-      'FROM Facturas F'
+        'SELECT F.EMP_CODIGO, F.suc_codigo SUC, F.MOV_numero FAC, F.cli_c' +
+        'odigo CLI, F.tfa_codigo TFAC, F.fac_forma FORMA, F.mov_tipo'
+      'FROM MOVIMIENTOS F'
       
-        'WHERE F.fac_status IN ('#39'PEN'#39') AND F.EMP_CODIGO = @EMPRESA  AND C' +
-        'LI_CODIGO = @CLI'
-      'ORDER BY F.cli_codigo, F.fac_numero'
+        'WHERE F.MOV_status NOT IN ('#39'ANU'#39', '#39'PEN'#39')  AND F.MOV_TIPO IN ('#39'CR' +
+        'E'#39', '#39'ND'#39')   AND F.EMP_CODIGO = @EMPRESA AND F.CLI_CODIGO = @CLI ' +
+        'AND F.SUC_CODIGO = @SUC'
+      'ORDER BY F.suc_codigo, F.MOV_numero'
       ''
       ''
       'OPEN Cr_Actualiza_CXC'
       
         'FETCH NEXT FROM Cr_Actualiza_CXC INTO @EMPRESA, @SUC, @FAC, @CLI' +
-        ', @tipo, @FORMA'
+        ', @tipo, @FORMA, @MOVTIPO'
       'WHILE @@fetch_status = 0'
-      'BEGIN'
+      'begin '
+      'IF EXISTS(select *'
+      'from NotasCredito NC'
+      
+        'inner join Devolucion d on nc.emp_codigo = d.emp_codigo and nc.s' +
+        'uc_codigo=d.suc_codigo and nc.ncr_devolucion=d.dev_numero'
+      
+        'inner join Movimientos f on d.emp_codigo = f.emp_codigo and d.su' +
+        'c_codigo=f.suc_codigo and d.tfa_codigo = f.tfa_codigo and d.fac_' +
+        'forma = f.fac_forma and d.fac_numero = f.MOV_numero'
+      
+        'where nc.ncr_status <> '#39'ANU'#39' AND F.mov_numero = @FAC AND F.tfa_c' +
+        'odigo = @tipo AND F.fac_forma = @FORMA AND F.emp_codigo = @EMPRE' +
+        'SA AND F.suc_codigo = @SUC  AND NC.cli_codigo = @CLI'
+      'AND nc.ncr_numero not in '
+      '(select ncr_numero from Det_NotaCredito)) BEGIN '
+      'IF EXISTS(SELECT * FROM FACTURAS '
+      
+        'WHERE fac_status = '#39'PAG'#39' AND fac_numero = @FAC AND tfa_codigo = ' +
+        '@tipo AND emp_codigo = @EMPRESA AND suc_codigo = @SUC AND fac_fo' +
+        'rma= @FORMA) BEGIN '
+      
+        'select @MOVTIPO = f.mov_tipo, @MONTONC = nc.ncr_monto, @NC = NC.' +
+        'ncr_numero'
+      'from NotasCredito NC'
+      
+        'inner join Devolucion d on nc.emp_codigo = d.emp_codigo and nc.s' +
+        'uc_codigo=d.suc_codigo and nc.ncr_devolucion=d.dev_numero'
+      
+        'inner join Movimientos f on d.emp_codigo = f.emp_codigo and d.su' +
+        'c_codigo=f.suc_codigo and d.tfa_codigo = f.tfa_codigo and d.fac_' +
+        'forma = f.fac_forma and d.fac_numero = f.MOV_numero'
+      
+        'where nc.ncr_status <> '#39'ANU'#39' AND F.mov_numero = @FAC AND F.tfa_c' +
+        'odigo = @tipo AND F.fac_forma = @FORMA AND F.emp_codigo = @EMPRE' +
+        'SA AND F.suc_codigo = @SUC '
+      'AND nc.ncr_numero not in '
+      
+        '(select ncr_numero from Det_NotaCredito WHERE mov_numero = D.fac' +
+        '_numero AND tfa_codigo = D.tfa_codigo AND fac_forma = D.fac_form' +
+        'a AND emp_codigo = D.emp_codigo AND suc_codigo = D.suc_codigo)'
+      ''
+      'insert into Det_NotaCredito'
+      
+        'SELECT @EMPRESA, @SUC, @NC, 1 DET_SECUENCIA, @MOVTIPO, @FAC, @MO' +
+        'NTONC, @FORMA, @tipo, NULL, NULL'
+      ''
+      'UPDATE NotasCredito'
+      'SET ncr_montousado = ncr_monto'
+      
+        'WHERE emp_codigo = @EMPRESA AND suc_codigo = @SUC AND ncr_numero' +
+        ' = @NC'
+      'END'
+      'END'
+      ''
       'SET @PAGO = 0'
       
         'if exists(select fac_numero from FacFormaPago where fac_numero =' +
@@ -3881,30 +3940,36 @@ object frmRecibos: TfrmRecibos
         'odigo AND R.suc_codigo = DR.suc_codigo AND R.rec_numero =DR.rec_' +
         'numero'
       
-        '             WHERE R.rec_status = '#39'EMI'#39' AND DR.det_numero = @FAC' +
-        ' AND DR.emp_codigo  = @EMPRESA AND DR.suc_codigo = @SUC AND R.CL' +
-        'I_CODIGO = @CLI'
+        '             WHERE R.rec_status <> '#39'ANU'#39' AND DR.det_numero = @FA' +
+        'C AND DR.emp_codigo  = @EMPRESA AND DR.suc_codigo = @SUC AND R.C' +
+        'LI_CODIGO = @CLI '
       
         '             AND DR.FAC_FORMA = @FORMA AND DR.tfa_codigo = @tipo' +
-        '),0)'
+        ' AND DR.det_tipo = @MOVTIPO),0)'
       #9#9#9' '
-      ''
       
         'SET @PAGO = ISNULL(@PAGO,0) + ISNULL((SELECT ISNULL(SUM(DET_MONT' +
-        'O),0) FROM DET_NOTACREDITO N '
+        'O),0) '
+      '             FROM DET_NOTACREDITO N '
+      
+        '             INNER JOIN NOTASCREDITO NC ON N.EMP_CODIGO = NC.EMP' +
+        '_CODIGO AND N.SUC_CODIGO = NC.SUC_CODIGO AND N.NCR_NUMERO = NC.N' +
+        'CR_NUMERO'
       
         '             WHERE MOV_NUMERO = @FAC AND N.emp_codigo  = @EMPRES' +
         'A AND N.suc_codigo = @SUC'
       
-        '             AND N.FAC_FORMA = @FORMA AND N.tfa_codigo = @TIPO),' +
-        '0)'
+        '             AND N.FAC_FORMA = @FORMA AND N.tfa_codigo = @TIPO A' +
+        'ND NC.mov_tipo = @MOVTIPO'
+      #9#9#9' AND NC.NCR_STATUS <> '#39'ANU'#39
+      '             AND NC.NCR_DEVOLUCION IS NULL ),0)'
       ''
       
         'SET @PAGO = ISNULL(@PAGO,0) + ISNULL((SELECT ISNULL(SUM(DEV_TOTA' +
         'L),0) FROM DEVOLUCION N '
       
-        '             WHERE N.dev_status = '#39'EMI'#39' AND N.fac_numero = @FAC ' +
-        'AND N.emp_codigo  = @EMPRESA AND N.suc_codigo = @SUC'
+        '             WHERE N.dev_status <> '#39'ANU'#39' AND N.fac_numero = @FAC' +
+        ' AND N.emp_codigo  = @EMPRESA AND N.suc_codigo = @SUC'
       
         '             AND N.FAC_FORMA = @FORMA AND N.tfa_codigo = @TIPO),' +
         '0)'
@@ -3919,9 +3984,16 @@ object frmRecibos: TfrmRecibos
       
         '             WHERE N.NCR_status <> '#39'ANU'#39' AND D.MOV_numero = @FAC' +
         ' AND D.emp_codigo  = @EMPRESA AND D.suc_codigo = @SUC'
+      '             AND D.FAC_FORMA = @FORMA AND D.tfa_codigo = @TIPO'
+      #9#9#9' AND N.NCR_DEVOLUCION NOT IN '
+      #9#9#9' (SELECT N.DEV_NUMERO FROM DEVOLUCION N '
       
-        '             AND D.FAC_FORMA = @FORMA AND D.tfa_codigo = @TIPO),' +
-        '0)'
+        '             WHERE N.dev_status = '#39'EMI'#39' AND N.FAC_NUMERO = @FAC ' +
+        'AND N.emp_codigo  = @EMPRESA AND N.suc_codigo = @SUC'
+      
+        '             AND N.FAC_FORMA = @FORMA AND N.tfa_codigo = @TIPO))' +
+        ',0)'
+      ''
       ''
       ''
       
@@ -3936,12 +4008,11 @@ object frmRecibos: TfrmRecibos
         ' DD.emp_codigo= @EMPRESA AND DD.suc_codigo = @SUC'
       
         '                                      and d.ban_codigo = dd.ban_' +
-        'codigo'
+        'codigo AND DD.mov_tipo = @MOVTIPO'
       #9#9#9'  and d.dep_ano = dd.dep_ano'
       #9#9#9'  and d.dep_mes = dd.dep_mes'
       #9#9'      AND DD.FAC_FORMA = @FORMA AND DD.TFA_CODIGO = @TIPO),0)'
       #9#9#9' '
-      ''
       'UPDATE Facturas'
       'SET fac_abono = isnull(@PAGO,0),'
       
@@ -3950,7 +4021,7 @@ object frmRecibos: TfrmRecibos
       
         'WHERE emp_codigo = @EMPRESA AND suc_codigo = @SUC AND tfa_codigo' +
         ' = @tipo AND fac_forma = @FORMA '
-      'AND fac_numero = @FAC'
+      'AND fac_numero = @FAC and cli_codigo = @CLI'
       ''
       'UPDATE Movimientos '
       'SET mov_abono = isnull(@PAGO,0),'
@@ -3960,13 +4031,14 @@ object frmRecibos: TfrmRecibos
       
         'WHERE emp_codigo = @EMPRESA AND suc_codigo = @SUC AND tfa_codigo' +
         ' = @tipo AND fac_forma = @FORMA '
-      'AND MOV_numero = @FAC'
-      ''
+      
+        'AND MOV_numero = @FAC and cli_codigo = @CLI AND ISNULL(MOV_CUOTA' +
+        ','#39'False'#39')='#39'False'#39
       ''
       ''
       
         'FETCH NEXT FROM Cr_Actualiza_CXC INTO @EMPRESA, @SUC, @FAC, @CLI' +
-        ', @tipo, @FORMA'
+        ', @tipo, @FORMA, @MOVTIPO'
       'END'
       'CLOSE Cr_Actualiza_CXC'
       'DEALLOCATE Cr_Actualiza_CXC'

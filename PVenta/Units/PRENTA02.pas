@@ -887,7 +887,7 @@ procedure TfrmAlquiler.btVendedorClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.Query.clear;
   Search.Query.add('select ven_nombre, ven_codigo');
   Search.Query.add('from vendedores');
@@ -973,7 +973,7 @@ begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
   Search.AliasFields.Add('RNC');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('Cï¿½digo');
   Search.Query.clear;
   if dm.QParametrosPAR_CODIGOCLIENTE.value = 'I' then
   begin
@@ -1341,7 +1341,7 @@ begin
      Search.Query.add('and usu_codigo = '+IntToStr(dm.QUsuariosUSU_CODIGO.Value));
 
   Search.AliasFields.clear;
-  Search.AliasFields.add('Número');
+  Search.AliasFields.add('Nï¿½mero');
   Search.AliasFields.add('A Nombre de');
   Search.AliasFields.add('Proyecto');
   Search.ResultField := 'cot_numero';
@@ -1508,7 +1508,7 @@ procedure TfrmAlquiler.btmonedaClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('Cï¿½digo');
   Search.Query.clear;
   Search.Query.add('select mon_nombre, mon_codigo');
   Search.Query.add('from moneda');
@@ -1646,7 +1646,7 @@ begin
      Search.Query.add('and usu_codigo = '+IntToStr(dm.QUsuariosUSU_CODIGO.Value));
 
   Search.AliasFields.clear;
-  Search.AliasFields.add('Número');
+  Search.AliasFields.add('Nï¿½mero');
   Search.AliasFields.add('A Nombre de');
   Search.ResultField := 'alq_numero';
   Search.Title := 'Alquileres';
@@ -1864,28 +1864,24 @@ begin
 end;
 
 procedure TfrmAlquiler.QAlquileralq_rncChange(Sender: TField);
+var
+  D: TDatoRncConsulta;
 begin
-  if (not QAlquilerAlq_rnc.IsNull) and (Trim(edCliente.Text) = '') then
+  if (QAlquilerAlq_rnc.IsNull) or (Trim(edCliente.Text) <> '') then
+    Exit;
+
+  D := dm.ConsultarRncCompleto(QAlquilerAlq_rnc.Value);
+  if D.Encontrado then
   begin
-    dm.Query1.Close;
-    dm.Query1.SQL.Clear;
-    dm.Query1.SQL.Add('select c.cli_codigo, rnc_cedula, razon_social, nombre_comercial,');
-    dm.Query1.SQL.Add('actividad_economica, direccion, numero, urbanizacion,');
-    dm.Query1.SQL.Add('telefono, estatus from rnc');
-    dm.Query1.SQL.Add(' left join clientes c on rnc.rnc_cedula = c.cli_rnc'); {20170704}
-    dm.Query1.SQL.Add('where rnc_cedula = :rnc');
-    dm.Query1.Parameters.ParamByName('rnc').Value := QAlquilerAlq_rnc.Value;
-    dm.Query1.Open;
-    if dm.Query1.RecordCount > 0 then
+    if D.CliCodigo > 0 then
     begin
-      edCliente.Text                  := dm.Query1.FieldByName('cli_codigo').AsString; {20170704}
-      QAlquilerCLI_CODIGO.Value     := dm.Query1.FieldByName('cli_codigo').AsInteger;{20170704}
-      QAlquilerAlq_NOMBRE.Value     := dm.Query1.FieldByName('razon_social').AsString;
-      QAlquilerAlq_DIRECCION.Value  := dm.Query1.FieldByName('direccion').AsString;
-      QAlquilerAlq_LOCALIDAD.Value  := Trim(dm.Query1.FieldByName('urbanizacion').AsString)+
-                                         Trim(dm.Query1.FieldByName('numero').AsString);
-      QAlquilerAlq_TELEFONO.Value   := dm.Query1.FieldByName('telefono').AsString;
+      edCliente.Text := IntToStr(D.CliCodigo);
+      QAlquilerCLI_CODIGO.Value := D.CliCodigo;
     end;
+    QAlquilerAlq_NOMBRE.Value := D.RazonSocial;
+    QAlquilerAlq_DIRECCION.Value := D.Direccion;
+    QAlquilerAlq_LOCALIDAD.Value := Trim(D.Urbanizacion) + Trim(D.Numero);
+    QAlquilerAlq_TELEFONO.Value := D.Telefono;
   end;
 end;
 

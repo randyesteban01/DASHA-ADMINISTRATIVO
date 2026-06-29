@@ -191,7 +191,6 @@ type
     procedure rbFormaClick(Sender: TObject);
     procedure QCargosCAR_NUMEROChange(Sender: TField);
     procedure QCargosCAR_MONTOChange(Sender: TField);
-    procedure QCargosCAR_FECHAChange(Sender: TField);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure QCargosSUC_CODIGOChange(Sender: TField);
     procedure QCargosREC_NUMEROChange(Sender: TField);
@@ -225,6 +224,7 @@ type
       var Key: Word; Shift: TShiftState);
     procedure btLocalidadClick(Sender: TObject);
     procedure rbTipoChange(Sender: TObject);
+    procedure QCargosCAR_FECHAChange(Sender: TField);
   private
     { Private declarations }
   public
@@ -233,6 +233,7 @@ type
     Debitos, Creditos, TotalPagoFacturas : Double;
     Totaliza, Inserta : Boolean;
     Accion : Integer;
+    buscar : boolean;
     Procedure Totalizar;
     Procedure TotalizaFac;
   end;
@@ -262,6 +263,7 @@ procedure TfrmCargosBanco.FormCreate(Sender: TObject);
 var
   a : integer;
 begin
+  buscar:=False;
   for a := 0 to (Sender as TForm).ComponentCount -1 DO
   begin
     if Components[a].ClassType = tdbedit then
@@ -358,8 +360,7 @@ begin
   QFacturas.Open;
 
   QCentro.Close;
-  QCentro.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
-  QCentro.Parameters.ParamByName('ban').Value := -1;
+  QCentro.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;;
   QCentro.Parameters.ParamByName('ano').Value := -1;
   QCentro.Parameters.ParamByName('mes').Value := -1;
   QCentro.Parameters.ParamByName('num').Value := -1;
@@ -637,7 +638,7 @@ begin
     else
     begin
       Totaliza := False;
-      QCargosEMP_CODIGO.Value := DM.vp_cia;
+      QCargosEMP_CODIGO.Value := dm.QEmpresasEMP_CODIGO.Value;
       //Otro
       QCargos.Post;
       QCargos.UpdateBatch;
@@ -744,7 +745,7 @@ begin
 
       if QCargosSUP_CODIGO.Value > 0 then begin
       qRepBalanceFact.Close;
-      qRepBalanceFact.Parameters.ParamByName('emp').Value := dm.vp_cia;
+      qRepBalanceFact.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
       qRepBalanceFact.Parameters.ParamByName('SUP').Value := QCargosSUP_CODIGO.Value;
       qRepBalanceFact.ExecSQL;
       dm.Query1.Close;
@@ -847,6 +848,7 @@ begin
   End
   else
     tBanco.Text := '';
+    
 end;
 
 procedure TfrmCargosBanco.QCargosAfterInsert(DataSet: TDataSet);
@@ -911,7 +913,7 @@ begin
     Search.Query.Clear;
     Search.Query.Add('select cli_nombre, cli_codigo');
     Search.Query.Add('from clientes');
-    Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
+    Search.Query.Add('where emp_codigo = '+IntToStr(dm.QEmpresasEMP_CODIGO.Value));
     Search.AliasFields.Clear;
     Search.AliasFields.Add('Nombre');
     Search.AliasFields.Add('Código');
@@ -930,7 +932,7 @@ begin
     Search.Query.Clear;
     Search.Query.Add('select sup_nombre, sup_codigo');
     Search.Query.Add('from proveedores');
-    Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
+    Search.Query.Add('where emp_codigo = '+IntToStr(dm.QEmpresasEMP_CODIGO.Value));
     Search.Query.Add('and sup_balance > 0');
     Search.AliasFields.Clear;
     Search.AliasFields.Add('Nombre');
@@ -950,7 +952,7 @@ begin
     Search.Query.Clear;
     Search.Query.Add('select sup_nombre, sup_codigo');
     Search.Query.Add('from proveedores');
-    Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
+    Search.Query.Add('where emp_codigo = '+IntToStr(dm.QEmpresasEMP_CODIGO.Value));
     Search.Query.Add('and sup_balance = 0');
     Search.AliasFields.Clear;
     Search.AliasFields.Add('Nombre');
@@ -1008,19 +1010,19 @@ begin
     Query1.Close;
     Query1.SQL.Clear;
     Query1.SQL.Add('select car_numero, ban_codigo, car_tipo, car_status,');
-    Query1.SQL.Add('car_ano, car_mes, car_abono');
+    Query1.SQL.Add('car_ano, car_mes, car_abono, emp_codigo');
     Query1.SQL.Add('from cargosbanco');
     Query1.SQL.Add('where ban_codigo = :ban');
     Query1.SQL.Add('and car_numero = :num');
     Query1.SQL.Add('and emp_codigo = :emp');
-    Query1.SQL.Add('and car_ano = :ano');
-    Query1.SQL.Add('and car_mes = :mes');
+    //Query1.SQL.Add('and car_ano = :ano');
+    //Query1.SQL.Add('and car_mes = :mes');
     Query1.SQL.Add('and suc_codigo = :suc');
     Query1.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
     Query1.Parameters.ParamByName('ban').Value := QCargosBAN_CODIGO.Value;
     Query1.Parameters.ParamByName('num').Value := QCargosCAR_NUMERO.Value;
-    Query1.Parameters.ParamByName('ano').Value := QCargosCAR_ANO.Value;
-    Query1.Parameters.ParamByName('mes').Value := QCargosCAR_MES.Value;
+    //Query1.Parameters.ParamByName('ano').Value := QCargosCAR_ANO.Value;
+    //Query1.Parameters.ParamByName('mes').Value := QCargosCAR_MES.Value;
     Query1.Parameters.ParamByName('suc').Value := Suc;
     Query1.Open;
     if Query1.RecordCount > 0 then
@@ -1049,6 +1051,7 @@ begin
       else
       Begin
         QCargos.Close;
+        QCargos.Parameters.ParamByName('emp_codigo').Value := dm.QEmpresasEMP_CODIGO.Value;
         QCargos.Parameters.ParamByName('banco').Value := Query1.FieldByName('ban_codigo').AsInteger;
         QCargos.Parameters.ParamByName('num').Value   := Query1.FieldByName('car_numero').AsInteger;
         QCargos.Parameters.ParamByName('ano').Value   := Query1.FieldByName('car_ano').AsInteger;
@@ -1073,7 +1076,7 @@ begin
         QCentro.Parameters.ParamByName('ano').Value := QCargosCAR_ANO.Value;
         QCentro.Parameters.ParamByName('mes').Value := QCargosCAR_MES.Value;
         QCentro.Open;
-        
+
         Totalizar;
         QCargos.Edit;
       end;
@@ -1129,31 +1132,6 @@ begin
 end;
 
 
-procedure TfrmCargosBanco.QCargosCAR_FECHAChange(Sender: TField);
-var
-  Suc : integer;
-begin
-  QCargosCAR_ANO.Value := YearOf(QCargosCAR_FECHA.Value);
-  QCargosCAR_MES.Value := MonthOf(QCargosCAR_FECHA.Value);
-  Suc := QCargosSUC_CODIGO.Value;
-  dm.Query1.Close;
-  dm.Query1.SQL.Clear;
-  dm.Query1.SQL.Add('select isnull(max(car_numero),0) as maximo');
-  dm.Query1.SQL.Add('from cargosbanco');
-  dm.Query1.SQL.Add('where emp_codigo = :emp');
-  dm.Query1.SQL.Add('and ban_codigo = :ban');
-  //dm.Query1.SQL.Add('and car_ano = :ano');
-  //dm.Query1.SQL.Add('and car_mes = :mes');
-  dm.Query1.SQL.Add('and suc_codigo = :suc');
-  dm.Query1.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
-  dm.Query1.Parameters.ParamByName('ban').Value := QCargosBAN_CODIGO.Value;
-  //dm.Query1.Parameters.ParamByName('ano').Value := QCargosCAR_ANO.Value;
-  //dm.Query1.Parameters.ParamByName('mes').Value := QCargosCAR_MES.Value;
-  dm.Query1.Parameters.ParamByName('suc').Value := Suc;
-  dm.Query1.Open;
-  QCargosCAR_NUMERO.Value := dm.Query1.FieldByName('maximo').AsInteger + 1;
-end;
-
 procedure TfrmCargosBanco.FormKeyPress(Sender: TObject; var Key: Char);
 begin
   if key = chr(vk_return) then
@@ -1187,6 +1165,7 @@ begin
   dm.Query1.Parameters.ParamByName('suc').Value := Suc;
   dm.Query1.Open;
   QCargosCAR_NUMERO.Value := dm.Query1.FieldByName('maximo').AsInteger + 1;
+
 end;
 
 procedure TfrmCargosBanco.QCargosREC_NUMEROChange(Sender: TField);
@@ -1799,7 +1778,7 @@ begin
       dm.Query1.SQL.Add('select suc_nombre, cont_numeroSucursal from sucursales');
       dm.Query1.SQL.Add('where emp_codigo = :emp');
       dm.Query1.SQL.Add('and cont_numeroSucursal = '+QuotedStr(dbedtcont_numeroSucursal.Text));
-      dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+      dm.Query1.Parameters.ParamByName('emp').Value :=  dm.QEmpresasEMP_CODIGO.Value;
       dm.Query1.Open;
       TSucLoc.Text := dm.Query1.FieldByName('suc_nombre').AsString;
       end;
@@ -1812,7 +1791,7 @@ begin
   Search.Query.Clear;
   Search.AliasFields.Clear;
   Search.Query.Add('select suc_nombre, cont_numeroSucursal from sucursales');
-  Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
+  Search.Query.Add('where emp_codigo = '+IntToStr(dm.QEmpresasEMP_CODIGO.Value));
   Search.AliasFields.Add('Nombre');
   Search.AliasFields.Add('Código');
   Search.Title := 'Localidades / Sucursales';
@@ -1825,7 +1804,7 @@ begin
     dm.Query1.SQL.Add('select suc_nombre, cont_numeroSucursal from sucursales');
     dm.Query1.SQL.Add('where emp_codigo = :emp');
     dm.Query1.SQL.Add('and cont_numeroSucursal = '+QuotedStr(dbedtcont_numeroSucursal.Text));
-    dm.Query1.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
+    dm.Query1.Parameters.ParamByName('emp').Value :=dm.QEmpresasEMP_CODIGO.Value;
     dm.Query1.Open;
     TSucLoc.Text := dm.Query1.FieldByName('suc_nombre').AsString;
   end;
@@ -1838,7 +1817,7 @@ begin
   0,1:begin
   DBEdit5.Enabled   := False;
   tbenef.Enabled    := DBEdit5.Enabled;
-  
+
   tbenef.Text := '';
   tbenef.Color := clInfoBk;
   end;
@@ -1851,6 +1830,37 @@ begin
   tbenef.Color    := clWindow;
   end;
   end;
+end;
+
+procedure TfrmCargosBanco.QCargosCAR_FECHAChange(Sender: TField);
+var
+  Suc : integer;
+begin
+
+  QCargosCAR_ANO.Value := YearOf(QCargosCAR_FECHA.Value);
+  QCargosCAR_MES.Value := MonthOf(QCargosCAR_FECHA.Value);
+  Suc := QCargosSUC_CODIGO.Value;
+  if QCargosCAR_NUMERO.IsNull or (QCargosCAR_NUMERO.Value = 0) then
+  begin
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('select isnull(max(car_numero),0) as maximo');
+    dm.Query1.SQL.Add('from cargosbanco');
+    dm.Query1.SQL.Add('where emp_codigo = :emp');
+    dm.Query1.SQL.Add('and ban_codigo = :ban');
+    //dm.Query1.SQL.Add('and car_ano = :ano');
+    //dm.Query1.SQL.Add('and car_mes = :mes');
+    dm.Query1.SQL.Add('and suc_codigo = :suc');
+    dm.Query1.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
+    dm.Query1.Parameters.ParamByName('ban').Value := QCargosBAN_CODIGO.Value;
+    //dm.Query1.Parameters.ParamByName('ano').Value := QCargosCAR_ANO.Value;
+    //dm.Query1.Parameters.ParamByName('mes').Value := QCargosCAR_MES.Value;
+    dm.Query1.Parameters.ParamByName('suc').Value := Suc;
+    dm.Query1.Open;
+    QCargosCAR_NUMERO.Value := dm.Query1.FieldByName('maximo').AsInteger + 1;
+  end;
+
+
 end;
 
 end.

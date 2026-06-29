@@ -1,6 +1,6 @@
 object RPedidoSup_Preimpreso: TRPedidoSup_Preimpreso
-  Left = 672
-  Top = 119
+  Left = 840
+  Top = 123
   Width = 851
   Height = 732
   VertScrollBar.Position = 17
@@ -14,7 +14,7 @@ object RPedidoSup_Preimpreso: TRPedidoSup_Preimpreso
   OldCreateOrder = False
   Scaled = False
   PixelsPerInch = 96
-  TextHeight = 14
+  TextHeight = 13
   object QRTHorton: TQuickRep
     Left = 8
     Top = -9

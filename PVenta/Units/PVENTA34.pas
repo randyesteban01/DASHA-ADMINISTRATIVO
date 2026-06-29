@@ -122,7 +122,7 @@ type
     procedure BitBtn1Click(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure btCloseClick(Sender: TObject);
+    procedure exit(Sender: TObject);
     procedure QUnidadesCalcFields(DataSet: TDataSet);
     procedure gunidadesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -194,7 +194,7 @@ begin
   end;
 end;
 
-procedure TfrmPrecios.btCloseClick(Sender: TObject);
+procedure TfrmPrecios.exit(Sender: TObject);
 begin
   acepto := 0;
   Close;

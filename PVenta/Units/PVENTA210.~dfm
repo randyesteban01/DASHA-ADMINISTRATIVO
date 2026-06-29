@@ -1,6 +1,6 @@
 object frmResumenVentaProducto: TfrmResumenVentaProducto
-  Left = 466
-  Top = 267
+  Left = 490
+  Top = 261
   ActiveControl = spAno
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -507,6 +507,7 @@ object frmResumenVentaProducto: TfrmResumenVentaProducto
     CursorType = ctStatic
     LockType = ltBatchOptimistic
     CommandTimeout = 0
+    DataSource = DM.dsEmpresas
     ProcedureName = 'pr_venta_producto_anual;1'
     Parameters = <
       item

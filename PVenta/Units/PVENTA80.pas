@@ -1333,6 +1333,84 @@ type
     QParametrosPAR_mostrarsubcategorias: TBooleanField;
     QParametrosPAR_AutorizacionNoRequerida: TBooleanField;
     dbchkpar_posAutorizacion: TDBCheckBox;
+    pnFE: TPanel;
+    pgc2: TPageControl;
+    tsRestBar1: TTabSheet;
+    lbl1: TLabel;
+    lbl11: TLabel;
+    lbl12: TLabel;
+    dbchkRestBar_FactConItbis: TDBCheckBox;
+    dbedtURL_FacturacionElectronica: TDBEdit;
+    dbedtURL_FCFacturacionElectronica: TDBEdit;
+    dbedtPass_FacturacionElectronica: TDBEdit;
+    ts1: TTabSheet;
+    grp3: TGroupBox;
+    dbgrd1: TDBGrid;
+    btn4: TBitBtn;
+    QParametrosUsa_FacturacionElectronica: TBooleanField;
+    QParametrosURL_FacturacionElectronica: TStringField;
+    QParametrosURL_FCFacturacionElectronica: TStringField;
+    QParametrosPass_FacturacionElectronica: TStringField;
+    QeNCF: TADOQuery;
+    DataSource1: TDataSource;
+    dseNCF: TDataSource;
+    QeNCFemp_codigo: TIntegerField;
+    QeNCFSecuencia_Inicial_DGII: TIntegerField;
+    QeNCFTipo: TIntegerField;
+    QeNCFUltima_secuencia_DGII: TIntegerField;
+    QeNCFCantidad: TIntegerField;
+    QeNCFFechaVencimientoSecuenciaDGII: TDateField;
+    QeNCFFinal: TIntegerField;
+    QeNCFnombre_dgii: TStringField;
+    QeNCFcantidad_minima: TIntegerField;
+    QParametrosImprimirCopia: TBooleanField;
+    DBCheckBox70: TDBCheckBox;
+    DBCheckBox71: TDBCheckBox;
+    QParametrosservicio_construccion: TBooleanField;
+    DBCheckBox73: TDBCheckBox;
+    QParametrosintegracion_luganis: TBooleanField;
+    QParametrosmesas_abiertas: TBooleanField;
+    DBCheckBox74: TDBCheckBox;
+    Label180: TLabel;
+    DBEdit23: TDBEdit;
+    QParametrospar_luganis_baseurl: TStringField;
+    Label181: TLabel;
+    DBEdit24: TDBEdit;
+    Label182: TLabel;
+    DBEdit28: TDBEdit;
+    QParametrospar_luganis_companycode: TStringField;
+    QParametrospar_luganis_username: TStringField;
+    QParametrospar_luganis_password: TStringField;
+    QParametrospar_luganis_appversion: TStringField;
+    QParametrospar_luganis_os: TStringField;
+    QParametrospar_luganis_deviceid: TStringField;
+    QParametrospar_luganis_latitude: TStringField;
+    QParametrospar_luganis_longitude: TStringField;
+    QParametrospar_luganis_providerip: TStringField;
+    Label183: TLabel;
+    Label184: TLabel;
+    DBEdit40: TDBEdit;
+    Label185: TLabel;
+    DBEdit47: TDBEdit;
+    DBEdit48: TDBEdit;
+    Label186: TLabel;
+    DBEdit39: TDBEdit;
+    Label187: TLabel;
+    DBEdit49: TDBEdit;
+    Label188: TLabel;
+    DBEdit59: TDBEdit;
+    Label189: TLabel;
+    DBEdit60: TDBEdit;
+    DBCheckBox72: TDBCheckBox;
+    QParametrospar_comision_vend: TBooleanField;
+    DBCheckBox75: TDBCheckBox;
+    QParametrosPAR_FE_DetenerFacturacion: TBooleanField;
+    DBCheckBox76: TDBCheckBox;
+    DBCheckBox77: TDBCheckBox;
+    QParametrospar_ImprimirFacturaRestBar: TBooleanField;
+    QParametrospar_ImprimirCopiaRestBar: TBooleanField;
+    DBCheckBox78: TDBCheckBox;
+    QParametrospar_usa_huella_supervisor: TBooleanField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure tvOpcionesChange(Sender: TObject; Node: TTreeNode);
@@ -1622,6 +1700,7 @@ type
     procedure QContabpar_ctadevventasGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
     procedure edpuertoChange(Sender: TObject);
+    procedure btn4Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -1637,7 +1716,7 @@ var
 
 implementation
 
-uses SIGMA01, CONT64, SIGMA00, Math;
+uses SIGMA01, CONT64, SIGMA00, Math, PVENTA252;
 
 {$R *.dfm}
 
@@ -1685,6 +1764,7 @@ begin
   pnCotizacion.Visible  := tvOpciones.Selected.AbsoluteIndex = 21;
   pnAtrasos.Visible     := tvOpciones.Selected.AbsoluteIndex = 22;
   pnVerifone.Visible    := tvOpciones.Selected.AbsoluteIndex = 23;
+  pnFE.Visible          := tvOpciones.Selected.AbsoluteIndex = 24;
 
   case tvOpciones.Selected.AbsoluteIndex of
   6 : begin
@@ -1904,6 +1984,8 @@ begin
     // pgc1.ActivePageIndex := 0;
    end;
   end;
+
+  FormCreate(Sender);
 end;
 
 procedure TfrmParametros.FormActivate(Sender: TObject);
@@ -1937,6 +2019,12 @@ begin
     QContab.Edit;
     QBusquedaProd.Open;
     QPasar.Open;
+
+    QeNCF.Close;
+    QeNCF.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    QeNCF.Open;
+    QeNCF.Edit;
+
     if not QParametrosPAR_AHORA1.IsNull then
     begin
       aHora1.Time := TimeOf(QParametrosPAR_AHORA1.Value);
@@ -4705,8 +4793,8 @@ begin
        begin
          (frmParametros.Components[x] as TPanel).Width := 437; //417;
          if frmParametros.Components[x].Name = 'pnFormatosImp' then
-         (frmParametros.Components[x] as TPanel).Height:=  413 else
-         (frmParametros.Components[x] as TPanel).Height:=  385;
+         (frmParametros.Components[x] as TPanel).Height:=  389 else
+         (frmParametros.Components[x] as TPanel).Height:=  400;
          (frmParametros.Components[x] as TPanel).Left := 168;
          (frmParametros.Components[x] as TPanel).Top := 8;
        end;
@@ -5739,6 +5827,74 @@ BEGIN
   DBComboBox12.Items.Add(edpuerto.Text);
 end;
 
+end;
+
+
+
+procedure TfrmParametros.btn4Click(Sender: TObject);
+begin
+  Application.CreateForm(tfrmeNCF, frmeNCF);
+  frmeNCF.cboTipoeNCF.KeyValue := QeNCFTipo.Value;
+
+  frmeNCF.eNCFInicial.Text := QeNCFSecuencia_Inicial_DGII.AsString;
+  frmeNCF.eNCFFinal.ReadOnly := True;
+  frmeNCF.eNCFFinal.ReadOnly := True;
+
+  frmeNCF.eNCFFinal.Text := FloatToStr(QeNCFCantidad.AsFloat + QeNCFSecuencia_Inicial_DGII.AsFloat-1);
+  frmeNCF.eNCFUltimo.Text := FloatToStr(QeNCFUltima_secuencia_DGII.AsFloat);
+  frmeNCF.eNCFCantidad.Text := FloatToStr(QeNCFCantidad.AsFloat);
+  frmeNCF.eNCFCantidadMinima.Text := FloatToStr(QeNCFcantidad_minima.AsFloat);
+  if not QeNCFFechaVencimientoSecuenciaDGII.IsNull then
+  begin
+    frmeNCF.eNCFFecha.Date := QeNCFFechaVencimientoSecuenciaDGII.AsDateTime;
+    frmeNCF.ChkB_Vencimiento.Checked := True
+  end
+  else
+    frmeNCF.eNCFFecha.Clear;
+
+
+  frmeNCF.ShowModal;
+  if frmeNCF.ModalResult = mrOk then
+  begin
+    if Trim(frmeNCF.eNCFUltimo.Text) = '' then frmeNCF.eNCFUltimo.Text := Trim(frmeNCF.eNCFInicial.Text);
+
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('update SecuenciaDGII');
+    dm.Query1.SQL.Add('set Secuencia_Inicial_DGII = :ini,');
+    dm.Query1.SQL.Add('Cantidad = :can, cantidad_minima=:canm,');
+    dm.Query1.SQL.Add('Ultima_secuencia_DGII = :ultima,');
+    dm.Query1.SQL.Add('FechaVencimientoSecuenciaDGII = :sec');
+    dm.Query1.SQL.Add('where Tipo = :tip');
+    dm.Query1.SQL.Add(' and emp_codigo = :emp');
+
+    dm.Query1.Parameters.ParamByName('ini').Value := StrToFloat(Trim(frmeNCF.eNCFInicial.Text));
+    dm.Query1.Parameters.ParamByName('can').Value := StrToFloat(Trim(frmeNCF.eNCFCantidad.Text));
+    dm.Query1.Parameters.ParamByName('ultima').Value := StrToFloat(Trim(frmeNCF.eNCFUltimo.Text));
+    dm.Query1.Parameters.ParamByName('canm').Value := StrToFloat(Trim(frmeNCF.eNCFCantidadMinima.Text));
+
+    dm.Query1.Parameters.ParamByName('tip').Value := StrToInt(Trim(frmeNCF.cboTipoeNCF.KeyValue));
+   
+    dm.Query1.Parameters.ParamByName('sec').DataType := ftDate;
+    if (Trim(frmeNCF.eNCFFecha.Text) = '') then
+    begin
+      // sin fecha -> NULL en SQL
+      dm.Query1.Parameters.ParamByName('sec').Value := Null;
+      // alternativamente: dm.Query1.Parameters.ParamByName('sec').Clear;
+    end
+    else
+    begin
+      dm.Query1.Parameters.ParamByName('sec').Value := frmeNCF.eNCFFecha.Date;
+    end;
+
+    dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    dm.Query1.ExecSQL;
+
+    QeNCF.Close;
+    QeNCF.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    QeNCF.Open;
+    QeNCF.Edit;
+  end;
 end;
 
 end.

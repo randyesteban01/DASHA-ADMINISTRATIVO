@@ -218,6 +218,14 @@ type
     QDevolucionDEV_TASA: TCurrencyField;
     QDetalleCalcItbis2: TCurrencyField;
     QDevolucionDEV_HORA: TStringField;
+    QDevolucionemp_rnc: TStringField;
+    QDevolucioncli_rnc: TStringField;
+    QDevolucioneNCF: TStringField;
+    QDevolucionmotivo_dgi: TIntegerField;
+    tmotivodgi: TEdit;
+    Label24: TLabel;
+    DBEdit15: TDBEdit;
+    SpeedButton2: TSpeedButton;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure RG(Sender: TObject; var Key: Word;
@@ -256,6 +264,10 @@ type
     procedure btmotivoClick(Sender: TObject);
     procedure QDevolucionmot_codigoGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
+    procedure SpeedButton2Click(Sender: TObject);
+    procedure QDevolucionmotivo_dgiGetText(Sender: TField;
+      var Text: String; DisplayText: Boolean);
+    procedure FormDestroy(Sender: TObject);
   private
         vl_status_reg : String;
     procedure ImprimeTicketFiscal(ImpresoraFiscal:TImpresora);
@@ -274,6 +286,16 @@ type
     procedure totalizar;
     procedure Imp40Columnas;
     procedure BuscaTicket;
+
+    function EsEmpresaItbisMaestro: Boolean;
+    procedure DistribuirItbisMaestroEnDetalle;
+
+    function ValidarENCFDisponible(
+      AEmp: Integer; ATipo: Integer;
+      out AMsg: string;
+      out ASiguienteCorrelativo: Int64
+    ): Boolean;
+
   end;
 
 var
@@ -282,12 +304,78 @@ var
    StatusFiscal:String;
   frmDevolucion: TfrmDevolucion;
 
+  vItbisMaestro: Double;
+  vTasaFactura: Double;
+  vEsEmpresaItbisMaestro: Boolean;
+  vItbisPorLinea: TStringList;
+  vTotalCantFactura: Double;
+
 implementation
 
 uses RVENTA03, PVENTA37, PVENTA97, SIGMA01, SIGMA00, PVENTA123, RVENTA72,
-  StrUtils;
+  StrUtils,FacturacionElectronicaDGII_TLB;
 
 {$R *.DFM}
+
+function TfrmDevolucion.EsEmpresaItbisMaestro: Boolean;
+var
+  rnc: string;
+begin
+  Result := False;
+
+  if Assigned(dm.QEmpresas) then
+  begin
+    if not dm.QEmpresas.Active then dm.QEmpresas.Open;
+    rnc := Trim(dm.QEmpresas.FieldByName('emp_rnc').AsString);
+    Result := (rnc = '131861717');
+
+  end;
+end;
+
+function Round2(const V: Double): Double;
+begin
+  Result := Int(V * 100 + 0.5) / 100;
+end;
+
+
+procedure TfrmDevolucion.DistribuirItbisMaestroEnDetalle;
+var
+  bm: TBookmark;
+  totalItbis, itbisPorUnidad: Double;
+  cnt, sec, idx: Integer;
+begin
+  vItbisPorLinea.Clear;
+
+  if not vEsEmpresaItbisMaestro then Exit;
+  if vItbisMaestro <= 0 then Exit;
+  try
+
+    itbisPorUnidad := vItbisMaestro / vTotalCantFactura;
+    // Guardar por DET_SECUENCIA (que tú lo asignas a := a)
+    idx := 0;
+    QDetalle.First;
+    while not QDetalle.Eof do
+    begin
+      if (QDetalle.FieldByName('DEV_CANTIDAD').AsFloat > 0) and
+         (Trim(QDetalle.FieldByName('DEV_CONITBIS').AsString) = 'S') then
+      begin
+        Inc(idx);
+        sec := QDetalle.FieldByName('DET_SECUENCIA').AsInteger;
+
+        if idx < cnt then
+          vItbisPorLinea.Values[IntToStr(sec)] := FloatToStr(itbisPorUnidad)
+        else
+          vItbisPorLinea.Values[IntToStr(sec)] := FloatToStr(itbisPorUnidad);
+      end;
+
+      QDetalle.Next;
+    end;
+
+  finally
+    
+  end;
+end;
+
 
 procedure TfrmDevolucion.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -470,187 +558,306 @@ end;
 
 procedure TfrmDevolucion.QDevolucionFAC_NUMEROChange(Sender: TField);
 var
-  Condi, Cajero, a : integer;
+  Condi, Cajero, a : Integer;
+  FacturaTieneItbis: Boolean;
+  EsSarita: Boolean;
+  FacturaItbis: Double;
 begin
-  if rgtipo.ItemIndex = 0 then
-  if tTipo.text='' then
-     MessageDlg('DEBE ELEJIR UN TIPO DE FACTURA',mtError,[mbok],0)
-  else
+  // ====== Detectar si es SARITA por RNC 105081105 ======
+  EsSarita := False;
+  if Assigned(dm.QEmpresas) then
   begin
-    if not QDevolucionFAC_NUMERO.isnull then
+    if not dm.QEmpresas.Active then
+      dm.QEmpresas.Open;
+
+  EsSarita :=
+  (Trim(dm.QEmpresas.FieldByName('emp_rnc').AsString) = '105081105') or
+  (Trim(dm.QEmpresas.FieldByName('emp_rnc').AsString) = '131861717');
+
+
+  end;
+
+  if rgtipo.ItemIndex = 0 then
+    if tTipo.Text = '' then
+      MessageDlg('DEBE ELEJIR UN TIPO DE FACTURA', mtError, [mbok], 0)
+    else
     begin
-      dm.Query1.close;
-      dm.Query1.sql.clear;
-      dm.Query1.sql.add('select f.suc_codigo, f.fac_nombre, f.ven_codigo, f.cpa_codigo, f.cli_codigo,');
-      dm.Query1.sql.add('f.alm_codigo, f.fac_status, f.fac_total, f.fac_abono, ');
-      dm.Query1.sql.add('f.caj_codigo, t.tfa_actbalance, f.fac_porccomision, f.fac_fecha,');
-      dm.Query1.sql.add('f.fac_cuotas, f.fac_conitbis, f.ncf_fijo, f.ncf_secuencia, recargo, porc_desc_gral, FAC_TASA');
-      dm.Query1.sql.add('from facturas f, tiposfactura t');
-      dm.Query1.sql.add('where f.emp_codigo = t.emp_codigo');
-      dm.Query1.sql.add('and f.tfa_codigo = t.tfa_Codigo');
-      dm.Query1.sql.add('and f.emp_codigo = :emp');
-      dm.Query1.sql.add('and f.fac_forma    = :forma');
-      dm.Query1.sql.add('and f.tfa_codigo   = :tipo');
-      dm.Query1.sql.add('and f.fac_numero   = :numero');
-      dm.Query1.sql.add('and f.suc_codigo = :suc');
-      dm.Query1.Parameters.parambyname('emp').Value    := dm.vp_cia;
-      dm.Query1.Parameters.parambyname('forma').Value  := QDevolucionFAC_FORMA.Value;
-      dm.Query1.Parameters.parambyname('tipo').Value   := strtoint(trim(edTipo.text));
-      dm.Query1.Parameters.parambyname('numero').Value := QDevolucionFAC_NUMERO.value;
-      dm.Query1.Parameters.parambyname('suc').Value    := QDevolucionsuc_codigo.Value;
-      dm.Query1.open;
-      if dm.Query1.recordcount = 0 then
+      if not QDevolucionFAC_NUMERO.IsNull then
       begin
-        showmessage('ESTA FACTURA NO EXISTE');
-        QDevolucionFAC_NUMERO.Clear;
-        abort;
-      end
-      else if dm.Query1.fieldbyname('fac_cuotas').AsInteger > 0 then
-      begin
-        showmessage('NO PUEDE REALIZARSE DEVOLUCION A FACTURAS QUE'+#13+
-                    'TIENEN FIANANCIAMIENTO, DEBE DE REALIZAR UNA'+#13+
-                    'NOTA DE CREDITO');
-        QDevolucionFAC_NUMERO.Clear;
-        abort;
-      end
-      else if dm.Query1.fieldbyname('fac_status').asstring = 'ANU' then
-      begin
-        showmessage('ESTA FACTURA ESTA ANULADA');
-        QDevolucionFAC_NUMERO.Clear;
-        abort;
-      end
-      else if DaysBetween(dm.Query1.fieldbyname('fac_fecha').AsDateTime, Date) >
-      dm.QParametrosPAR_DEVDIAS.Value then
-      begin
-        MessageDlg('ESTA FACTURA NO ACEPTA DEVOLUCIONES',mtError,[mbok],0);
-        QDevolucionFAC_NUMERO.Clear;
-        abort;
-      end
-      else
-      begin
-        ConItbis  := dm.Query1.fieldbyname('fac_conitbis').asboolean;
-        QDevolucionDEV_CONITBIS.Value := dm.Query1.fieldbyname('fac_conitbis').Value;
+        dm.Query1.Close;
+        dm.Query1.SQL.Clear;
+        dm.Query1.SQL.Add('select f.suc_codigo, f.fac_nombre, f.ven_codigo, f.cpa_codigo, f.cli_codigo,');
+        dm.Query1.SQL.Add('f.alm_codigo, f.fac_status, f.fac_total, f.fac_abono, ');
+        dm.Query1.SQL.Add('f.caj_codigo, t.tfa_actbalance, f.fac_porccomision, f.fac_fecha,');
+        dm.Query1.SQL.Add('f.fac_cuotas, f.fac_conitbis, f.fac_itbis, f.ncf_fijo, f.ncf_secuencia, recargo, porc_desc_gral, FAC_TASA, f.eNCF, f.Enviado_DGII');
+        dm.Query1.SQL.Add('from facturas f, tiposfactura t');
+        dm.Query1.SQL.Add('where f.emp_codigo = t.emp_codigo');
+        dm.Query1.SQL.Add('and f.tfa_codigo = t.tfa_Codigo');
+        dm.Query1.SQL.Add('and f.emp_codigo = :emp');
+        dm.Query1.SQL.Add('and f.fac_forma    = :forma');
+        dm.Query1.SQL.Add('and f.tfa_codigo   = :tipo');
+        dm.Query1.SQL.Add('and f.fac_numero   = :numero');
+        dm.Query1.SQL.Add('and f.suc_codigo = :suc');
+        dm.Query1.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+        dm.Query1.Parameters.ParamByName('forma').Value  := QDevolucionFAC_FORMA.Value;
+        dm.Query1.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
+        dm.Query1.Parameters.ParamByName('numero').Value := QDevolucionFAC_NUMERO.Value;
+        dm.Query1.Parameters.ParamByName('suc').Value    := QDevolucionsuc_codigo.Value;
+        dm.Query1.Open;
 
-        Pendiente := dm.Query1.fieldbyname('fac_total').asfloat-dm.Query1.fieldbyname('fac_abono').asfloat;
-        Condi     := dm.Query1.fieldbyname('cpa_codigo').asinteger;
-        Cajero    := dm.Query1.fieldbyname('caj_codigo').asinteger;
-        tCliente.text := dm.Query1.fieldbyname('fac_nombre').asstring;
-        QdevolucionDEV_NOMBRE.Value := dm.Query1.fieldbyname('fac_nombre').asstring;
-        almacen := DM.Query1.FieldByName('alm_codigo').AsInteger;
-        QDevoluciondev_fecha_factura.Value := dm.Query1.fieldbyname('fac_fecha').Value;
-        QDevolucionCLI_CODIGO.value := dm.Query1.fieldbyname('cli_codigo').asinteger;
-        QDevolucionVEN_CODIGO.value := dm.Query1.fieldbyname('ven_codigo').asinteger;
-        QDevolucionNCF.Value        := dm.Query1.fieldbyname('ncf_fijo').AsString +
-                                       FormatFloat('00000000',dm.Query1.fieldbyname('ncf_secuencia').AsFloat);
-        QDevolucionporc_desc_gral.Value := DM.Query1.fieldbyname('porc_desc_gral').Value;
-        QDevolucionDEV_TASA.Value := DM.Query1.fieldbyname('FAC_TASA').Value;
-        ACTBalance := dm.Query1.fieldbyname('tfa_actbalance').asboolean;
-        tPendiente.text := format('%n',[Pendiente]);
-        QDevolucionDEV_RECARGO.value := dm.Query1.fieldbyname('recargo').asinteger;
-        vl_status_reg := dm.Query1.fieldbyname('fac_status').asstring;
-        DBLookupComboBox2.Enabled := False;
+        // ====== Guardar ITBIS maestro y tasa ======
+        vItbisMaestro := dm.Query1.FieldByName('fac_itbis').AsFloat;
+        vTasaFactura  := dm.Query1.FieldByName('FAC_TASA').AsFloat;
 
-        //buscando vendedor
-        dm.Query1.close;
-        dm.Query1.sql.clear;
-        dm.Query1.sql.add('select ven_nombre from vendedores');
-        dm.Query1.sql.add('where ven_codigo = :ven');
-        dm.Query1.sql.add('and emp_codigo = :emp');
-        dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
-        dm.Query1.Parameters.parambyname('ven').Value := QDevolucionVEN_CODIGO.value;
-        dm.Query1.open;
-        tVendedor.text := dm.Query1.fieldbyname('ven_nombre').asstring;
+        // Empresas especiales: repartir ITBIS del maestro entre items
+        vEsEmpresaItbisMaestro := EsSarita or dm.QParametrosservicio_construccion.AsBoolean;
 
-        //buscando condiciones
-        dm.Query1.close;
-        dm.Query1.sql.clear;
-        dm.Query1.sql.add('select cpa_nombre from condiciones');
-        dm.Query1.sql.add('where cpa_codigo = :cod');
-        dm.Query1.sql.add('and emp_codigo = :emp');
-        dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
-        dm.Query1.Parameters.parambyname('cod').Value := Condi;
-        dm.Query1.open;
-        tCondicion.text := dm.Query1.fieldbyname('cpa_nombre').asstring;
-
-        //buscando cajero
-        dm.Query1.close;
-        dm.Query1.sql.clear;
-        dm.Query1.sql.add('select caj_nombre from cajeros');
-        dm.Query1.sql.add('where caj_codigo = :cod');
-        dm.Query1.sql.add('and emp_codigo = :emp');
-        dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
-        dm.Query1.Parameters.parambyname('cod').Value := Cajero;
-        dm.Query1.open;
-        tCajero.text := dm.Query1.fieldbyname('caj_nombre').asstring;
-
-        //Buscando detalle de la factura
-        dm.Query1.close;
-        dm.Query1.sql.clear;
-        dm.Query1.sql.add('select pro_codigo, pro_nombre, det_costo, det_precio, det_total,');
-        dm.Query1.sql.add('det_cantidad, det_conitbis, det_itbis, det_descuento, pro_servicio,');
-        dm.Query1.sql.add('det_cantdevuelta, pro_roriginal, pro_rfabric, det_comision,');
-        dm.Query1.sql.add('ven_codigo, det_escala, det_medida, det_lote, det_fechavence,');
-        dm.Query1.sql.add('isnull(det_cant_oferta,0) as det_cant_oferta,');
-        dm.Query1.sql.add('det_selectivo_ad, det_selectivo_con, alm_codigo, ((det_precio*det_cantidad)*Recargo) recargo ');
-        dm.Query1.sql.add('from det_factura');
-        dm.Query1.sql.add('where emp_codigo = :emp');
-        dm.Query1.sql.add('and fac_forma    = :forma');
-        dm.Query1.sql.add('and tfa_codigo   = :tipo');
-        dm.Query1.sql.add('and fac_numero   = :numero');
-        dm.Query1.sql.add('and suc_codigo   = :suc');
-        dm.Query1.Parameters.parambyname('emp').Value    := dm.vp_cia;
-        dm.Query1.Parameters.parambyname('forma').Value  := QDevolucionFAC_FORMA.Value;
-        dm.Query1.Parameters.parambyname('tipo').Value   := strtoint(trim(edTipo.text));
-        dm.Query1.Parameters.parambyname('numero').Value := QDevolucionFAC_NUMERO.value;
-        dm.Query1.Parameters.parambyname('suc').Value    := QDevolucionsuc_codigo.Value;
-        dm.Query1.open;
-        dm.Query1.disablecontrols;
-
-        QDetalle.close;
-        QDetalle.open;
-        a := 0;
-        Insertar := True;
-        while not dm.Query1.eof do
+        if dm.Query1.RecordCount = 0 then
         begin
-          a := a + 1;
-          QDetalle.append;
-          QDetalleDET_SECUENCIA.value     := a;
-          QDetalleDET_ESCALA.Value        := dm.Query1.fieldbyname('det_escala').AsString;
-          QDetalleVEN_CODIGO.Value        := dm.Query1.fieldbyname('ven_codigo').AsInteger;
-          QDetalleDET_COMISION.Value      := dm.Query1.fieldbyname('det_comision').AsFloat;
-          QDetallePRO_SERVICIO.Value      := dm.Query1.fieldbyname('pro_servicio').AsString;
-          QDetalleEMP_CODIGO.value        := dm.vp_cia;
-          QDetallePRO_CODIGO.value        := dm.Query1.fieldbyname('pro_codigo').asinteger;
-          QDetalleDEV_COSTO.value         := dm.Query1.fieldbyname('det_costo').asfloat;
-          QDetalleDEV_PRECIO.value        := dm.Query1.fieldbyname('det_precio').AsFloat;
-          QDetalleDEV_TOPECANTIDAD.value  := dm.Query1.fieldbyname('det_cantidad').asfloat-
-                                            dm.Query1.fieldbyname('det_cantdevuelta').asfloat;
-          QDetalleDEV_CONITBIS.value      := dm.Query1.fieldbyname('det_conitbis').asstring;
-          QDetalleDEV_DESCUENTO.value     := dm.Query1.fieldbyname('det_descuento').asfloat;
-          QDetalleDEV_ITBIS.value         := dm.Query1.fieldbyname('det_itbis').asfloat;
-          QDetalleDEV_CANTFACTURADA.value := dm.Query1.fieldbyname('det_cantidad').asfloat;
-          QDetallePRO_NOMBRE.value        := dm.Query1.fieldbyname('pro_nombre').asstring;
-          QDetallePRO_RORIGINAL.value     := dm.Query1.fieldbyname('pro_roriginal').asstring;
-          QDetallePRO_RFABRIC.value       := dm.Query1.fieldbyname('pro_rfabric').asstring;
-          QDetalleDET_MEDIDA.Value        := dm.Query1.fieldbyname('det_medida').asstring;
-          QDetalledet_lote.Value          := dm.Query1.fieldbyname('det_lote').AsInteger;
-          QDetalledet_fechavence.Value    := dm.Query1.fieldbyname('det_fechavence').AsDateTime;
-          QDetalledet_cant_oferta.Value   := dm.Query1.fieldbyname('det_cant_oferta').asfloat;
-          QDetalledet_selectivo_ad.Value  := dm.Query1.fieldbyname('det_selectivo_ad').asfloat;
-          QDetalledet_selectivo_con.Value := dm.Query1.fieldbyname('det_selectivo_con').asfloat;
-          QDetallealm_codigo.Value        := dm.Query1.fieldbyname('alm_codigo').AsInteger;
-          QDetalleDEV_RECARGO.Value       := dm.Query1.fieldbyname('recargo').asfloat;
-          QDetalle.post;
-          dm.Query1.next;
+          ShowMessage('ESTA FACTURA NO EXISTE');
+          QDevolucionFAC_NUMERO.Clear;
+          Abort;
+        end
+        else if dm.Query1.FieldByName('fac_cuotas').AsInteger > 0 then
+        begin
+          ShowMessage('NO PUEDE REALIZARSE DEVOLUCION A FACTURAS QUE' + #13 +
+                      'TIENEN FIANANCIAMIENTO, DEBE DE REALIZAR UNA' + #13 +
+                      'NOTA DE CREDITO');
+          QDevolucionFAC_NUMERO.Clear;
+          Abort;
+        end
+        else if dm.Query1.FieldByName('fac_status').AsString = 'ANU' then
+        begin
+          ShowMessage('ESTA FACTURA ESTA ANULADA');
+          QDevolucionFAC_NUMERO.Clear;
+          Abort;
+        end
+        else if DaysBetween(dm.Query1.FieldByName('fac_fecha').AsDateTime, Date) >
+                dm.QParametrosPAR_DEVDIAS.Value then
+        begin
+          MessageDlg('ESTA FACTURA NO ACEPTA DEVOLUCIONES', mtError, [mbok], 0);
+          QDevolucionFAC_NUMERO.Clear;
+          Abort;
+        end
+        else
+        begin
+          // ====== Determinar si la factura tiene ITBIS (aunque alguna línea venga sin) ======
+          FacturaTieneItbis :=
+            dm.Query1.FieldByName('fac_conitbis').AsBoolean
+            or ((not dm.Query1.FieldByName('fac_itbis').IsNull) and (dm.Query1.FieldByName('fac_itbis').AsFloat > 0));
+
+          ConItbis := FacturaTieneItbis;
+
+          if FacturaTieneItbis then
+            QDevolucionDEV_CONITBIS.AsString := 'S'
+          else
+            QDevolucionDEV_CONITBIS.AsString := 'N';
+
+          Pendiente := dm.Query1.FieldByName('fac_total').AsFloat - dm.Query1.FieldByName('fac_abono').AsFloat;
+          Condi     := dm.Query1.FieldByName('cpa_codigo').AsInteger;
+          Cajero    := dm.Query1.FieldByName('caj_codigo').AsInteger;
+          tCliente.Text := dm.Query1.FieldByName('fac_nombre').AsString;
+          QdevolucionDEV_NOMBRE.Value := dm.Query1.FieldByName('fac_nombre').AsString;
+          almacen := dm.Query1.FieldByName('alm_codigo').AsInteger;
+          QDevoluciondev_fecha_factura.Value := dm.Query1.FieldByName('fac_fecha').Value;
+          QDevolucionCLI_CODIGO.Value := dm.Query1.FieldByName('cli_codigo').AsInteger;
+          QDevolucionVEN_CODIGO.Value := dm.Query1.FieldByName('ven_codigo').AsInteger;
+
+          if (not dm.Query1.FieldByName('Enviado_DGII').IsNull) and
+             (dm.Query1.FieldByName('Enviado_DGII').AsBoolean = True) then
+          begin
+            QDevolucionNCF.Value := dm.Query1.FieldByName('eNCF').AsString;
+          end
+          else
+          begin
+            QDevolucionNCF.Value := dm.Query1.FieldByName('ncf_fijo').AsString +
+                                    FormatFloat('00000000', dm.Query1.FieldByName('ncf_secuencia').AsFloat);
+          end;
+
+          QDevolucionporc_desc_gral.Value := dm.Query1.FieldByName('porc_desc_gral').Value;
+          QDevolucionDEV_TASA.Value := dm.Query1.FieldByName('FAC_TASA').Value;
+          ACTBalance := dm.Query1.FieldByName('tfa_actbalance').AsBoolean;
+          tPendiente.Text := Format('%n', [Pendiente]);
+          QDevolucionDEV_RECARGO.Value := dm.Query1.FieldByName('recargo').AsInteger;
+          vl_status_reg := dm.Query1.FieldByName('fac_status').AsString;
+          DBLookupComboBox2.Enabled := False;
+
+          // ====== buscando vendedor ======
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('select ven_nombre from vendedores');
+          dm.Query1.SQL.Add('where ven_codigo = :ven');
+          dm.Query1.SQL.Add('and emp_codigo = :emp');
+          dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+          dm.Query1.Parameters.ParamByName('ven').Value := QDevolucionVEN_CODIGO.Value;
+          dm.Query1.Open;
+          tVendedor.Text := dm.Query1.FieldByName('ven_nombre').AsString;
+
+          // ====== buscando condiciones ======
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('select cpa_nombre from condiciones');
+          dm.Query1.SQL.Add('where cpa_codigo = :cod');
+          dm.Query1.SQL.Add('and emp_codigo = :emp');
+          dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+          dm.Query1.Parameters.ParamByName('cod').Value := Condi;
+          dm.Query1.Open;
+          tCondicion.Text := dm.Query1.FieldByName('cpa_nombre').AsString;
+
+          // ====== buscando cajero ======
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('select caj_nombre from cajeros');
+          dm.Query1.SQL.Add('where caj_codigo = :cod');
+          dm.Query1.SQL.Add('and emp_codigo = :emp');
+          dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+          dm.Query1.Parameters.ParamByName('cod').Value := Cajero;
+          dm.Query1.Open;
+          tCajero.Text := dm.Query1.FieldByName('caj_nombre').AsString;
+
+          // ====== Buscando detalle de la factura ======
+         { dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('select pro_codigo, pro_nombre, det_costo, det_precio, det_total,');
+          dm.Query1.SQL.Add('det_cantidad, det_conitbis, det_itbis, det_descuento, pro_servicio,');
+          dm.Query1.SQL.Add('det_cantdevuelta, pro_roriginal, pro_rfabric, det_comision,');
+          dm.Query1.SQL.Add('ven_codigo, det_escala, det_medida, det_lote, det_fechavence,');
+          dm.Query1.SQL.Add('isnull(det_cant_oferta,0) as det_cant_oferta,');
+          dm.Query1.SQL.Add('det_selectivo_ad, det_selectivo_con, alm_codigo, ((det_precio*det_cantidad)*Recargo) recargo ');
+          dm.Query1.SQL.Add('from det_factura');
+          dm.Query1.SQL.Add('where emp_codigo = :emp');
+          dm.Query1.SQL.Add('and fac_forma    = :forma');
+          dm.Query1.SQL.Add('and tfa_codigo   = :tipo');
+          dm.Query1.SQL.Add('and fac_numero   = :numero');
+          dm.Query1.SQL.Add('and suc_codigo   = :suc');
+          dm.Query1.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+          dm.Query1.Parameters.ParamByName('forma').Value  := QDevolucionFAC_FORMA.Value;
+          dm.Query1.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
+          dm.Query1.Parameters.ParamByName('numero').Value := QDevolucionFAC_NUMERO.Value;
+          dm.Query1.Parameters.ParamByName('suc').Value    := QDevolucionsuc_codigo.Value;
+          }
+
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+
+          dm.Query1.SQL.Add('SELECT total_cantidad,');
+          dm.Query1.SQL.Add('  d.pro_codigo, d.pro_nombre, d.det_costo, d.det_precio, d.det_total,');
+          dm.Query1.SQL.Add('  d.det_cantidad, d.det_conitbis, d.det_itbis, d.det_descuento, d.pro_servicio,');
+          dm.Query1.SQL.Add('  d.det_cantdevuelta, d.pro_roriginal, d.pro_rfabric, d.det_comision,');
+          dm.Query1.SQL.Add('  d.ven_codigo, d.det_escala, d.det_medida, d.det_lote, d.det_fechavence,');
+          dm.Query1.SQL.Add('  ISNULL(d.det_cant_oferta,0) AS det_cant_oferta,');
+          dm.Query1.SQL.Add('  d.det_selectivo_ad, d.det_selectivo_con, d.alm_codigo,');
+
+          dm.Query1.SQL.Add('  f.Recargo AS recargo_cabecera,');
+          dm.Query1.SQL.Add('  CAST(f.Recargo AS DECIMAL(18,6)) / NULLIF(t.total_cantidad, 0) AS recargo,');
+          dm.Query1.SQL.Add('  (CAST(f.Recargo AS DECIMAL(18,6)) / NULLIF(t.total_cantidad, 0)) * ISNULL(d.det_cantidad,0) AS recargo'); // <-- recargo_linea
+
+          dm.Query1.SQL.Add('FROM det_factura d');
+          dm.Query1.SQL.Add('INNER JOIN facturas f');
+          dm.Query1.SQL.Add('  ON f.emp_codigo = d.emp_codigo');
+          dm.Query1.SQL.Add(' AND f.suc_codigo = d.suc_codigo');
+          dm.Query1.SQL.Add(' AND f.fac_forma  = d.fac_forma');
+          dm.Query1.SQL.Add(' AND f.tfa_codigo = d.tfa_codigo');
+          dm.Query1.SQL.Add(' AND f.fac_numero = d.fac_numero');
+
+          dm.Query1.SQL.Add('CROSS APPLY (');
+          dm.Query1.SQL.Add('  SELECT SUM(ISNULL(d2.det_cantidad,0)) AS total_cantidad');
+          dm.Query1.SQL.Add('  FROM det_factura d2');
+          dm.Query1.SQL.Add('  WHERE d2.emp_codigo = d.emp_codigo');
+          dm.Query1.SQL.Add('    AND d2.suc_codigo = d.suc_codigo');
+          dm.Query1.SQL.Add('    AND d2.fac_forma  = d.fac_forma');
+          dm.Query1.SQL.Add('    AND d2.tfa_codigo = d.tfa_codigo');
+          dm.Query1.SQL.Add('    AND d2.fac_numero = d.fac_numero');
+          dm.Query1.SQL.Add(') t');
+
+          dm.Query1.SQL.Add('WHERE d.emp_codigo = :emp');
+          dm.Query1.SQL.Add('  AND d.fac_forma  = :forma');
+          dm.Query1.SQL.Add('  AND d.tfa_codigo = :tipo');
+          dm.Query1.SQL.Add('  AND d.fac_numero = :numero');
+          dm.Query1.SQL.Add('  AND d.suc_codigo = :suc');
+
+          dm.Query1.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+          dm.Query1.Parameters.ParamByName('forma').Value  := QDevolucionFAC_FORMA.Value;
+          dm.Query1.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
+          dm.Query1.Parameters.ParamByName('numero').Value := QDevolucionFAC_NUMERO.Value;
+          dm.Query1.Parameters.ParamByName('suc').Value    := QDevolucionsuc_codigo.Value;
+
+          dm.Query1.Open;
+
+           vTotalCantFactura := dm.Query1.FieldByName('total_cantidad').AsFloat;  
+          if vTotalCantFactura <= 0 then vTotalCantFactura := 1;
+
+          dm.Query1.DisableControls;
+
+          QDetalle.Close;
+          QDetalle.Open;
+          a := 0;
+          Insertar := True;
+
+          while not dm.Query1.Eof do
+          begin
+            a := a + 1;
+            QDetalle.Append;
+
+            QDetalleDET_SECUENCIA.Value     := a;
+            QDetalleDET_ESCALA.Value        := dm.Query1.FieldByName('det_escala').AsString;
+            QDetalleVEN_CODIGO.Value        := dm.Query1.FieldByName('ven_codigo').AsInteger;
+            QDetalleDET_COMISION.Value      := dm.Query1.FieldByName('det_comision').AsFloat;
+            QDetallePRO_SERVICIO.Value      := dm.Query1.FieldByName('pro_servicio').AsString;
+            QDetalleEMP_CODIGO.Value        := dm.vp_cia;
+            QDetallePRO_CODIGO.Value        := dm.Query1.FieldByName('pro_codigo').AsInteger;
+            QDetalleDEV_COSTO.Value         := dm.Query1.FieldByName('det_costo').AsFloat;
+            QDetalleDEV_PRECIO.Value        := dm.Query1.FieldByName('det_precio').AsFloat;
+            QDetalleDEV_TOPECANTIDAD.Value  := dm.Query1.FieldByName('det_cantidad').AsFloat -
+                                              dm.Query1.FieldByName('det_cantdevuelta').AsFloat;
+
+            // ====== FORZAR ITBIS SOLO PARA SARITA ======
+            if EsSarita and FacturaTieneItbis then
+              QDetalleDEV_CONITBIS.AsString := 'S'
+            else
+              QDetalleDEV_CONITBIS.AsString := dm.Query1.FieldByName('det_conitbis').AsString;
+
+            QDetalleDEV_DESCUENTO.Value     := dm.Query1.FieldByName('det_descuento').AsFloat;
+
+            if dm.QParametrosservicio_construccion.Value then
+            QDetalleDEV_ITBIS.Value := vItbisMaestro
+            else
+            QDetalleDEV_ITBIS.Value := dm.Query1.FieldByName('det_itbis').AsFloat;
+
+            //QDetalleDEV_ITBIS.Value         := dm.Query1.FieldByName('det_itbis').AsFloat;
+
+            // Si para Sarita viene 0 pero la factura tiene itbis, fuerza % estándar
+            if EsSarita and FacturaTieneItbis and (QDetalleDEV_ITBIS.AsFloat <= 0) then
+              QDetalleDEV_ITBIS.AsFloat := 18;
+
+            QDetalleDEV_CANTFACTURADA.Value := dm.Query1.FieldByName('det_cantidad').AsFloat;
+            QDetallePRO_NOMBRE.Value        := dm.Query1.FieldByName('pro_nombre').AsString;
+            QDetallePRO_RORIGINAL.Value     := dm.Query1.FieldByName('pro_roriginal').AsString;
+            QDetallePRO_RFABRIC.Value       := dm.Query1.FieldByName('pro_rfabric').AsString;
+            QDetalleDET_MEDIDA.Value        := dm.Query1.FieldByName('det_medida').AsString;
+            QDetalledet_lote.Value          := dm.Query1.FieldByName('det_lote').AsInteger;
+            QDetalledet_fechavence.Value    := dm.Query1.FieldByName('det_fechavence').AsDateTime;
+            QDetalledet_cant_oferta.Value   := dm.Query1.FieldByName('det_cant_oferta').AsFloat;
+            QDetalledet_selectivo_ad.Value  := dm.Query1.FieldByName('det_selectivo_ad').AsFloat;
+            QDetalledet_selectivo_con.Value := dm.Query1.FieldByName('det_selectivo_con').AsFloat;
+            QDetallealm_codigo.Value        := dm.Query1.FieldByName('alm_codigo').AsInteger;
+            QDetalleDEV_RECARGO.Value       := dm.Query1.FieldByName('recargo').AsFloat;
+
+            QDetalle.Post;
+            dm.Query1.Next;
+          end;
+
+          dm.Query1.EnableControls;
+          QDetalle.First;
+          Insertar := False;
+
+          // ====== Repartir ITBIS maestro entre items (solo empresas especiales) ======
+          DistribuirItbisMaestroEnDetalle;
+          QDetalle.Refresh; // para que recalculen CalcFields si es necesario
+
         end;
-        dm.Query1.enablecontrols;
-        QDetalle.first;
-        Insertar := False;
       end;
     end;
-  end;
-  //QDevolucionSubTotal.Value :=  0;
-  //QDevolucionDEV_TOTAL.Value := 0;
 end;
 
 procedure TfrmDevolucion.GridEnter(Sender: TObject);
@@ -725,14 +932,13 @@ begin
   while not QDetalle.eof do
   begin
     if QDetalleDEV_CANTIDAD.Value > 0 then begin
-    vl_recargo := QDetalleDEV_RECARGO.Value;
+    vl_recargo := QDetalleDEV_RECARGO.Value +vl_recargo;
     Itbis     := Itbis + QDetalleCalcItbis.value;
     Itbis2    := Itbis2 + QDetalleCalcItbis2.Value;
     if (ConItbis) and (dm.QParametrospar_itbisincluido.Value = 'True') then
     total  := total + QDetalleValor.Value
     else
-    Total  := Total  + QDetalleValor.Value+
-                        vl_recargo;
+    Total  := Total  + QDetalleValor.Value ;
     SelectivoAd  := SelectivoAd  + (QDetalledet_selectivo_ad.Value);
     SelectivoCon := SelectivoCon + (QDetalledet_selectivo_con.Value);
     vl_subtotal  := total-vl_recargo-Itbis;
@@ -759,16 +965,44 @@ begin
   QDevoluciondev_selectivo_ad.Value  := SelectivoAd;
   QDevoluciondev_selectivo_con.Value := SelectivoCon;
   if Itbis2 = 0 then
-  QDevolucionDEV_TOTAL.value         := vl_subtotal+itbis-descuento+vl_recargo+SelectivoAd+SelectivoCon else
-  QDevolucionDEV_TOTAL.value         := vl_subtotal+itbis2-descuento+vl_recargo+SelectivoAd+SelectivoCon;
-  QDevolucionDEV_RECARGO.Value       := vl_recargo;
+  QDevolucionDEV_TOTAL.value         := vl_subtotal+itbis-descuento+SelectivoAd+SelectivoCon  + vl_recargo else
+  QDevolucionDEV_TOTAL.value         := vl_subtotal+itbis2-descuento+SelectivoAd+SelectivoCon + vl_recargo;
+  QDevolucionDEV_RECARGO.Value       := vl_recargo ;
 
  end;
 
 procedure TfrmDevolucion.QDetalleCalcFields(DataSet: TDataSet);
 var
   Venta, NumItbis : Double;
+  ConItbisEfectivo: Boolean;
+
+   sec: Integer;
+  itbisAsignado: Double;
 begin
+
+ if vEsEmpresaItbisMaestro and (Trim(QDetalleDEV_CONITBIS.AsString) = 'S') then
+begin
+  // ITBIS devuelto proporcional a la cantidad DEVUELTA,
+  // pero la base (por unidad) viene de la FACTURA original.
+  if vTotalCantFactura > 0 then
+    QDetalleCalcItbis.Value := Round2( (vItbisMaestro / vTotalCantFactura) * QDetalleDEV_CANTIDAD.AsFloat )
+  else
+    QDetalleCalcItbis.Value := 0;
+
+  QDetalleCalcItbis2.Value := 0;
+
+  // tu cálculo normal de venta/desc/valor (sin usar porcentaje)
+  recargo  := QDetalleDEV_RECARGO.Value;
+  Venta    := (QDetalleDEV_PRECIO.Value + recargo) * QDetalleDEV_CANTIDAD.Value;
+
+  QDetallePrecioItbis.Value := Venta + QDetalledet_selectivo_ad.Value + QDetalledet_selectivo_con.Value;
+  QDetalleCalcRecargo.Value := recargo * QDetalleDEV_CANTIDAD.Value;
+  QDetalleCalcDesc.Value    := (Venta * QDetalleDEV_DESCUENTO.Value) / 100;
+
+  QDetalleValor.Value := (Venta + QDetalledet_selectivo_ad.Value + QDetalledet_selectivo_con.Value + QDetalleCalcItbis.Value);
+  Exit;
+end;
+
  //Facturas
   if QDevolucionFAC_NUMERO.Value > 0 then begin
   if QDetalleDEV_CANTIDAD.Value > 0 then begin
@@ -792,9 +1026,9 @@ begin
       else
       begin
       recargo  := QDetalleDEV_RECARGO.Value;
-      Venta    := (QDetalleDEV_PRECIO.value*QDetalleDEV_CANTIDAD.Value)+recargo;
+      Venta    := (QDetalleDEV_PRECIO.value+recargo)*QDetalleDEV_CANTIDAD.Value;
       QDetallePrecioItbis.value := Venta+QDetalledet_selectivo_ad.Value+QDetalledet_selectivo_con.Value;
-      QDetalleCalcRecargo.Value := recargo;
+      QDetalleCalcRecargo.Value := recargo*QDetalleDEV_CANTIDAD.Value;
       QDetalleCalcDesc.value    := (Venta *QDetalleDEV_DESCUENTO.value)/100;
       if (ConItbis) and (QDevolucionporc_desc_gral.Value = 0) then
         QDetalleCalcItbis.value := ((((Venta-QDetalleCalcDesc.Value)+(QDetalledet_selectivo_ad.Value+QDetalledet_selectivo_con.Value))*
@@ -811,9 +1045,9 @@ begin
   else
   begin
     recargo  := QDetalleDEV_RECARGO.Value;
-      Venta    := (QDetalleDEV_PRECIO.value*QDetalleDEV_CANTIDAD.Value)+recargo;
+      Venta    := (QDetalleDEV_PRECIO.value+recargo)*QDetalleDEV_CANTIDAD.Value;
       QDetallePrecioItbis.value := Venta;
-      QDetalleCalcRecargo.Value := recargo;
+      QDetalleCalcRecargo.Value := recargo*QDetalleDEV_CANTIDAD.Value;
       QDetalleCalcDesc.value    := (Venta *QDetalleDEV_DESCUENTO.value)/100;
       QDetalleCalcItbis.value := 0;
 
@@ -863,11 +1097,128 @@ begin
   if Totaliza = true then Totalizar;
 end;
 
+function TfrmDevolucion.ValidarENCFDisponible(
+  AEmp: Integer; ATipo: Integer;
+  out AMsg: string;
+  out ASiguienteCorrelativo: Int64  // opcional, informativo
+): Boolean;
+var
+  Q: TADOQuery;
+  desde, ultima, cantidad, hasta, siguiente: Int64;
+  vence: TDateTime;
+  activa: Boolean;
+begin
+  Result := False;
+  AMsg := '';
+  ASiguienteCorrelativo := 0;
+
+  Q := dm.Query1; // reutiliza tu query
+  Q.Close;
+  Q.SQL.Clear;
+  Q.SQL.Add('SELECT s.Secuencia_Inicial_DGII, s.Ultima_secuencia_DGII, ');
+  Q.SQL.Add('     CONVERT(datetime, s.FechaVencimientoSecuenciaDGII, 120) AS FechaVencimientoSecuenciaDGII, s.Activa, s.Cantidad');
+  Q.SQL.Add('FROM SecuenciaDGII s');
+  Q.SQL.Add('JOIN TipoNCF t ON t.emp_codigo = s.emp_codigo AND s.Tipo = t.cod_dgii');
+  Q.SQL.Add('WHERE s.emp_codigo = :emp AND t.tip_codigo = :tip');
+  Q.Parameters.ParamByName('emp').Value := AEmp;
+  Q.Parameters.ParamByName('tip').Value := ATipo;
+
+  Q.Open;
+
+  if Q.Eof then
+  begin
+    AMsg := 'SECUENCIA_NO_CONFIGURADA';
+    Exit;
+  end;
+
+  desde    := Q.FieldByName('Secuencia_Inicial_DGII').AsInteger;
+  ultima   := Q.FieldByName('Ultima_secuencia_DGII').AsInteger;
+  cantidad := Q.FieldByName('Cantidad').AsInteger;
+
+  if not Q.FieldByName('FechaVencimientoSecuenciaDGII').IsNull then
+  begin
+    vence := Q.FieldByName('FechaVencimientoSecuenciaDGII').AsDateTime;
+    if Now > vence then
+    begin
+      AMsg := 'La secuencia está vencida.';
+      Exit;
+    end;
+  end;
+
+
+  if not Q.FieldByName('Activa').IsNull then
+  activa := Q.FieldByName('Activa').AsBoolean
+  else
+    activa := False; // por defecto
+
+  hasta     := desde + cantidad - 1;
+  siguiente := ultima + 1;
+
+  if activa = False then
+  begin
+    AMsg := 'SECUENCIA_INACTIVA';
+    Exit;
+  end;
+
+  if siguiente > hasta then
+  begin
+    AMsg := 'SECUENCIA_AGOTADA';
+    Exit;
+  end;
+
+  // Hay secuencia válida y disponible (sin reservar)
+  ASiguienteCorrelativo := siguiente;
+  Result := True;
+end;
+
+
 procedure TfrmDevolucion.btGrabarClick(Sender: TObject);
 var
   desem : integer;
   devdinero : string;
+  Servicio: FacturaElectronicaService;
+  resultado: WideString;
+
+  eNCFFactura: string;
+  TotalFactura: Currency;
+  CausaCodigo: Integer;
+  EnviarDGII: Boolean;
+
+   EsSarita: Boolean;
+   Encontrado: Boolean;
+
+   ok: Boolean;
+   msg: string;
+   prox: Int64;
+
 begin
+    Encontrado := False;
+
+     if (DM.QParametrosPAR_FE_DetenerFacturacion.Value and dm.QParametrosUsa_FacturacionElectronica.Value) then
+        begin
+          ok := ValidarENCFDisponible(
+                        dm.vp_cia,
+                        34,
+                        msg, prox);
+          if (not ok) then
+          begin
+            ShowMessage('No hay comprobantes fiscales disponibles para esta factura.');
+            Exit;
+          end;
+        end;
+
+  // ====== Detectar si es SARITA por RNC 105081105 ======
+  EsSarita := False;
+  if Assigned(dm.QEmpresas) then
+  begin
+    if not dm.QEmpresas.Active then
+      dm.QEmpresas.Open;
+
+  EsSarita :=
+  (Trim(dm.QEmpresas.FieldByName('emp_rnc').AsString) = '131861717');
+
+
+  end;
 
   //verificando si el cierre se hizo para esta fecha
   dm.Query1.Close;
@@ -888,6 +1239,12 @@ begin
   begin
     showmessage('LA DEVOLUCION NO ESTA COMPLETADA');
     Grid.setfocus;
+    abort;
+  end
+  else
+  if QDevolucionmotivo_dgi.Value = 0 then
+  begin
+    showmessage('DEBE INDICAR EL MOTIVO DE LA DEVOLUCION');
     abort;
   end
   else
@@ -1126,7 +1483,7 @@ begin
           dm.Query1.SQL.Add('SET @DEVID = '+QDevolucionDEV_NUMERO.Text);
           dm.Query1.SQL.Add('SET @EMP = '+QDevolucionEMP_CODIGO.Text);
           dm.Query1.SQL.Add('SET @SUC = '+QDevolucionsuc_codigo.Text);
-          dm.Query1.SQL.Add('SET @NCID = (SELECT ncr_numero FROM NotasCredito WHERE emp_codigo = @EMP AND suc_codigo = @SUC AND NCR_DEVOLUCION = @DEVID)');
+          dm.Query1.SQL.Add('SET @NCID = (SELECT TOP 1 ncr_numero FROM NotasCredito WHERE emp_codigo = @EMP AND suc_codigo = @SUC AND NCR_DEVOLUCION = @DEVID)');
           dm.Query1.SQL.Add('UPDATE NotasCredito');
           dm.Query1.SQL.Add('SET NCR_MONTOUSADO = 0,');
           dm.Query1.SQL.Add('FAC_NUMERO = NULL');
@@ -1176,7 +1533,356 @@ begin
 
           QUpdNC.ExecSQL;
 
-          if messagedlg('SE HA GENERADO LA DEVOLUCION NUMERO '+inttostr(QDevolucionDEV_NUMERO.value)+
+          if dm.QParametrosUsa_FacturacionElectronica.Value then
+          begin
+            EnviarDGII := True;  // asumimos que sí se puede, hasta que una validación falle
+
+              // ================= VALIDACIONES NUEVAS (FACTURA ASOCIADA) =================
+             // 1) Factura administrativa
+            dm.Query1.Close;
+            dm.Query1.SQL.Clear;
+            dm.Query1.SQL.Add('SELECT eNCF, fac_total, fac_itbis, AceptadoDGII');
+            dm.Query1.SQL.Add('FROM dbo.Facturas');
+            dm.Query1.SQL.Add('WHERE emp_codigo = :emp');
+            dm.Query1.SQL.Add('  AND suc_codigo = :suc');
+            dm.Query1.SQL.Add('  AND fac_numero = :num');
+            dm.Query1.SQL.Add('  AND fac_forma  = :forma');
+            dm.Query1.SQL.Add('  AND tfa_codigo = :tfa');
+            dm.Query1.Parameters.ParamByName('emp').Value   := QDevolucionEMP_CODIGO.Value;
+            dm.Query1.Parameters.ParamByName('suc').Value   := QDevolucionsuc_codigo.Value;
+            dm.Query1.Parameters.ParamByName('num').Value   := QDevolucionFAC_NUMERO.Value;
+            dm.Query1.Parameters.ParamByName('forma').Value := QDevolucionFAC_FORMA.Value;
+            dm.Query1.Parameters.ParamByName('tfa').Value   := QDevolucionTFA_CODIGO.Value;
+            dm.Query1.Open;
+            Encontrado := not dm.Query1.IsEmpty;
+            // 2) Ticket POS (Montos_Ticket) si no hubo fila en Facturas
+            if not Encontrado then
+            begin
+              dm.Query1.Close;
+              dm.Query1.SQL.Clear;
+              dm.Query1.SQL.Add('SELECT eNCF, total AS fac_total, itbis AS fac_itbis, AceptadoDGII');
+              dm.Query1.SQL.Add('FROM dbo.Montos_Ticket');
+              dm.Query1.SQL.Add('WHERE emp_codigo = :emp');
+              dm.Query1.SQL.Add('  AND suc_codigo = :suc');
+              dm.Query1.SQL.Add('  AND ticket     = :num');
+              dm.Query1.SQL.Add('  AND usu_codigo = :usu');
+              dm.Query1.SQL.Add('  AND caja       = :caja');
+
+              dm.Query1.Parameters.ParamByName('emp').Value := QDevolucionEMP_CODIGO.Value;
+              dm.Query1.Parameters.ParamByName('suc').Value := QDevolucionsuc_codigo.Value;
+              dm.Query1.Parameters.ParamByName('num').Value := QDevolucionticket_numero.Value;
+              dm.Query1.Parameters.ParamByName('usu').Value := QDevolucionticket_cajero.Value;  // campo real del devolución
+              dm.Query1.Parameters.ParamByName('caja').Value := QDevolucionticket_caja.Value;      // idem
+               dm.Query1.Open;
+              Encontrado := not dm.Query1.IsEmpty;
+            end;
+            if not Encontrado then
+            begin
+              ShowMessage('No se encontró la factura asociada. No se enviará la devolución a la DGII.');
+              EnviarDGII := False;
+            end;
+
+            // ================= VALIDACIONES NUEVAS =================
+            // 1) Buscar la factura asociada por: emp_codigo, fac_forma, fac_numero, suc_codigo, tfa_codigo
+           { dm.Query1.Close;
+            dm.Query1.SQL.Clear;
+            dm.Query1.SQL.Add('select eNCF, fac_total,fac_itbis, AceptadoDGII');
+            dm.Query1.SQL.Add('from Facturas');
+            dm.Query1.SQL.Add('where emp_codigo = :emp');
+            dm.Query1.SQL.Add('  and suc_codigo = :suc');
+            dm.Query1.SQL.Add('  and fac_numero = :num');
+            dm.Query1.SQL.Add('  and fac_forma  = :forma');
+            dm.Query1.SQL.Add('  and tfa_codigo = :tfa');
+
+            dm.Query1.Parameters.ParamByName('emp').Value   := QDevolucionEMP_CODIGO.Value;
+            dm.Query1.Parameters.ParamByName('suc').Value   := QDevolucionsuc_codigo.Value;
+            dm.Query1.Parameters.ParamByName('num').Value   := QDevolucionFAC_NUMERO.Value;
+            dm.Query1.Parameters.ParamByName('forma').Value := QDevolucionFAC_FORMA.Value;
+            dm.Query1.Parameters.ParamByName('tfa').Value   := QDevolucionTFA_CODIGO.Value;
+            dm.Query1.Open;
+
+            if dm.Query1.IsEmpty then
+            begin
+              ShowMessage('No se encontró la factura asociada. No se enviará la devolución a la DGII.');
+              EnviarDGII := False;
+            end;        }
+
+            if not (DM.QParametrosintegracion_luganis.AsBoolean) then
+              begin
+                // Validar que la factura fue aceptada por la DGII
+              if EnviarDGII and (not dm.Query1.FieldByName('AceptadoDGII').AsBoolean) then
+              begin
+                ShowMessage(
+                  'La factura asociada no ha sido aceptada por la DGII. ' +
+                  'No se enviará la devolución a la DGII.'
+                );
+                EnviarDGII := False;
+              end;
+            end;
+
+            if EnviarDGII then
+            begin
+              eNCFFactura  := Trim(dm.Query1.FieldByName('eNCF').AsString);
+            // TotalFactura normalmente = fac_total
+            // Para empresas especiales = fac_total + fac_itbis (maestro)
+            if EsSarita then
+            begin
+              TotalFactura :=
+                dm.Query1.FieldByName('fac_total').AsCurrency +
+                dm.Query1.FieldByName('fac_itbis').AsCurrency;
+            end
+            else
+            begin
+              TotalFactura := dm.Query1.FieldByName('fac_total').AsCurrency;
+            end;
+
+
+              // 2) Si la factura asociada no tiene eNCF ? NO enviar
+              if eNCFFactura = '' then
+              begin
+                ShowMessage('La factura asociada no tiene eNCF. No se enviará la devolución a la DGII.');
+                EnviarDGII := False;
+              end;
+            end;
+
+            // 3) Validar motivo DGII (1,2,3) vs montos
+            if EnviarDGII then
+            begin
+              CausaCodigo := StrToIntDef(Trim(QDevolucionmotivo_dgi.AsString), 0);
+
+              case CausaCodigo of
+                1: // Anulación total
+                  begin
+                    if Abs(QDevolucionDEV_TOTAL.Value - TotalFactura) > 0.03 then
+                    begin
+                      ShowMessage(
+                        'Para la causa "1 - Anulación total", el monto de la devolución (' +
+                        CurrToStr(QDevolucionDEV_TOTAL.Value) +
+                        ') debe ser igual al monto de la factura (' +
+                        CurrToStr(TotalFactura) + ').'
+                      );
+                      EnviarDGII := False;
+                    end;
+                  end;
+
+                3: // Corrección montos
+                  begin
+                    if (QDevolucionDEV_TOTAL.Value <= 0) or
+                       (QDevolucionDEV_TOTAL.Value > TotalFactura) then
+                    begin
+                      ShowMessage(
+                        'Para la causa "3 - Corrección montos", el monto de la devolución debe ser ' +
+                        'mayor que 0 y menor o igual al monto de la factura (' +
+                        CurrToStr(TotalFactura) + ').'
+                      );
+                      EnviarDGII := False;
+                    end;
+                  end;
+
+                2: // Corrección texto
+                  begin
+                    if Abs(QDevolucionDEV_TOTAL.Value) > 0.01 then
+                    begin
+                      ShowMessage(
+                        'Para la causa "2 - Corrección texto", el monto de la devolución debe ser 0.00.'
+                      );
+                      EnviarDGII := False;
+                    end;
+                  end;
+              else
+                begin
+                  ShowMessage('Motivo DGII inválido o no soportado. No se enviará la devolución.');
+                  EnviarDGII := False;
+                end;
+              end;
+            end;
+            // ================= FIN VALIDACIONES NUEVAS =================
+
+            // Si todas las validaciones pasaron, enviamos a DGII o LUGANIS
+            if EnviarDGII then
+            begin
+              if dm.QParametrosintegracion_luganis.Value then
+              begin
+                // ===================== FLUJO LUGANIS =====================
+                QDevolucion.Edit;
+
+                dm.Query1.Close;
+                dm.Query1.SQL.Clear;
+                dm.Query1.SQL.Add('select emp_rnc');
+                dm.Query1.SQL.Add('from empresas');
+                dm.Query1.SQL.Add('where emp_codigo = :emp');
+                dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                dm.Query1.Open;
+                QDevolucionemp_rnc.Value := dm.Query1.FieldByName('emp_rnc').AsString;
+
+                dm.Query1.Close;
+                dm.Query1.SQL.Clear;
+                dm.Query1.SQL.Add('select cli_rnc');
+                dm.Query1.SQL.Add('from Clientes');
+                dm.Query1.SQL.Add('where cli_codigo = :sup');
+                dm.Query1.SQL.Add('  and emp_codigo = :emp');
+                dm.Query1.Parameters.ParamByName('sup').Value := QDevolucionCLI_CODIGO.Value;
+                dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                dm.Query1.Open;
+                QDevolucioncli_rnc.Value := dm.Query1.FieldByName('cli_rnc').AsString;
+
+                dm.Query1.Close;
+                dm.Query1.SQL.Clear;
+                dm.Query1.SQL.Add('select eNCF');
+                dm.Query1.SQL.Add('from DEVOLUCION');
+                dm.Query1.SQL.Add('where emp_codigo = :emp');
+                dm.Query1.SQL.Add('  and DEV_NUMERO = :numero');
+                dm.Query1.SQL.Add('  and suc_codigo = :suc');
+                dm.Query1.SQL.Add('  and dev_status <> :status');
+                dm.Query1.Parameters.ParamByName('emp').Value := QDevolucionEMP_CODIGO.Value;
+                dm.Query1.Parameters.ParamByName('suc').Value := QDevolucionsuc_codigo.Value;
+                dm.Query1.Parameters.ParamByName('numero').Value := QDevolucionDEV_NUMERO.Value;
+                dm.Query1.Parameters.ParamByName('status').Value := 'ANU';
+                dm.Query1.Open;
+                QDevolucioneNCF.Value := dm.Query1.FieldByName('eNCF').AsString;
+
+                Servicio := CoFacturaElectronicaService.Create;
+                resultado := Servicio.EnviarDevolucionLuganis(
+                  IntToStr(QDevolucionEMP_CODIGO.Value),
+                  IntToStr(QDevolucionsuc_codigo.Value),
+                  IntToStr(QDevolucionDEV_NUMERO.Value),
+                  QDevolucionemp_rnc.Value,
+                  QDevolucioneNCF.Value,
+                  QDevolucioncli_rnc.Value,
+                  dm.QParametrospar_luganis_baseurl.AsString,
+                  dm.QParametrospar_luganis_companycode.AsString,
+                  dm.QParametrospar_luganis_username.AsString,
+                  dm.QParametrospar_luganis_password.AsString,
+                  dm.QParametrospar_luganis_appversion.AsString,
+                  dm.QParametrospar_luganis_os.AsString,
+                  dm.QParametrospar_luganis_deviceid.AsString,
+                  dm.QParametrospar_luganis_latitude.AsString,
+                  dm.QParametrospar_luganis_longitude.AsString,
+                  dm.QParametrospar_luganis_providerip.AsString,
+                  False,
+                  True,   // saveGeneratedTxt
+                  '',     // outputFolder
+                  False   // logDebug
+                );
+              end
+              else
+              begin
+                // ===================== FLUJO DGII =====================
+                if (not QDevolucionticket_numero.IsNull) and (Trim(QDevolucionticket_numero.AsString) <> '') then
+                begin
+                  QDevolucion.Edit;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select emp_rnc');
+                  dm.Query1.SQL.Add('from empresas');
+                  dm.Query1.SQL.Add('where emp_codigo = :emp');
+                  dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                  dm.Query1.Open;
+                  QDevolucionemp_rnc.Value := dm.Query1.FieldByName('emp_rnc').AsString;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select cli_rnc');
+                  dm.Query1.SQL.Add('from Clientes');
+                  dm.Query1.SQL.Add('where cli_codigo = :sup');
+                  dm.Query1.SQL.Add('  and emp_codigo = :emp');
+                  dm.Query1.Parameters.ParamByName('sup').Value := QDevolucionCLI_CODIGO.Value;
+                  dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                  dm.Query1.Open;
+                  QDevolucioncli_rnc.Value := dm.Query1.FieldByName('cli_rnc').AsString;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select eNCF');
+                  dm.Query1.SQL.Add('from DEVOLUCION');
+                  dm.Query1.SQL.Add('where emp_codigo = :emp');
+                  dm.Query1.SQL.Add('  and DEV_NUMERO = :numero');
+                  dm.Query1.SQL.Add('  and suc_codigo = :suc');
+                  dm.Query1.SQL.Add('  and dev_status <> :status');
+                  dm.Query1.Parameters.ParamByName('emp').Value := QDevolucionEMP_CODIGO.Value;
+                  dm.Query1.Parameters.ParamByName('suc').Value := QDevolucionsuc_codigo.Value;
+                  dm.Query1.Parameters.ParamByName('numero').Value := QDevolucionDEV_NUMERO.Value;
+                  dm.Query1.Parameters.ParamByName('status').Value := 'ANU';
+                  dm.Query1.Open;
+                  QDevolucioneNCF.Value := dm.Query1.FieldByName('eNCF').AsString;
+
+                  Servicio := CoFacturaElectronicaService.Create;
+                  resultado := Servicio.EnviarDevolucionPOS(
+                    IntToStr(QDevolucionEMP_CODIGO.Value),
+                    IntToStr(QDevolucionsuc_codigo.Value),
+                    '',
+                    IntToStr(QDevolucionDEV_NUMERO.Value),
+                    QDevolucionemp_rnc.Value,
+                    '',
+                    QDevolucioncli_rnc.Value,
+                    '',
+                    '',
+                    '34'
+                  );
+                end
+                else
+                begin
+                  QDevolucion.Edit;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select emp_rnc');
+                  dm.Query1.SQL.Add('from empresas');
+                  dm.Query1.SQL.Add('where emp_codigo = :emp');
+                  dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                  dm.Query1.Open;
+                  QDevolucionemp_rnc.Value := dm.Query1.FieldByName('emp_rnc').AsString;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select cli_rnc');
+                  dm.Query1.SQL.Add('from Clientes');
+                  dm.Query1.SQL.Add('where cli_codigo = :sup');
+                  dm.Query1.SQL.Add('  and emp_codigo = :emp');
+                  dm.Query1.Parameters.ParamByName('sup').Value := QDevolucionCLI_CODIGO.Value;
+                  dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                  dm.Query1.Open;
+                  QDevolucioncli_rnc.Value := dm.Query1.FieldByName('cli_rnc').AsString;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select eNCF');
+                  dm.Query1.SQL.Add('from DEVOLUCION');
+                  dm.Query1.SQL.Add('where emp_codigo = :emp');
+                  dm.Query1.SQL.Add('  and DEV_NUMERO = :numero');
+                  dm.Query1.SQL.Add('  and suc_codigo = :suc');
+                  dm.Query1.SQL.Add('  and dev_status <> :status');
+                  dm.Query1.Parameters.ParamByName('emp').Value := QDevolucionEMP_CODIGO.Value;
+                  dm.Query1.Parameters.ParamByName('suc').Value := QDevolucionsuc_codigo.Value;
+                  dm.Query1.Parameters.ParamByName('numero').Value := QDevolucionDEV_NUMERO.Value;
+                  dm.Query1.Parameters.ParamByName('status').Value := 'ANU';
+                  dm.Query1.Open;
+                  QDevolucioneNCF.Value := dm.Query1.FieldByName('eNCF').AsString;
+
+                  Servicio := CoFacturaElectronicaService.Create;
+                  resultado := Servicio.EnviarDevolucion(
+                    IntToStr(QDevolucionEMP_CODIGO.Value),
+                    IntToStr(QDevolucionsuc_codigo.Value),
+                    '',
+                    IntToStr(QDevolucionDEV_NUMERO.Value),
+                    QDevolucionemp_rnc.Value,
+                    '',
+                    QDevolucioncli_rnc.Value,
+                    '',
+                    '',
+                    '34'
+                  );
+                end;
+              end;
+            end
+            else
+            begin
+              ShowMessage('La devolución se grabó correctamente, pero NO se envió a la DGII por las validaciones.');
+            end;
+          end;
+
+              if messagedlg('SE HA GENERADO LA DEVOLUCION NUMERO '+inttostr(QDevolucionDEV_NUMERO.value)+
                         ', DESEA IMPRIMIR ESTA DEVOLUCION?',mtconfirmation,[mbyes,mbno],0) = mryes then
           begin
             if Impresora.IDPrinter > 0 then
@@ -1266,7 +1972,356 @@ begin
 
         //Verificar si esta paga la facturas Jhonattan Gomez
         
+        
+          if dm.QParametrosUsa_FacturacionElectronica.Value then
+          begin
+            EnviarDGII := True;  // asumimos que sí se puede, hasta que una validación falle
 
+              // ================= VALIDACIONES NUEVAS (FACTURA ASOCIADA) =================
+             // 1) Factura administrativa
+            dm.Query1.Close;
+            dm.Query1.SQL.Clear;
+            dm.Query1.SQL.Add('SELECT eNCF, fac_total, fac_itbis, AceptadoDGII');
+            dm.Query1.SQL.Add('FROM dbo.Facturas');
+            dm.Query1.SQL.Add('WHERE emp_codigo = :emp');
+            dm.Query1.SQL.Add('  AND suc_codigo = :suc');
+            dm.Query1.SQL.Add('  AND fac_numero = :num');
+            dm.Query1.SQL.Add('  AND fac_forma  = :forma');
+            dm.Query1.SQL.Add('  AND tfa_codigo = :tfa');
+            dm.Query1.Parameters.ParamByName('emp').Value   := QDevolucionEMP_CODIGO.Value;
+            dm.Query1.Parameters.ParamByName('suc').Value   := QDevolucionsuc_codigo.Value;
+            dm.Query1.Parameters.ParamByName('num').Value   := QDevolucionFAC_NUMERO.Value;
+            dm.Query1.Parameters.ParamByName('forma').Value := QDevolucionFAC_FORMA.Value;
+            dm.Query1.Parameters.ParamByName('tfa').Value   := QDevolucionTFA_CODIGO.Value;
+            dm.Query1.Open;
+            Encontrado := not dm.Query1.IsEmpty;
+            // 2) Ticket POS (Montos_Ticket) si no hubo fila en Facturas
+            if not Encontrado then
+            begin
+              dm.Query1.Close;
+              dm.Query1.SQL.Clear;
+              dm.Query1.SQL.Add('SELECT eNCF, total AS fac_total, itbis AS fac_itbis, AceptadoDGII');
+              dm.Query1.SQL.Add('FROM dbo.Montos_Ticket');
+              dm.Query1.SQL.Add('WHERE emp_codigo = :emp');
+              dm.Query1.SQL.Add('  AND suc_codigo = :suc');
+              dm.Query1.SQL.Add('  AND ticket     = :num');
+              dm.Query1.SQL.Add('  AND usu_codigo = :usu');
+              dm.Query1.SQL.Add('  AND caja       = :caja');
+
+              dm.Query1.Parameters.ParamByName('emp').Value := QDevolucionEMP_CODIGO.Value;
+              dm.Query1.Parameters.ParamByName('suc').Value := QDevolucionsuc_codigo.Value;
+              dm.Query1.Parameters.ParamByName('num').Value := QDevolucionticket_numero.Value;
+              dm.Query1.Parameters.ParamByName('usu').Value := QDevolucionticket_cajero.Value;  // campo real del devolución
+              dm.Query1.Parameters.ParamByName('caja').Value := QDevolucionticket_caja.Value;      // idem
+               dm.Query1.Open;
+              Encontrado := not dm.Query1.IsEmpty;
+            end;
+            if not Encontrado then
+            begin
+              ShowMessage('No se encontró la factura asociada. No se enviará la devolución a la DGII.');
+              EnviarDGII := False;
+            end;
+
+            // ================= VALIDACIONES NUEVAS =================
+            // 1) Buscar la factura asociada por: emp_codigo, fac_forma, fac_numero, suc_codigo, tfa_codigo
+           { dm.Query1.Close;
+            dm.Query1.SQL.Clear;
+            dm.Query1.SQL.Add('select eNCF, fac_total,fac_itbis, AceptadoDGII');
+            dm.Query1.SQL.Add('from Facturas');
+            dm.Query1.SQL.Add('where emp_codigo = :emp');
+            dm.Query1.SQL.Add('  and suc_codigo = :suc');
+            dm.Query1.SQL.Add('  and fac_numero = :num');
+            dm.Query1.SQL.Add('  and fac_forma  = :forma');
+            dm.Query1.SQL.Add('  and tfa_codigo = :tfa');
+
+            dm.Query1.Parameters.ParamByName('emp').Value   := QDevolucionEMP_CODIGO.Value;
+            dm.Query1.Parameters.ParamByName('suc').Value   := QDevolucionsuc_codigo.Value;
+            dm.Query1.Parameters.ParamByName('num').Value   := QDevolucionFAC_NUMERO.Value;
+            dm.Query1.Parameters.ParamByName('forma').Value := QDevolucionFAC_FORMA.Value;
+            dm.Query1.Parameters.ParamByName('tfa').Value   := QDevolucionTFA_CODIGO.Value;
+            dm.Query1.Open;
+
+            if dm.Query1.IsEmpty then
+            begin
+              ShowMessage('No se encontró la factura asociada. No se enviará la devolución a la DGII.');
+              EnviarDGII := False;
+            end;        }
+
+            if not (DM.QParametrosintegracion_luganis.AsBoolean) then
+              begin
+                // Validar que la factura fue aceptada por la DGII
+              if EnviarDGII and (not dm.Query1.FieldByName('AceptadoDGII').AsBoolean) then
+              begin
+                ShowMessage(
+                  'La factura asociada no ha sido aceptada por la DGII. ' +
+                  'No se enviará la devolución a la DGII.'
+                );
+                EnviarDGII := False;
+              end;
+            end;
+
+            if EnviarDGII then
+            begin
+              eNCFFactura  := Trim(dm.Query1.FieldByName('eNCF').AsString);
+            // TotalFactura normalmente = fac_total
+            // Para empresas especiales = fac_total + fac_itbis (maestro)
+            if EsSarita then
+            begin
+              TotalFactura :=
+                dm.Query1.FieldByName('fac_total').AsCurrency +
+                dm.Query1.FieldByName('fac_itbis').AsCurrency;
+            end
+            else
+            begin
+              TotalFactura := dm.Query1.FieldByName('fac_total').AsCurrency;
+            end;
+
+
+              // 2) Si la factura asociada no tiene eNCF ? NO enviar
+              if eNCFFactura = '' then
+              begin
+                ShowMessage('La factura asociada no tiene eNCF. No se enviará la devolución a la DGII.');
+                EnviarDGII := False;
+              end;
+            end;
+
+            // 3) Validar motivo DGII (1,2,3) vs montos
+            if EnviarDGII then
+            begin
+              CausaCodigo := StrToIntDef(Trim(QDevolucionmotivo_dgi.AsString), 0);
+
+              case CausaCodigo of
+                1: // Anulación total
+                  begin
+                    if Abs(QDevolucionDEV_TOTAL.Value - TotalFactura) > 0.01 then
+                    begin
+                      ShowMessage(
+                        'Para la causa "1 - Anulación total", el monto de la devolución (' +
+                        CurrToStr(QDevolucionDEV_TOTAL.Value) +
+                        ') debe ser igual al monto de la factura (' +
+                        CurrToStr(TotalFactura) + ').'
+                      );
+                      EnviarDGII := False;
+                    end;
+                  end;
+
+                3: // Corrección montos
+                  begin
+                    if (QDevolucionDEV_TOTAL.Value <= 0) or
+                       (QDevolucionDEV_TOTAL.Value > TotalFactura) then
+                    begin
+                      ShowMessage(
+                        'Para la causa "3 - Corrección montos", el monto de la devolución debe ser ' +
+                        'mayor que 0 y menor o igual al monto de la factura (' +
+                        CurrToStr(TotalFactura) + ').'
+                      );
+                      EnviarDGII := False;
+                    end;
+                  end;
+
+                2: // Corrección texto
+                  begin
+                    if Abs(QDevolucionDEV_TOTAL.Value) > 0.01 then
+                    begin
+                      ShowMessage(
+                        'Para la causa "2 - Corrección texto", el monto de la devolución debe ser 0.00.'
+                      );
+                      EnviarDGII := False;
+                    end;
+                  end;
+              else
+                begin
+                  ShowMessage('Motivo DGII inválido o no soportado. No se enviará la devolución.');
+                  EnviarDGII := False;
+                end;
+              end;
+            end;
+            // ================= FIN VALIDACIONES NUEVAS =================
+
+            // Si todas las validaciones pasaron, enviamos a DGII o LUGANIS
+            if EnviarDGII then
+            begin
+              if dm.QParametrosintegracion_luganis.Value then
+              begin
+                // ===================== FLUJO LUGANIS =====================
+                QDevolucion.Edit;
+
+                dm.Query1.Close;
+                dm.Query1.SQL.Clear;
+                dm.Query1.SQL.Add('select emp_rnc');
+                dm.Query1.SQL.Add('from empresas');
+                dm.Query1.SQL.Add('where emp_codigo = :emp');
+                dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                dm.Query1.Open;
+                QDevolucionemp_rnc.Value := dm.Query1.FieldByName('emp_rnc').AsString;
+
+                dm.Query1.Close;
+                dm.Query1.SQL.Clear;
+                dm.Query1.SQL.Add('select cli_rnc');
+                dm.Query1.SQL.Add('from Clientes');
+                dm.Query1.SQL.Add('where cli_codigo = :sup');
+                dm.Query1.SQL.Add('  and emp_codigo = :emp');
+                dm.Query1.Parameters.ParamByName('sup').Value := QDevolucionCLI_CODIGO.Value;
+                dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                dm.Query1.Open;
+                QDevolucioncli_rnc.Value := dm.Query1.FieldByName('cli_rnc').AsString;
+
+                dm.Query1.Close;
+                dm.Query1.SQL.Clear;
+                dm.Query1.SQL.Add('select eNCF');
+                dm.Query1.SQL.Add('from DEVOLUCION');
+                dm.Query1.SQL.Add('where emp_codigo = :emp');
+                dm.Query1.SQL.Add('  and DEV_NUMERO = :numero');
+                dm.Query1.SQL.Add('  and suc_codigo = :suc');
+                dm.Query1.SQL.Add('  and dev_status <> :status');
+                dm.Query1.Parameters.ParamByName('emp').Value := QDevolucionEMP_CODIGO.Value;
+                dm.Query1.Parameters.ParamByName('suc').Value := QDevolucionsuc_codigo.Value;
+                dm.Query1.Parameters.ParamByName('numero').Value := QDevolucionDEV_NUMERO.Value;
+                dm.Query1.Parameters.ParamByName('status').Value := 'ANU';
+                dm.Query1.Open;
+                QDevolucioneNCF.Value := dm.Query1.FieldByName('eNCF').AsString;
+
+                Servicio := CoFacturaElectronicaService.Create;
+                resultado := Servicio.EnviarDevolucionLuganis(
+                  IntToStr(QDevolucionEMP_CODIGO.Value),
+                  IntToStr(QDevolucionsuc_codigo.Value),
+                  IntToStr(QDevolucionDEV_NUMERO.Value),
+                  QDevolucionemp_rnc.Value,
+                  QDevolucioneNCF.Value,
+                  QDevolucioncli_rnc.Value,
+                  dm.QParametrospar_luganis_baseurl.AsString,
+                  dm.QParametrospar_luganis_companycode.AsString,
+                  dm.QParametrospar_luganis_username.AsString,
+                  dm.QParametrospar_luganis_password.AsString,
+                  dm.QParametrospar_luganis_appversion.AsString,
+                  dm.QParametrospar_luganis_os.AsString,
+                  dm.QParametrospar_luganis_deviceid.AsString,
+                  dm.QParametrospar_luganis_latitude.AsString,
+                  dm.QParametrospar_luganis_longitude.AsString,
+                  dm.QParametrospar_luganis_providerip.AsString,
+                  False,
+                  True,   // saveGeneratedTxt
+                  '',     // outputFolder
+                  False   // logDebug
+                );
+              end
+              else
+              begin
+                // ===================== FLUJO DGII =====================
+                if (not QDevolucionticket_numero.IsNull) and (Trim(QDevolucionticket_numero.AsString) <> '') then
+                begin
+                  QDevolucion.Edit;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select emp_rnc');
+                  dm.Query1.SQL.Add('from empresas');
+                  dm.Query1.SQL.Add('where emp_codigo = :emp');
+                  dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                  dm.Query1.Open;
+                  QDevolucionemp_rnc.Value := dm.Query1.FieldByName('emp_rnc').AsString;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select cli_rnc');
+                  dm.Query1.SQL.Add('from Clientes');
+                  dm.Query1.SQL.Add('where cli_codigo = :sup');
+                  dm.Query1.SQL.Add('  and emp_codigo = :emp');
+                  dm.Query1.Parameters.ParamByName('sup').Value := QDevolucionCLI_CODIGO.Value;
+                  dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                  dm.Query1.Open;
+                  QDevolucioncli_rnc.Value := dm.Query1.FieldByName('cli_rnc').AsString;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select eNCF');
+                  dm.Query1.SQL.Add('from DEVOLUCION');
+                  dm.Query1.SQL.Add('where emp_codigo = :emp');
+                  dm.Query1.SQL.Add('  and DEV_NUMERO = :numero');
+                  dm.Query1.SQL.Add('  and suc_codigo = :suc');
+                  dm.Query1.SQL.Add('  and dev_status <> :status');
+                  dm.Query1.Parameters.ParamByName('emp').Value := QDevolucionEMP_CODIGO.Value;
+                  dm.Query1.Parameters.ParamByName('suc').Value := QDevolucionsuc_codigo.Value;
+                  dm.Query1.Parameters.ParamByName('numero').Value := QDevolucionDEV_NUMERO.Value;
+                  dm.Query1.Parameters.ParamByName('status').Value := 'ANU';
+                  dm.Query1.Open;
+                  QDevolucioneNCF.Value := dm.Query1.FieldByName('eNCF').AsString;
+
+                  Servicio := CoFacturaElectronicaService.Create;
+                  resultado := Servicio.EnviarDevolucionPOS(
+                    IntToStr(QDevolucionEMP_CODIGO.Value),
+                    IntToStr(QDevolucionsuc_codigo.Value),
+                    '',
+                    IntToStr(QDevolucionDEV_NUMERO.Value),
+                    QDevolucionemp_rnc.Value,
+                    '',
+                    QDevolucioncli_rnc.Value,
+                    '',
+                    '',
+                    '34'
+                  );
+                end
+                else
+                begin
+                  QDevolucion.Edit;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select emp_rnc');
+                  dm.Query1.SQL.Add('from empresas');
+                  dm.Query1.SQL.Add('where emp_codigo = :emp');
+                  dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                  dm.Query1.Open;
+                  QDevolucionemp_rnc.Value := dm.Query1.FieldByName('emp_rnc').AsString;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select cli_rnc');
+                  dm.Query1.SQL.Add('from Clientes');
+                  dm.Query1.SQL.Add('where cli_codigo = :sup');
+                  dm.Query1.SQL.Add('  and emp_codigo = :emp');
+                  dm.Query1.Parameters.ParamByName('sup').Value := QDevolucionCLI_CODIGO.Value;
+                  dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                  dm.Query1.Open;
+                  QDevolucioncli_rnc.Value := dm.Query1.FieldByName('cli_rnc').AsString;
+
+                  dm.Query1.Close;
+                  dm.Query1.SQL.Clear;
+                  dm.Query1.SQL.Add('select eNCF');
+                  dm.Query1.SQL.Add('from DEVOLUCION');
+                  dm.Query1.SQL.Add('where emp_codigo = :emp');
+                  dm.Query1.SQL.Add('  and DEV_NUMERO = :numero');
+                  dm.Query1.SQL.Add('  and suc_codigo = :suc');
+                  dm.Query1.SQL.Add('  and dev_status <> :status');
+                  dm.Query1.Parameters.ParamByName('emp').Value := QDevolucionEMP_CODIGO.Value;
+                  dm.Query1.Parameters.ParamByName('suc').Value := QDevolucionsuc_codigo.Value;
+                  dm.Query1.Parameters.ParamByName('numero').Value := QDevolucionDEV_NUMERO.Value;
+                  dm.Query1.Parameters.ParamByName('status').Value := 'ANU';
+                  dm.Query1.Open;
+                  QDevolucioneNCF.Value := dm.Query1.FieldByName('eNCF').AsString;
+
+                  Servicio := CoFacturaElectronicaService.Create;
+                  resultado := Servicio.EnviarDevolucion(
+                    IntToStr(QDevolucionEMP_CODIGO.Value),
+                    IntToStr(QDevolucionsuc_codigo.Value),
+                    '',
+                    IntToStr(QDevolucionDEV_NUMERO.Value),
+                    QDevolucionemp_rnc.Value,
+                    '',
+                    QDevolucioncli_rnc.Value,
+                    '',
+                    '',
+                    '34'
+                  );
+                end;
+              end;
+            end
+            else
+            begin
+              ShowMessage('La devolución se grabó correctamente, pero NO se envió a la DGII por las validaciones.');
+            end;
+          end;
+          
         if messagedlg('SE HA GENERADO LA DEVOLUCION NUMERO '+inttostr(QDevolucionDEV_NUMERO.value)+
                       ', DESEA IMPRIMIR ESTA DEVOLUCION?',mtconfirmation,[mbyes,mbno],0) = mryes then
         begin
@@ -1413,6 +2468,10 @@ begin
   end;
 
   dm.getParametrosPrinterFiscal;
+
+  vItbisPorLinea := TStringList.Create;
+  vItbisPorLinea.Sorted := False;
+  vItbisPorLinea.Duplicates := dupIgnore;
 end;
 
 procedure TfrmDevolucion.rbFormaClick(Sender: TObject);
@@ -1482,7 +2541,8 @@ begin
   writeln(arch, 'NCF     : '+NCF);
   writeln(arch, 'NCF Mod.: '+NCFMODIFICA);
   writeln(arch, ' ');
-  writeln(arch, 'MONTO   : '+chr(27)+chr(52)+Format('%n',[QdevolucionDEV_TOTAL.value])+chr(27)+chr(53));
+  writeln(arch, 'MONTO   : '+Format('%n',[QdevolucionDEV_TOTAL.value]));
+  //+chr(27)+chr(52)+Format('%n',[QdevolucionDEV_TOTAL.value])+chr(27)+chr(53));
   writeln(arch, '----------------------------------------');
   writeln(arch, 'Cant. Descripcion del Producto');
   writeln(arch, '----------------------------------------');
@@ -2915,6 +3975,48 @@ begin
     ExecSQL;
   end;
 
+end;
+
+procedure TfrmDevolucion.SpeedButton2Click(Sender: TObject);
+begin
+  search.Query.clear;
+  search.AliasFields.clear;
+  search.Query.add('select nombre, Codigo');
+  search.Query.add('from catAnulacioneNCF');
+  search.AliasFields.add('Nombre');
+  search.AliasFields.add('Código');
+  search.ResultField := 'Codigo';
+  search.Title := 'Motivos de Devolucion para la DGII';
+  if search.execute then
+  begin
+    QDevolucionmotivo_dgi.Value := StrToInt(search.valuefield);
+    DBEdit15.SetFocus;
+end;
+ end;
+procedure TfrmDevolucion.QDevolucionmotivo_dgiGetText(Sender: TField;
+  var Text: String; DisplayText: Boolean);
+begin
+if not QDevolucionmotivo_dgi.IsNull then
+  begin
+    Text := IntToStr(QDevolucionmotivo_dgi.Value);
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('select nombre from catAnulacioneNCF');
+    dm.Query1.SQL.Add('where codigo = :cod');
+    dm.Query1.Parameters.ParamByName('cod').Value := QDevolucionmotivo_dgi.Value;
+    dm.Query1.Open;
+    if dm.Query1.RecordCount > 0 then
+      tmotivodgi.Text := dm.Query1.FieldByName('nombre').AsString
+    else
+      tmotivodgi.Text := '';
+  end;
+
+
+end;
+
+procedure TfrmDevolucion.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(vItbisPorLinea);
 end;
 
 end.

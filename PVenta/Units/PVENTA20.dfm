@@ -1,11 +1,11 @@
 object frmPedidosProv: TfrmPedidosProv
-  Left = 718
-  Top = 325
+  Left = 525
+  Top = 213
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Orden de Compra'
-  ClientHeight = 448
-  ClientWidth = 930
+  ClientHeight = 416
+  ClientWidth = 864
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -24,34 +24,34 @@ object frmPedidosProv: TfrmPedidosProv
   OnKeyPress = FormKeyPress
   OnPaint = FormPaint
   PixelsPerInch = 96
-  TextHeight = 14
+  TextHeight = 13
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 930
-    Height = 180
+    Width = 864
+    Height = 167
     Align = alTop
     BevelInner = bvRaised
     BevelOuter = bvLowered
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
-    Font.Height = -12
+    Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     TabOrder = 0
     object Label2: TLabel
-      Left = 9
-      Top = 58
-      Width = 56
-      Height = 14
+      Left = 8
+      Top = 54
+      Width = 50
+      Height = 13
       Caption = 'Proveedor'
     end
     object btProveedor: TSpeedButton
-      Left = 125
-      Top = 58
-      Width = 25
-      Height = 24
+      Left = 116
+      Top = 54
+      Width = 23
+      Height = 22
       Flat = True
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -68,59 +68,59 @@ object frmPedidosProv: TfrmPedidosProv
       OnClick = btProveedorClick
     end
     object Label3: TLabel
-      Left = 9
-      Top = 82
-      Width = 49
-      Height = 14
+      Left = 8
+      Top = 76
+      Width = 43
+      Height = 13
       Caption = 'Direcci'#243'n'
     end
     object Label4: TLabel
-      Left = 9
-      Top = 106
-      Width = 49
-      Height = 14
+      Left = 8
+      Top = 98
+      Width = 44
+      Height = 13
       Caption = 'Localidad'
     end
     object Label5: TLabel
-      Left = 9
-      Top = 129
-      Width = 49
-      Height = 14
+      Left = 8
+      Top = 120
+      Width = 42
+      Height = 13
       Caption = 'Tel'#233'fono'
     end
     object Label6: TLabel
-      Left = 155
-      Top = 129
+      Left = 144
+      Top = 120
       Width = 18
-      Height = 14
+      Height = 13
       Caption = 'Fax'
     end
     object Label8: TLabel
-      Left = 267
-      Top = 129
-      Width = 20
-      Height = 14
+      Left = 248
+      Top = 120
+      Width = 17
+      Height = 13
       Caption = 'Bce'
     end
     object Label9: TLabel
-      Left = 9
-      Top = 9
-      Width = 32
-      Height = 14
+      Left = 8
+      Top = 8
+      Width = 29
+      Height = 13
       Caption = 'Fecha'
     end
     object Label10: TLabel
-      Left = 396
-      Top = 56
-      Width = 64
-      Height = 14
+      Left = 368
+      Top = 52
+      Width = 57
+      Height = 13
       Caption = 'Condiciones'
     end
     object btCondicion: TSpeedButton
-      Left = 495
-      Top = 56
-      Width = 25
-      Height = 24
+      Left = 460
+      Top = 52
+      Width = 23
+      Height = 22
       Flat = True
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -137,47 +137,47 @@ object frmPedidosProv: TfrmPedidosProv
       OnClick = btCondicionClick
     end
     object Label1: TLabel
-      Left = 9
-      Top = 153
-      Width = 54
-      Height = 14
+      Left = 8
+      Top = 142
+      Width = 49
+      Height = 13
       Caption = 'Cotizaci'#243'n'
       FocusControl = DBEdit9
     end
     object Label14: TLabel
-      Left = 145
-      Top = 9
-      Width = 44
-      Height = 14
+      Left = 135
+      Top = 8
+      Width = 40
+      Height = 13
       Caption = 'Sucursal'
     end
     object Label11: TLabel
-      Left = 181
-      Top = 153
-      Width = 108
-      Height = 14
+      Left = 168
+      Top = 142
+      Width = 94
+      Height = 13
       Caption = 'Solicitud de Compra'
       FocusControl = DBEdit13
     end
     object Label12: TLabel
-      Left = 396
-      Top = 80
-      Width = 42
-      Height = 14
+      Left = 368
+      Top = 74
+      Width = 39
+      Height = 13
       Caption = 'Courrier'
     end
     object Label13: TLabel
-      Left = 396
-      Top = 32
-      Width = 43
-      Height = 14
+      Left = 368
+      Top = 30
+      Width = 38
+      Height = 13
       Caption = 'Moneda'
     end
     object btmoneda: TSpeedButton
-      Left = 495
-      Top = 32
-      Width = 25
-      Height = 24
+      Left = 460
+      Top = 30
+      Width = 23
+      Height = 22
       Flat = True
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -194,24 +194,24 @@ object frmPedidosProv: TfrmPedidosProv
       OnClick = btmonedaClick
     end
     object Label15: TLabel
-      Left = 663
-      Top = 37
-      Width = 25
-      Height = 14
+      Left = 616
+      Top = 34
+      Width = 23
+      Height = 13
       Caption = 'Tasa'
     end
     object Label20: TLabel
-      Left = 396
-      Top = 9
-      Width = 37
-      Height = 14
+      Left = 368
+      Top = 8
+      Width = 33
+      Height = 13
       Caption = 'Centro'
     end
     object btcentro: TSpeedButton
-      Left = 495
-      Top = 9
-      Width = 25
-      Height = 23
+      Left = 460
+      Top = 8
+      Width = 23
+      Height = 22
       Flat = True
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -228,17 +228,17 @@ object frmPedidosProv: TfrmPedidosProv
       OnClick = btcentroClick
     end
     object Label25: TLabel
-      Left = 9
-      Top = 33
-      Width = 38
-      Height = 14
+      Left = 8
+      Top = 31
+      Width = 33
+      Height = 13
       Caption = 'Depto.'
     end
     object btdepto: TSpeedButton
-      Left = 125
-      Top = 32
-      Width = 25
-      Height = 24
+      Left = 116
+      Top = 30
+      Width = 23
+      Height = 22
       Flat = True
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -255,15 +255,15 @@ object frmPedidosProv: TfrmPedidosProv
       OnClick = btdeptoClick
     end
     object edProveedor: TEdit
-      Left = 69
-      Top = 58
-      Width = 53
-      Height = 23
+      Left = 64
+      Top = 54
+      Width = 49
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
@@ -271,146 +271,146 @@ object frmPedidosProv: TfrmPedidosProv
       OnKeyDown = edProveedorKeyDown
     end
     object DBEdit1: TDBEdit
-      Left = 69
-      Top = 82
-      Width = 320
-      Height = 22
+      Left = 64
+      Top = 76
+      Width = 297
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'PED_DIRECCION'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 4
     end
     object DBEdit2: TDBEdit
-      Left = 69
-      Top = 106
-      Width = 320
-      Height = 22
+      Left = 64
+      Top = 98
+      Width = 297
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'PED_LOCALIDAD'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 5
     end
     object DBEdit3: TDBEdit
-      Left = 69
-      Top = 129
-      Width = 79
-      Height = 23
+      Left = 64
+      Top = 120
+      Width = 73
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'PED_TELEFONO'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 6
     end
     object DBEdit4: TDBEdit
-      Left = 181
-      Top = 129
-      Width = 79
-      Height = 23
+      Left = 168
+      Top = 120
+      Width = 73
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'PED_FAX'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 7
     end
     object tBalance: TEdit
-      Left = 293
-      Top = 129
-      Width = 96
-      Height = 23
+      Left = 272
+      Top = 120
+      Width = 89
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 14
     end
     object DBEdit5: TDBEdit
-      Left = 69
-      Top = 9
-      Width = 70
-      Height = 22
+      Left = 64
+      Top = 8
+      Width = 65
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'PED_FECHA'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 0
     end
     object tCondicion: TEdit
-      Left = 522
-      Top = 56
-      Width = 263
-      Height = 23
+      Left = 485
+      Top = 52
+      Width = 244
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 15
     end
     object DBEdit12: TDBEdit
-      Left = 465
-      Top = 56
-      Width = 27
-      Height = 23
+      Left = 432
+      Top = 52
+      Width = 25
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'CPA_CODIGO'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 13
     end
     object DBEdit6: TDBEdit
-      Left = 155
-      Top = 58
-      Width = 234
-      Height = 23
+      Left = 144
+      Top = 54
+      Width = 217
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       CharCase = ecUpperCase
@@ -420,40 +420,40 @@ object frmPedidosProv: TfrmPedidosProv
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 16
     end
     object DBEdit9: TDBEdit
-      Left = 69
-      Top = 153
-      Width = 79
-      Height = 23
+      Left = 64
+      Top = 142
+      Width = 73
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'PED_COTIZACION'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 8
     end
     object DBLookupComboBox2: TDBLookupComboBox
-      Left = 198
-      Top = 9
-      Width = 192
-      Height = 22
+      Left = 184
+      Top = 8
+      Width = 178
+      Height = 21
       DataField = 'SUC_CODIGO'
       DataSource = dsPedidos
       DropDownRows = 20
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       KeyField = 'suc_codigo'
@@ -463,27 +463,27 @@ object frmPedidosProv: TfrmPedidosProv
       TabOrder = 1
     end
     object DBEdit13: TDBEdit
-      Left = 293
-      Top = 153
-      Width = 96
-      Height = 23
+      Left = 272
+      Top = 142
+      Width = 89
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'ped_solicitud_compra'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 9
     end
     object DBRichEdit1: TDBRichEdit
-      Left = 465
-      Top = 106
-      Width = 320
-      Height = 70
+      Left = 432
+      Top = 98
+      Width = 297
+      Height = 65
       TabStop = False
       BevelKind = bkFlat
       BorderStyle = bsNone
@@ -492,61 +492,61 @@ object frmPedidosProv: TfrmPedidosProv
       TabOrder = 17
     end
     object tmoneda: TEdit
-      Left = 522
-      Top = 32
-      Width = 135
-      Height = 23
+      Left = 485
+      Top = 30
+      Width = 125
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 18
     end
     object DBEdit15: TDBEdit
-      Left = 698
-      Top = 32
-      Width = 87
-      Height = 23
+      Left = 648
+      Top = 30
+      Width = 81
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'ped_tasa'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 12
     end
     object DBEdit14: TDBEdit
-      Left = 465
-      Top = 32
-      Width = 27
-      Height = 23
+      Left = 432
+      Top = 30
+      Width = 25
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'mon_codigo'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 11
     end
     object DBLookupComboBox1: TDBLookupComboBox
-      Left = 465
-      Top = 80
-      Width = 320
-      Height = 22
+      Left = 432
+      Top = 74
+      Width = 297
+      Height = 21
       DataField = 'cou_codigo'
       DataSource = dsPedidos
       KeyField = 'cou_codigo'
@@ -555,68 +555,68 @@ object frmPedidosProv: TfrmPedidosProv
       TabOrder = 19
     end
     object DBEdit16: TDBEdit
-      Left = 465
-      Top = 9
-      Width = 27
-      Height = 22
+      Left = 432
+      Top = 8
+      Width = 25
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'cen_codigo'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 10
     end
     object tcentro: TEdit
-      Left = 522
-      Top = 9
-      Width = 263
-      Height = 22
+      Left = 485
+      Top = 8
+      Width = 244
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 20
     end
     object DBEdit25: TDBEdit
-      Left = 69
-      Top = 33
-      Width = 53
-      Height = 23
+      Left = 64
+      Top = 31
+      Width = 49
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'dep_codigo'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 2
     end
     object tdepto: TEdit
-      Left = 155
-      Top = 33
-      Width = 234
-      Height = 23
+      Left = 144
+      Top = 31
+      Width = 217
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
@@ -625,97 +625,97 @@ object frmPedidosProv: TfrmPedidosProv
   end
   object Panel5: TPanel
     Left = 0
-    Top = 353
-    Width = 930
-    Height = 95
+    Top = 328
+    Width = 864
+    Height = 88
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
-    Font.Height = -12
+    Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     TabOrder = 2
     object Label16: TLabel
-      Left = 728
-      Top = 30
-      Width = 59
-      Height = 14
+      Left = 676
+      Top = 28
+      Width = 51
+      Height = 13
       Caption = 'Descuento'
     end
     object Label17: TLabel
-      Left = 728
-      Top = 51
-      Width = 23
-      Height = 14
+      Left = 676
+      Top = 47
+      Width = 21
+      Height = 13
       Caption = 'Itbis'
     end
     object Label19: TLabel
-      Left = 728
-      Top = 72
-      Width = 28
-      Height = 14
+      Left = 676
+      Top = 67
+      Width = 24
+      Height = 13
       Caption = 'Total'
     end
     object Label7: TLabel
-      Left = 728
-      Top = 9
-      Width = 53
-      Height = 14
+      Left = 676
+      Top = 8
+      Width = 45
+      Height = 13
       Caption = 'Sub Total'
     end
     object Label18: TLabel
-      Left = 9
-      Top = 11
-      Width = 118
-      Height = 14
+      Left = 8
+      Top = 10
+      Width = 105
+      Height = 13
       Caption = 'Idioma para impresion'
     end
     object btBuscaProd: TSpeedButton
-      Left = 281
-      Top = 34
-      Width = 139
-      Height = 27
+      Left = 261
+      Top = 32
+      Width = 129
+      Height = 25
       Caption = '[ F4 ] - Buscar producto'
       OnClick = btBuscaProdClick
     end
     object btElimina: TSpeedButton
-      Left = 8
-      Top = 64
-      Width = 132
-      Height = 26
+      Left = 7
+      Top = 59
+      Width = 123
+      Height = 25
       Caption = '[ F5 ] - Eliminar fila       '
       OnClick = btEliminaClick
     end
     object btNota: TSpeedButton
-      Left = 141
-      Top = 64
-      Width = 139
-      Height = 26
+      Left = 131
+      Top = 59
+      Width = 129
+      Height = 25
       Caption = '[ F7 ] - Nota de la orden'
       OnClick = btNotaClick
     end
     object DBText1: TDBText
-      Left = 293
-      Top = 8
-      Width = 70
-      Height = 18
+      Left = 272
+      Top = 7
+      Width = 65
+      Height = 17
       DataField = 'PED_NUMERO'
       DataSource = dsPedidos
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -15
+      Font.Height = -13
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object btBuscaPedido: TSpeedButton
-      Left = 281
-      Top = 64
-      Width = 139
-      Height = 26
+      Left = 261
+      Top = 59
+      Width = 129
+      Height = 25
       Caption = 'Buscar Orden'
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -732,50 +732,50 @@ object frmPedidosProv: TfrmPedidosProv
       OnClick = btBuscaPedidoClick
     end
     object btGrabar: TSpeedButton
-      Left = 8
-      Top = 34
-      Width = 132
-      Height = 27
+      Left = 7
+      Top = 32
+      Width = 123
+      Height = 25
       Caption = '[ F2 ] - Grabar/Imprimir'
       OnClick = btGrabarClick
     end
     object btLimpiar: TSpeedButton
-      Left = 141
-      Top = 34
-      Width = 139
-      Height = 27
+      Left = 131
+      Top = 32
+      Width = 129
+      Height = 25
       Caption = '[ F3 ] - Limpiar/Nueva   '
       OnClick = btLimpiarClick
     end
     object btSalir: TSpeedButton
-      Left = 422
-      Top = 64
-      Width = 156
-      Height = 26
+      Left = 392
+      Top = 59
+      Width = 145
+      Height = 25
       Caption = '[ F10 ] - Cancelar/Salir         '
       OnClick = btSalirClick
     end
     object btBuscaProdProv: TSpeedButton
-      Left = 422
-      Top = 34
-      Width = 156
-      Height = 27
+      Left = 392
+      Top = 32
+      Width = 145
+      Height = 25
       Caption = '[ F6 ] - Productos proveedor'
       OnClick = btBuscaProdProvClick
     end
     object btlogistica: TSpeedButton
-      Left = 498
+      Left = 462
       Top = 3
-      Width = 80
-      Height = 27
+      Width = 75
+      Height = 25
       Caption = 'Logistica'
       OnClick = btlogisticaClick
     end
     object DBEdit7: TDBEdit
-      Left = 789
-      Top = 25
-      Width = 134
-      Height = 22
+      Left = 733
+      Top = 23
+      Width = 124
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
@@ -784,17 +784,17 @@ object frmPedidosProv: TfrmPedidosProv
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 0
     end
     object DBEdit8: TDBEdit
-      Left = 789
-      Top = 46
-      Width = 134
-      Height = 23
+      Left = 733
+      Top = 43
+      Width = 124
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
@@ -803,17 +803,17 @@ object frmPedidosProv: TfrmPedidosProv
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 1
     end
     object DBEdit10: TDBEdit
-      Left = 789
-      Top = 68
-      Width = 134
-      Height = 22
+      Left = 733
+      Top = 63
+      Width = 124
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
@@ -822,17 +822,17 @@ object frmPedidosProv: TfrmPedidosProv
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 2
     end
     object DBEdit11: TDBEdit
-      Left = 789
+      Left = 733
       Top = 3
-      Width = 134
-      Height = 23
+      Width = 124
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
@@ -841,20 +841,20 @@ object frmPedidosProv: TfrmPedidosProv
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 3
     end
     object cbidioma: TComboBox
-      Left = 129
+      Left = 120
       Top = 6
-      Width = 156
-      Height = 22
+      Width = 145
+      Height = 21
       BevelKind = bkFlat
       Style = csDropDownList
-      ItemHeight = 14
+      ItemHeight = 13
       ItemIndex = 0
       TabOrder = 4
       Text = 'Espa'#241'ol'
@@ -865,15 +865,15 @@ object frmPedidosProv: TfrmPedidosProv
   end
   object Grid: TDBGrid
     Left = 0
-    Top = 180
-    Width = 930
-    Height = 120
+    Top = 167
+    Width = 864
+    Height = 112
     Align = alClient
     Ctl3D = False
     DataSource = dsDetalle
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
-    Font.Height = -12
+    Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
     Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgCancelOnExit]
@@ -984,33 +984,33 @@ object frmPedidosProv: TfrmPedidosProv
   end
   object Panel1: TPanel
     Left = 0
-    Top = 300
-    Width = 930
-    Height = 53
+    Top = 279
+    Width = 864
+    Height = 49
     Align = alBottom
     TabOrder = 3
     object Label31: TLabel
-      Left = 87
+      Left = 81
       Top = 6
-      Width = 85
-      Height = 14
+      Width = 74
+      Height = 13
       Caption = 'Costo Und Ant.'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
     end
     object Label32: TLabel
-      Left = 87
-      Top = 29
-      Width = 87
-      Height = 14
+      Left = 81
+      Top = 27
+      Width = 75
+      Height = 13
       Caption = 'Costo Emp Ant.'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
@@ -1018,105 +1018,105 @@ object frmPedidosProv: TfrmPedidosProv
     object Label33: TLabel
       Left = 4
       Top = 6
-      Width = 62
-      Height = 14
+      Width = 54
+      Height = 13
       Caption = 'Costo Neto'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
     end
     object sbPrecios: TScrollBox
-      Left = 250
+      Left = 232
       Top = 1
-      Width = 673
-      Height = 51
+      Width = 625
+      Height = 47
       BevelKind = bkFlat
       BorderStyle = bsNone
       TabOrder = 0
       object Label21: TLabel
         Left = 2
         Top = 3
-        Width = 127
-        Height = 14
+        Width = 110
+        Height = 13
         Caption = '%Beneficio / Precio #1'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
       object Label22: TLabel
         Left = 2
-        Top = 26
-        Width = 127
-        Height = 14
+        Top = 24
+        Width = 110
+        Height = 13
         Caption = '%Beneficio / Precio #2'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
       object Label23: TLabel
-        Left = 322
+        Left = 299
         Top = 3
-        Width = 127
-        Height = 14
+        Width = 110
+        Height = 13
         Caption = '%Beneficio / Precio #3'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
       object Label24: TLabel
-        Left = 322
-        Top = 26
-        Width = 127
-        Height = 14
+        Left = 299
+        Top = 24
+        Width = 110
+        Height = 13
         Caption = '%Beneficio / Precio #4'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
       end
       object DBEdit17: TDBEdit
-        Left = 129
+        Left = 120
         Top = 1
-        Width = 54
-        Height = 23
+        Width = 50
+        Height = 21
         BevelKind = bkFlat
         BorderStyle = bsNone
         DataField = 'pro_beneficio'
         DataSource = dsDetalle
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
         TabOrder = 0
       end
       object DBEdit18: TDBEdit
-        Left = 205
+        Left = 190
         Top = 1
-        Width = 111
-        Height = 23
+        Width = 103
+        Height = 21
         BevelKind = bkFlat
         BorderStyle = bsNone
         DataField = 'pro_precio1'
         DataSource = dsDetalle
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
@@ -1124,34 +1124,34 @@ object frmPedidosProv: TfrmPedidosProv
         OnKeyDown = DBEdit18KeyDown
       end
       object DBEdit19: TDBEdit
-        Left = 129
-        Top = 24
-        Width = 54
-        Height = 22
+        Left = 120
+        Top = 22
+        Width = 50
+        Height = 21
         BevelKind = bkFlat
         BorderStyle = bsNone
         DataField = 'pro_beneficio2'
         DataSource = dsDetalle
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
         TabOrder = 2
       end
       object DBEdit20: TDBEdit
-        Left = 205
-        Top = 24
-        Width = 111
-        Height = 22
+        Left = 190
+        Top = 22
+        Width = 103
+        Height = 21
         BevelKind = bkFlat
         BorderStyle = bsNone
         DataField = 'pro_precio2'
         DataSource = dsDetalle
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
@@ -1159,34 +1159,34 @@ object frmPedidosProv: TfrmPedidosProv
         OnKeyDown = DBEdit20KeyDown
       end
       object DBEdit21: TDBEdit
-        Left = 448
+        Left = 416
         Top = 1
-        Width = 54
-        Height = 23
+        Width = 50
+        Height = 21
         BevelKind = bkFlat
         BorderStyle = bsNone
         DataField = 'pro_beneficio3'
         DataSource = dsDetalle
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
         TabOrder = 4
       end
       object DBEdit22: TDBEdit
-        Left = 504
+        Left = 468
         Top = 1
-        Width = 111
-        Height = 23
+        Width = 103
+        Height = 21
         BevelKind = bkFlat
         BorderStyle = bsNone
         DataField = 'pro_precio3'
         DataSource = dsDetalle
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
@@ -1194,34 +1194,34 @@ object frmPedidosProv: TfrmPedidosProv
         OnKeyDown = DBEdit22KeyDown
       end
       object DBEdit23: TDBEdit
-        Left = 448
-        Top = 24
-        Width = 54
-        Height = 22
+        Left = 416
+        Top = 22
+        Width = 50
+        Height = 21
         BevelKind = bkFlat
         BorderStyle = bsNone
         DataField = 'pro_beneficio4'
         DataSource = dsDetalle
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
         TabOrder = 6
       end
       object DBEdit24: TDBEdit
-        Left = 504
-        Top = 24
-        Width = 111
-        Height = 22
+        Left = 468
+        Top = 22
+        Width = 103
+        Height = 21
         BevelKind = bkFlat
         BorderStyle = bsNone
         DataField = 'pro_precio4'
         DataSource = dsDetalle
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
@@ -1230,17 +1230,17 @@ object frmPedidosProv: TfrmPedidosProv
       end
     end
     object DBEdit28: TDBEdit
-      Left = 173
+      Left = 161
       Top = 4
-      Width = 76
-      Height = 23
+      Width = 70
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'det_costound_ant'
       DataSource = dsDetalle
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
@@ -1248,17 +1248,17 @@ object frmPedidosProv: TfrmPedidosProv
       TabOrder = 1
     end
     object DBEdit29: TDBEdit
-      Left = 173
-      Top = 27
-      Width = 76
-      Height = 23
+      Left = 161
+      Top = 25
+      Width = 70
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'det_costoemp_ant'
       DataSource = dsDetalle
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
@@ -1267,16 +1267,16 @@ object frmPedidosProv: TfrmPedidosProv
     end
     object DBEdit30: TDBEdit
       Left = 4
-      Top = 27
-      Width = 78
-      Height = 23
+      Top = 25
+      Width = 72
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       DataField = 'CostoNeto'
       DataSource = dsDetalle
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
@@ -1284,14 +1284,14 @@ object frmPedidosProv: TfrmPedidosProv
       TabOrder = 3
     end
     object btprecios: TBitBtn
-      Left = 34
-      Top = 22
-      Width = 226
-      Height = 26
+      Left = 32
+      Top = 20
+      Width = 209
+      Height = 25
       Caption = '[ F8 ] - Precios x Unidad de Medida'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
@@ -1301,11 +1301,11 @@ object frmPedidosProv: TfrmPedidosProv
     end
   end
   object Lista: TListBox
-    Left = 43
-    Top = 224
-    Width = 208
-    Height = 53
-    ItemHeight = 14
+    Left = 40
+    Top = 208
+    Width = 193
+    Height = 49
+    ItemHeight = 13
     TabOrder = 4
     Visible = False
   end

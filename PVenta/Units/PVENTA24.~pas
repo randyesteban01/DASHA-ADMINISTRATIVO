@@ -200,7 +200,6 @@ type
     QCentrosub_secuencia: TIntegerField;
     QCentrocat_cuenta: TStringField;
     DBCheckBox1: TDBCheckBox;
-    QFormasPagoforma: TStringField;
     Label18: TLabel;
     lbVencido: TStaticText;
     lbCant: TStaticText;
@@ -263,6 +262,7 @@ type
     QDocSaldo: TCurrencyField;
     qQuery: TADOQuery;
     qRepBalanceFact: TADOQuery;
+    QFormasPagoFORMA: TStringField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btCloseClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -350,8 +350,12 @@ type
     procedure tmrCorreoTimer(Sender: TObject);
     procedure QRecibosREC_MORAChange(Sender: TField);
     procedure GridMovExit(Sender: TObject);
+    procedure QDocPendienteBeforeOpen(DataSet: TDataSet);
+    procedure DBLookupComboBox2CloseUp(Sender: TObject);
+    procedure QFormasPagoBeforeOpen(DataSet: TDataSet);
+    procedure QFormaBeforeOpen(DataSet: TDataSet);
   private
-    vl_cliente, vl_suc, vl_ticket, vl_MovSec :  Integer;
+    vl_cliente, vl_suc, vl_ticket, vl_MovSec: Integer;
       vl_dest, vl_tipoclie, vl_clienteN, vl_asunto, vl_factnum, vl_adjunto1, vl_adjunto2, vl_cuerpo :String;
     { Private declarations }
     procedure EnvioMail(Reporte: TQuickRep; Tipo: String);
@@ -554,7 +558,7 @@ begin
       end;
       dm.Query1.Parameters.parambyname('fec').Value := Now;
       dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
-      DM.Query1.Parameters.ParamByName('suc').Value := QSucursalsuc_codigo.Value;
+      DM.Query1.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
       dm.Query1.open;
       lbVencido.Caption := FormatCurr('#,0.00',dm.Query1.fieldbyname('vencido').Value);
 
@@ -582,7 +586,7 @@ begin
       QRecibosREC_NOMBRE.value := dm.Query1.fieldbyname('cli_nombre').asstring;
       cli := dm.Query1.fieldbyname('cli_Codigo').asinteger;
       if dm.Query1.fieldbyname('cli_balance').IsNull then
-      lbBalance.Caption := '0.00' else 
+      lbBalance.Caption := '0.00' else
       lbBalance.Caption := FormatCurr('#,0.00',dm.Query1.fieldbyname('cli_balance').Value);
       if dm.Query1.fieldbyname('ven_Codigo').Value = 0 then
       QRecibosVEN_CODIGO.Value := 0 else
@@ -594,7 +598,7 @@ end;
 
 procedure TfrmRecibos.SpeedButton2Click(Sender: TObject);
 var
-  cli : integer;
+  cli : String;
 begin
   Search.Query.clear;
   Search.AliasFields.clear;
@@ -638,7 +642,7 @@ begin
       lbVencido.Caption := Format('%n',[dm.Query1.fieldbyname('vencido').AsFloat]);
 
     edCliente.text := search.valuefield;
-    cli := StrToInt(Search.ValueField);
+
 
     dm.Query1.close;
     dm.Query1.sql.clear;
@@ -651,21 +655,21 @@ begin
     if dm.QParametrosPAR_CODIGOCLIENTE.value = 'I' then
     begin
       dm.Query1.sql.add('and cli_codigo = :cli');
-      dm.Query1.Parameters.parambyname('cli').Value := cli;
+      dm.Query1.Parameters.parambyname('cli').Value := search.valuefield;
     end
     else
     begin
       dm.Query1.sql.add('and cli_referencia = :cli');
-      dm.Query1.Parameters.parambyname('cli').Value := cli;
+      dm.Query1.Parameters.parambyname('cli').Value := search.valuefield;
     end;
     dm.Query1.Parameters.parambyname('emp').Value := dm.QEmpresasEMP_CODIGO.value;
     dm.Query1.open;
     QRecibospro_codigo.Value := dm.Query1.fieldbyname('pro_Codigo').asinteger;
     QRecibosREC_NOMBRE.value := dm.Query1.fieldbyname('cli_nombre').asstring;
-    cli := dm.Query1.fieldbyname('cli_Codigo').asinteger;
+    vl_cliente := dm.Query1.fieldbyname('cli_Codigo').asinteger;
     lbBalance.Caption := Format('%n',[dm.Query1.fieldbyname('cli_balance').AsFloat]);
     QRecibosVEN_CODIGO.Value := dm.Query1.fieldbyname('ven_Codigo').asinteger;
-    QRecibosCLI_CODIGO.value := cli;
+    QRecibosCLI_CODIGO.value := vl_cliente;
     dbedit2.setfocus;
   end;
 end;
@@ -748,7 +752,7 @@ var
 begin
     if ckautomatico.Checked then
   begin
-     if distri = true then
+       if distri = true then
     begin
       totaliza := false;
       //total := StrToFloat(FormatCurr('%10.2f',[QRecibosREC_MONTO.value])) +
@@ -840,6 +844,22 @@ QDocDET_MONTO.value := Balance-QDocDET_MORA.Value else
 QDocDET_MONTO.value := QDocDET_PENDIENTE.Value;
 QDoc.Post;
 end;
+
+if Balance < QDocDET_MORA.Value then begin
+QDoc.Edit;
+QDocDET_MORA.value  := Balance;
+QDocDET_MONTO.value := 0;
+QDoc.Post;
+end;
+
+if Balance = 0 then begin
+QDoc.Edit;
+QDocDET_MORA.value  := 0;
+QDocDET_MONTO.value := 0;
+QDoc.Post;
+end;
+
+
 end;
 
 if QDocDET_MORA.Value = 0 then begin
@@ -857,7 +877,7 @@ QDoc.Post;
 end;
 end;
 end;
-Balance := balance - (QDocDET_PENDIENTE.Value + QDocDET_MORA.Value);
+Balance := balance - (QDocDET_MONTO.Value+QDocDET_MORA.Value);
 end
 ELSE
 BEGIN
@@ -877,15 +897,13 @@ QDoc.Post;
 balance := 0;
 end;
 
-
-
 QDoc.next;
 end;
 
 QDoc.first;
 tdesc := 0;
 while not QDoc.eof do begin
-    if total > 0 then begin
+    if QRecibosrec_porc_descuento.Value > 0 then begin
           QDoc.edit;
           QDocdet_porc_descuento.Value := QRecibosrec_porc_descuento.Value;
           QDocdet_Descuento.Value := (((QDocDET_PENDIENTE.Value-QDocdet_totalitbis.Value) * QDocdet_porc_descuento.Value)/100);
@@ -893,7 +911,6 @@ while not QDoc.eof do begin
 
           if QDocdet_Descuento.Value > 0 then
             tdesc := tdesc + QDocdet_Descuento.Value;
-
           QDoc.post;
 end;
 QDoc.next;
@@ -922,6 +939,7 @@ begin
     Descuento := 0;
     DescAplicado := 0;
     TotalInteres := 0;
+    Aplicar :=  0;
     TotalMora2 := 0;
     QDoc.disablecontrols;
     QDoc.first;
@@ -935,6 +953,7 @@ begin
       TotalMora2 := TotalMora2 + QDocDET_MORA.Value;
       vl_mora := TotalMora2;
       Descuento := Descuento + QDocDescuento.Value;
+      Aplicar   := Aplicar + QDocDET_MONTO.Value + QDocDET_MORA.Value;
       //totaldetalle := totaldetalle + QDocDET_MONTO.value + QDocDET_MORA.value;
 
       if QDocDET_MONTO.Value > 0 then
@@ -953,7 +972,7 @@ begin
             vConcepto3 := vConcepto3 + QDocDET_NUMERO.AsString+',';
           end;
         end;
-        totaldetalle := totaldetalle + QDocDET_MONTO.value + QDocDET_MORA.value;
+        totaldetalle := totaldetalle + QDocSaldo.Value + QDocDET_MORA.value;//QDocDET_MONTO.value + QDocDET_MORA.value;
       end;
 
       QDoc.next;
@@ -977,7 +996,7 @@ begin
     QRecibosREC_MORA.Value   :=  TotalMora2;
     lbBalance.Caption := formatCurr('#,0.00',deuda);
     lbVencido.Caption := formatCurr('#,0.00',deuda+QRecibosREC_MORA.Value);
-    lbAplicar.Caption := formatCurr('#,0.00',TotalDetalle);
+    lbAplicar.Caption := formatCurr('#,0.00',Aplicar);
   end;
 end;
 
@@ -1140,14 +1159,14 @@ var
   TotRecibo : Double;
 begin
   continua := true;
-  if lbAplicar.Caption <> FormatCurr('#,0.00',QRecibosREC_MONTO.Value+QRecibosrec_retencion.Value) then
+  if Aplicar <> (QRecibosREC_MONTO.Value+QRecibosrec_retencion.Value) then
   begin
     if MessageDlg('EL BALANCE DEL CLIENTE ES DIFERENTE AL MONTO PAGADO'+#13+
                'DESEA CONTINUAR?',mtConfirmation,[mbyes,mbno],0) = mrno then
                continua := false;
   end;
 
-  TotRecibo := QRecibosREC_MONTO.Value; //totalpositivo + QRecibosREC_RETENCION.value - totalnegativo;
+  TotRecibo := totalpositivo + QRecibosREC_RETENCION.value - totalnegativo; //QRecibosREC_MONTO.Value; 
 
   if continua then
   begin
@@ -1167,7 +1186,7 @@ begin
       GridForma.setfocus;
     end
     //else if ((TotRecibo <> TotalDetalle) and (ckCobro.Checked))
-    else if ((FormatCurr('#,0.00',TotalDetalle) <> FormatCurr('#,0.00',QRecibosREC_MONTO.Value+QRecibosrec_retencion.Value)) and (ckCobro.Checked))
+    else if ((FormatCurr('#,0.00',aplicar) <> FormatCurr('#,0.00',QRecibosREC_MONTO.Value+QRecibosrec_retencion.Value)) and (ckCobro.Checked))
     and (dm.qparametrospar_pago_mayor_balance.Value = 'False') then
     begin
       messagedlg('NO SE PUEDE GRABAR EL RECIBO, DEBIDO A'+#13+
@@ -1468,29 +1487,35 @@ begin
   GridMov.Visible := false;
 
   ins := True;
+
+  QForma.Close;
+  QForma.Open;
+
   QFormasPago.close;
   QFormasPago.open;
 
+
+
   //formas de pago
   dm.Query1.close;
-  dm.Query1.sql.clear;
-  dm.Query1.sql.add('select fpa_codigo, fpa_nombre');
-  dm.Query1.sql.add('from formaspago');
-  dm.Query1.sql.add('where emp_codigo = :emp');
-  dm.Query1.sql.add('order by fpa_codigo');
-  dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
-  dm.Query1.open;
+  dm.adoMultiUso.sql.clear;
+  dm.adoMultiUso.sql.add('select fpa_codigo, fpa_nombre');
+  dm.adoMultiUso.sql.add('from formaspago');
+  dm.adoMultiUso.sql.add('where emp_codigo = :emp');
+  dm.adoMultiUso.sql.add('order by fpa_codigo');
+  dm.adoMultiUso.Parameters.parambyname('emp').Value := dm.vp_cia;
+  dm.adoMultiUso.open;
 
-  dm.Query1.disablecontrols;
-  while not dm.Query1.eof do
+  dm.adoMultiUso.disablecontrols;
+  while not dm.adoMultiUso.eof do
   begin
     QFormasPago.append;
     QFormasPagoEMP_CODIGO.value := dm.vp_cia;
-    QFormasPagoFPA_CODIGO.value := dm.Query1.fieldbyname('fpa_codigo').AsInteger;
+    QFormasPagoFPA_CODIGO.value := dm.adoMultiUso.fieldbyname('fpa_codigo').AsInteger;
     QFormasPago.post;
-    dm.Query1.next;
+    dm.adoMultiUso.next;
   end;
-  dm.Query1.enablecontrols;
+  dm.adoMultiUso.enablecontrols;
   QFormasPago.first;
   ins := False;
   edCliente.SetFocus;
@@ -1511,6 +1536,10 @@ begin
   QFormasPago.open;
   edCliente.Clear;
   edCliente.SetFocus;
+  QDoc.Close;
+  QDoc.Open;
+  QDocPendiente.Close;
+  QDocPendiente.Open;
 end;
 
 procedure TfrmRecibos.btLimpiarClick(Sender: TObject);
@@ -1763,8 +1792,8 @@ begin
   else
     QDocTotalInteres.Value := 0;
 
-  //QDocSaldo.Value := (QDocDET_PENDIENTE.Value-QDocdet_descuento) + QDocTotalInteres.Value + QDocDET_MORA.Value;
-  QDocSaldo.Value := (QDocDET_PENDIENTE.Value) + QDocTotalInteres.Value + QDocDET_MORA.Value;
+  QDocSaldo.Value := (QDocDET_PENDIENTE.Value-QDocdet_descuento.Value) + QDocTotalInteres.Value + QDocDET_MORA.Value;
+  //QDocSaldo.Value := (QDocDET_PENDIENTE.Value) + QDocTotalInteres.Value + QDocDET_MORA.Value;
 end;
 
 procedure TfrmRecibos.FormKeyPress(Sender: TObject; var Key: Char);
@@ -1951,7 +1980,40 @@ end;
 
 procedure TfrmRecibos.QRecibosREC_DESCUENTOChange(Sender: TField);
 begin
-  if QRecibosREC_DESCUENTO.Value > 0 then
+    if StrToFloat(Format('%10.2f',[QRecibosREC_DESCUENTO.Value])) > 0 then
+  begin
+    if (not dm.QContabPAR_CTADESC.IsNull) or (dm.QContabPAR_CTADESC.Value <> '') then
+    begin
+      if QDetalle.Locate('cat_cuenta', dm.QContabPAR_CTADESC.Value ,[]) then
+      begin
+        QDetalle.Edit;
+        QDetalleDET_MONTO.Value := QRecibosREC_DESCUENTO.value;
+        QDetalle.Post;
+      end
+      else
+      begin
+        QDetalle.Append;
+        QDetalleCAT_CUENTA.Value := dm.QContabPAR_CTADESC.Value;
+        QDetalleDET_MONTO.Value  := QRecibosREC_DESCUENTO.value;
+        QDetalleDET_ORIGEN.Value := 'Debito';
+        QDetalle.Post;
+      end;
+
+      if QDetalle.Locate('cat_cuenta', CtaCliente ,[]) then
+      begin
+        QDetalle.Edit;
+        QDetalleDET_MONTO.Value := QRecibosREC_MONTO.Value + QRecibosREC_DESCUENTO.Value - QRecibosrec_interes.value;
+        QDetalle.Post;
+      end;
+    end;
+
+
+
+end;
+
+
+
+ { if QRecibosREC_DESCUENTO.Value > 0 then
   begin
     if (not dm.QContabPAR_CTADESC.IsNull) or (dm.QContabPAR_CTADESC.Value <> '') then
     begin
@@ -1978,6 +2040,7 @@ begin
       end;
     end;
   end;
+}
 
   {if not QRecibosREC_DESCUENTO.IsNull then
     Distribuir;}
@@ -2127,11 +2190,14 @@ begin
   qQuery.sql.add('select distinct m.mov_tipo, m.fac_forma, m.tfa_codigo, m.mov_numero,');
   qQuery.sql.add('isnull(c.cli_balance,0) cli_balance, m.mov_monto, m.mov_abono, m.mov_fecha,');
   qQuery.sql.add('m.mov_secuencia, m.mov_cuota, c.cli_cuenta, m.mov_interes, m.mov_fechavence,');
-  qQuery.SQL.Add('isnull((select ticket from montos_ticket where mov_numero = m.mov_numero and emp_codigo = m.emp_codigo and cli_codigo = m.cli_codigo),0) as ticket');
-  qQuery.sql.add('from movimientos m, clientes c');
-  qQuery.sql.add('where m.emp_codigo = c.emp_codigo');
-  qQuery.sql.add('and m.cli_Codigo = c.cli_codigo');
-  qQuery.sql.add('and m.emp_codigo = :emp');
+  qQuery.SQL.Add('ISNULL(t.ticket, 0) AS ticket');
+  qQuery.sql.add('FROM movimientos m JOIN clientes c ON m.emp_codigo = c.emp_codigo AND m.cli_codigo = c.cli_codigo');
+  qQuery.sql.add('LEFT JOIN montos_ticket t ON t.mov_numero = m.mov_numero AND t.emp_codigo = m.emp_codigo AND t.cli_codigo = m.cli_codigo');
+
+  {qQuery.sql.add('where m.emp_codigo = c.emp_codigo');
+  qQuery.sql.add('and m.cli_Codigo = c.cli_codigo');  }
+
+  qQuery.sql.add('where m.emp_codigo = :emp');
   qQuery.sql.add('and m.cli_Codigo = :cli');
   qQuery.sql.add('and m.mov_status = '+#39+'PEN'+#39);
   qQuery.sql.add('and m.suc_codigo = :suc');
@@ -2155,7 +2221,7 @@ begin
 
     Query1.Close;
     Query1.SQL.Clear;
-    Query1.SQL.Add('select distinct (f.fac_itbis + isnull(f.fac_selectivo_ad,0) + isnull(f.fac_selectivo_con,0)) as itbis');
+    Query1.SQL.Add('select distinct ((f.fac_itbis + isnull(f.fac_selectivo_ad,0) + isnull(f.fac_selectivo_con,0))*(1-(f.fac_abono/f.fac_total))) as itbis');
     Query1.SQL.Add('from facturas f');
     Query1.SQL.Add('where f.emp_codigo = :emp');
     Query1.SQL.Add('and f.tfa_codigo = :tfa');
@@ -2164,7 +2230,7 @@ begin
     Query1.SQL.Add('and f.suc_codigo = :suc');
     Query1.sql.add('and f.fac_status = '+#39+'PEN'+#39);
     Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
-    Query1.Parameters.ParamByName('suc').Value := QRecibosSUC_CODIGO.Value;
+    Query1.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
     Query1.Parameters.ParamByName('tfa').Value := qQuery.FieldByName('tfa_codigo').Value;
     Query1.Parameters.ParamByName('for').Value := qQuery.FieldByName('fac_forma').Value;
     Query1.Parameters.ParamByName('num').Value := qQuery.FieldByName('mov_numero').Value;
@@ -2204,7 +2270,7 @@ begin
    WITH qMora DO BEGIN
    Close;
    Parameters[0].Value := QDocEMP_CODIGO.Value;
-   Parameters[1].Value := QRecibosSUC_CODIGO.Value;
+   Parameters[1].Value := DBLookupComboBox2.KeyValue;
    Parameters[2].Value := QRecibosCLI_CODIGO.Value;
    Parameters[3].Value := QDocDET_NUMERO.Value;
    Parameters[4].Value := QDocFAC_FORMA.Value;
@@ -2328,6 +2394,7 @@ begin
   qRepBalanceFact.Close;
   qRepBalanceFact.Parameters.ParamByName('emp').Value := dm.vp_cia;
   qRepBalanceFact.Parameters.ParamByName('cli').Value := QRecibosCLI_CODIGO.Value;
+  qRepBalanceFact.Parameters.ParamByName('SUC').Value := DBLookupComboBox2.KeyValue;
   qRepBalanceFact.ExecSQL;
   dm.Query1.Close;
   dm.Query1.SQL.Clear;
@@ -2374,9 +2441,11 @@ begin
   dm.Query1.SQL.Add('where emp_codigo = clientes.emp_codigo');
   dm.Query1.SQL.Add('and cli_codigo = clientes.cli_codigo');
   dm.Query1.SQL.Add('and mov_status = '+QuotedStr('PEN')+')');
-  dm.Query1.SQL.Add('where emp_codigo = :emp');
+  dm.Query1.SQL.Add('where SUC_CODIGO = :suc');
+  dm.Query1.SQL.Add('and emp_codigo = :emp');
   dm.Query1.SQL.Add('and cli_codigo = :cli');
   dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+  dm.Query1.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
   dm.Query1.Parameters.ParamByName('cli').Value := QRecibosCLI_CODIGO.Value;
   dm.Query1.ExecSQL;
   screen.Cursor := crDefault;
@@ -3231,6 +3300,28 @@ QRecibosREC_MONTO.Value := TotalDetalle;
 QRecibos.Post;
 end;
 end;
+end;
+
+procedure TfrmRecibos.QDocPendienteBeforeOpen(DataSet: TDataSet);
+begin
+QDocPendiente.Parameters.ParamByName('SUC').Value := DBLookupComboBox2.KeyValue;
+end;
+
+procedure TfrmRecibos.DBLookupComboBox2CloseUp(Sender: TObject);
+begin
+ ckCobro.Checked;
+ ckCobroClick(Self);
+end;
+
+procedure TfrmRecibos.QFormasPagoBeforeOpen(DataSet: TDataSet);
+begin
+QForma.Close;
+QForma.Open;
+end;
+
+procedure TfrmRecibos.QFormaBeforeOpen(DataSet: TDataSet);
+begin
+QForma.Parameters.ParamByName('emp_codigo').Value := DM.vp_cia;
 end;
 
 end.

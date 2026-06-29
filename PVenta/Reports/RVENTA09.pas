@@ -30,7 +30,7 @@ type
     lbStatus: TQRLabel;
     lbFecha: TQRLabel;
     QRSysData1: TQRSysData;
-    QRBand2: TQRBand;
+    Cuadro: TQRBand;
     QRLabel21: TQRLabel;
     QRLabel22: TQRLabel;
     QRLabel31: TQRLabel;
@@ -76,9 +76,12 @@ type
     QNotasNCF_Secuencia: TBCDField;
     QNotasNCF: TStringField;
     QRLabel19: TQRLabel;
-    QRLabel5: TQRLabel;
-    QRDBText6: TQRDBText;
+    LNcf: TQRLabel;
+    TNcf: TQRDBText;
+    QNotaseNCF: TStringField;
     procedure QNotasCalcFields(DataSet: TDataSet);
+    procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
+      var PrintReport: Boolean);
   private
 
   public
@@ -99,6 +102,23 @@ procedure TRConsNC.QNotasCalcFields(DataSet: TDataSet);
 begin
   if not QNotasNCF_Fijo.IsNull then
     QNotasNCF.Value := QNotasNCF_Fijo.Value + FormatFloat('00000000',QNotasNCF_Secuencia.Value);
+end;
+
+procedure TRConsNC.QuickRepBeforePrint(Sender: TCustomQuickRep;
+  var PrintReport: Boolean);
+begin
+if  dm.QParametrosUsa_FacturacionElectronica.Value  then
+    begin
+      TNcf.DataField:='eNCF';
+      LNcf.Caption := 'eNCF'
+    end
+    else 
+    begin
+      TNcf.DataField:='NumeroCF';
+       LNcf.Caption := 'N.C.F.';
+    end;
+
+
 end;
 
 end.

@@ -4,7 +4,7 @@ interface
 
 uses Windows, SysUtils, Messages, Classes, Graphics, Controls,
   StdCtrls, ExtCtrls, Forms, QuickRpt, QRPDFFilt, QRExport, QRCtrls, DB, IBCustomDataSet,
-  IBQuery, ADODB, Math, QExport, QExportRTF;
+  IBQuery, ADODB, Math, QExport, QExportRTF,DelphiZXingQRCode;
 
 type
   TRFactura = class(TQuickRep)
@@ -257,6 +257,18 @@ type
     QRDBText8: TQRDBText;
     QFacturaSUBTOTAL: TCurrencyField;
     QFacturaFAC_TOTAL_DOLAR: TFloatField;
+    QFacturaeNCF: TStringField;
+    qrImgQRCode: TQRImage;
+    lblcodigoseg: TQRLabel;
+    lblFirmaDigital: TQRLabel;
+    QFacturacodigoseguridad: TStringField;
+    QRDBText16: TQRDBText;
+    QFacturafechafirma: TStringField;
+    QRDBText26: TQRDBText;
+    QFacturacod_dgii: TIntegerField;
+    QFacturaAceptadoDGII: TBooleanField;
+    QFacturaUrlCodigoQR: TMemoField;
+    lbNumCopia: TQRLabel;
     procedure QRBand3BeforePrint(Sender: TQRCustomBand;
       var PrintBand: Boolean);
     procedure Qnotasf(Sender: TCustomQuickRep;
@@ -278,12 +290,15 @@ type
     procedure QFacturaAfterOpen(DataSet: TDataSet);
     procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
       var PrintReport: Boolean);
+    procedure QRSysData1Print(Sender: TObject; var Value: String);
   private
 
   public
     ActBalance, ImprimeEncaqbezado : String;
     Linea : Integer;
     procedure CorregirError;
+    procedure GenerarCodigoQR(const Texto: string; Imagen: TQRImage);
+    procedure ImprimirConTotalPaginas;
   end;
 
 var
@@ -291,7 +306,11 @@ var
 
 implementation
 
-uses SIGMA01;
+uses SIGMA01, DateUtils;
+
+var
+  TotalPaginasFactura: Integer;
+  UsarTotalPaginasFactura: Boolean;
 
 
 {$R *.DFM}
@@ -568,19 +587,71 @@ begin
     ChildBand2.Height := 20;
 end;
 
-procedure TRFactura.QFacturaCalcFields(DataSet: TDataSet);
+procedure TRFactura.GenerarCodigoQR(const Texto: string; Imagen: TQRImage);
+var
+  QRCode: TDelphiZXingQRCode;
+  Bitmap: TBitmap;
+  QRSize: Integer;
+  ModuleSize: Integer;
+  i, j: Integer;
 begin
-  if not QFacturaNCF_Fijo.isnull then
+  QRCode := TDelphiZXingQRCode.Create;
+  try
+    QRCode.Data := Texto;
+    QRCode.QuietZone := 4;
+
+    // Calculamos el tamaùo basado en mùdulos
+    ModuleSize := 5; // Cada mùdulo mide 5 pùxeles (puedes ajustar)
+    QRSize := (QRCode.Rows + QRCode.QuietZone * 2) * ModuleSize;
+
+    Bitmap := TBitmap.Create;
+    try
+      Bitmap.Width := QRSize;
+      Bitmap.Height := QRSize;
+
+      Bitmap.Canvas.Brush.Color := clWhite;
+      Bitmap.Canvas.FillRect(Rect(0, 0, Bitmap.Width, Bitmap.Height));
+
+      Bitmap.Canvas.Brush.Color := clBlack;
+      for i := 0 to QRCode.Rows - 1 do
+        for j := 0 to QRCode.Columns - 1 do
+          if QRCode.IsBlack[i, j] then
+            Bitmap.Canvas.FillRect(Rect(
+              (j + QRCode.QuietZone) * ModuleSize,
+              (i + QRCode.QuietZone) * ModuleSize,
+              (j + QRCode.QuietZone + 1) * ModuleSize,
+              (i + QRCode.QuietZone + 1) * ModuleSize
+            ));
+
+      // Escalar para llenar el tamaùo del QRImage
+      Imagen.Picture.Bitmap.Width := Imagen.Width;
+      Imagen.Picture.Bitmap.Height := Imagen.Height;
+      Imagen.Picture.Bitmap.Canvas.StretchDraw(Rect(0, 0, Imagen.Width, Imagen.Height), Bitmap);
+    finally
+      Bitmap.Free;
+    end;
+  finally
+    QRCode.Free;
+  end;
+end;
+
+
+procedure TRFactura.QFacturaCalcFields(DataSet: TDataSet);
+var
+  Fecha: TDateTime;
+  FechaStr: string;
+begin
+  if not QFacturaNCF_Fijo.isnull  then
     QFacturaNumeroCF.Value :=  Trim(QFacturaNCF_Fijo.Value)+Trim(formatfloat('00000000',QFacturaNCF_Secuencia.Value))
    else
     QFacturaNumeroCF.Value := ' ';
 
   QFacturaNumero.Value := inttostr(QFacturaFAC_NUMERO.Value);
-  if not QFacturaNCF_Fijo.isnull then BEGIN
+  if (not QFacturaNCF_Fijo.isnull) or (not QFacturaeNCF.IsNull ) then BEGIN
     QFacturaNumeroCF.Value := Trim(QFacturaNCF_Fijo.Text)+formatfloat('00000000',QFacturaNCF_Secuencia.Value);
        //buscar vencimiento
       with QDatos do begin
-      Close;
+     { Close;
       sql.Clear;
       SQL.Add('select case when VerificaVenc = 0 then NULL ELSE FechaVenc end FechaVenc');
       sql.Add('from NCF ');
@@ -590,11 +661,32 @@ begin
       Parameters.ParamByName('emp_codigo').Value := QFacturaEMP_CODIGO.Value;
       Parameters.ParamByName('suc_codigo').Value := QFacturaSUC_CODIGO.Value;
       Parameters.ParamByName('NCF_Fijo').Value   := QFacturaNCF_Fijo.Text;
+      Open;  }
+       Close;
+      sql.Clear;
+      SQL.Add('select FechaVencimientoSecuenciaDGII as FechaVenc');
+      sql.Add('from SecuenciaDGII ');
+      sql.Add(' where emp_codigo = :emp_codigo');
+      sql.Add(' and Tipo= :tipo');
+      Parameters.ParamByName('emp_codigo').Value := QFacturaEMP_CODIGO.Value;
+      Parameters.ParamByName('tipo').Value   := QFacturacod_dgii.Value;
       Open;
       if FieldByName('FechaVenc').IsNull = False then begin
       QRLVNCF.Visible := True;
       QRLVNCFECH.Visible := True;
-      QRLVNCFECH.Caption := FormatDateTime('dd/mm/yyyy',FieldByName('FechaVenc').AsDateTime);
+      FechaStr := FieldByName('FechaVenc').AsString;  
+      if FechaStr <> '' then
+        begin
+          Fecha := EncodeDate(
+                     StrToInt(Copy(FechaStr, 1, 4)),   // Aùo
+                     StrToInt(Copy(FechaStr, 6, 2)),   // Mes
+                     StrToInt(Copy(FechaStr, 9, 2))    // Dùa
+                   );
+          QRLVNCFECH.Caption := FormatDateTime('dd/mm/yyyy', Fecha);
+        end
+        else
+          QRLVNCFECH.Caption := '';
+    //  QRLVNCFECH.Caption := FormatDateTime('dd/mm/yyyy',FieldByName('FechaVenc').AsDateTime);
       end;
 
       if FieldByName('FechaVenc').IsNull = True then begin
@@ -608,15 +700,12 @@ begin
       with QDatos do begin
       Close;
       sql.Clear;
-      SQL.Add('select b.tdo_nombre Nombre');
-      sql.Add('from NCF a');
-      sql.Add('inner join TiposDoc b on a.emp_codigo=b.emp_codigo and a.tdo_codigo=b.tdo_codigo');
-      sql.Add('where a.emp_codigo = :emp_codigo');
-      sql.Add('and a.suc_codigo = :suc_codigo');
-      sql.Add('and a.NCF_Fijo   = :NCF_Fijo');
+      SQL.Add('select isnull(nombre_dgii, tip_nombre) as Nombre');
+      sql.Add(' from TipoNCF a');
+      sql.Add(' where a.emp_codigo = :emp_codigo ');
+      sql.Add(' and a.tip_codigo   = :tipo');
       Parameters.ParamByName('emp_codigo').Value := QFacturaEMP_CODIGO.Value;
-      Parameters.ParamByName('suc_codigo').Value := QFacturaSUC_CODIGO.Value;
-      Parameters.ParamByName('NCF_Fijo').Value   := QFacturaNCF_Fijo.Text;
+      Parameters.ParamByName('tipo').Value   := QFacturatip_codigo.Value;
       Open;
       if not IsEmpty then begin
       QRLTipoNCF.Visible := True;
@@ -756,15 +845,41 @@ begin
 WITH DM.Query1 DO BEGIN
   Close;
   SQL.Clear;
-  SQL.Add('SELECT isnull(TFA_MENSAJE1,'+QuotedStr('')+') MENSAJE FROM TIPOSFACTURA'+
-  ' WHERE TFA_CODIGO = '+QFacturaTFA_CODIGO.Text+' AND EMP_CODIGO = '+QFacturaEMP_CODIGO.Text);
-  Open;
-  if not DM.Query1.RecordCount > 0 then
-  qrMemoMsg.Lines.Add(DM.Query1.FieldByName('MENSAJE').Value);
+  if (QFactura.RecordCount>0) then
+  begin
+    SQL.Add('SELECT isnull(TFA_MENSAJE1,'+QuotedStr('')+') MENSAJE FROM TIPOSFACTURA'+
+    ' WHERE TFA_CODIGO = '+QFacturaTFA_CODIGO.Text+' AND EMP_CODIGO = '+QFacturaEMP_CODIGO.Text);
+    Open;
+    if not DM.Query1.RecordCount > 0 then
+    qrMemoMsg.Lines.Add(DM.Query1.FieldByName('MENSAJE').Value);
+
+  end;
 
   end;
 
 
+end;
+
+procedure TRFactura.QRSysData1Print(Sender: TObject; var Value: String);
+begin
+  if UsarTotalPaginasFactura and (TotalPaginasFactura > 0) then
+    Value := Format('%d de %d', [PageNumber, TotalPaginasFactura])
+  else
+    Value := IntToStr(PageNumber);
+end;
+
+procedure TRFactura.ImprimirConTotalPaginas;
+begin
+  UsarTotalPaginasFactura := True;
+  TotalPaginasFactura := 0;
+  QRSysData1.OnPrint := QRSysData1Print;
+  Prepare;
+  TotalPaginasFactura := QRPrinter.PageCount;
+  if TotalPaginasFactura < 1 then
+    TotalPaginasFactura := 1;
+  QRPrinter.Print;
+  UsarTotalPaginasFactura := False;
+  TotalPaginasFactura := 0;
 end;
 
 procedure TRFactura.QuickRepBeforePrint(Sender: TCustomQuickRep;
@@ -773,6 +888,12 @@ var
   a : integer;
   cambiar : TQRLabel;
 begin
+  QRSysData1.OnPrint := QRSysData1Print;
+
+  lbNumCopia.Caption := '';
+  if Trim(lbNumCopia.Hint) <> '' then
+    lbNumCopia.Caption := lbNumCopia.Hint;
+
  if FileExists('.\Transporte.txt') then begin
   ChildBand3.Enabled := False;
   //qrMemoMsg.Enabled  := False;
@@ -881,6 +1002,16 @@ begin
   ActBalance := dm.Query1.fieldbyname('tfa_actbalance').AsString;
   lbFactura.caption := dm.Query1.fieldbyname('tfa_nombre').asstring;
   if ActBalance = 'True' then CorregirError;
+
+  {dm.Query1.close;
+  dm.Query1.sql.clear;
+  dm.Query1.sql.add('select tip_codigo, isnull(nombre_dgii, tip_nombre) as nombre from TipoNCF');
+  dm.Query1.sql.add('where emp_codigo = :emp');
+  dm.Query1.sql.add('and tip_codigo = :tipo');
+  dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+  dm.Query1.Parameters.parambyname('tipo').Value := QFacturatip_codigo.value;
+  dm.Query1.open;
+  lbFactura.caption := dm.Query1.fieldbyname('nombre').asstring;     }
 
 
   dm.Query1.Close;
@@ -1189,7 +1320,25 @@ begin
                         format('%n',[(QFormasPagoFOR_MONTO.value/QFacturafac_tasa.AsFloat)]);
     QFormasPago.next;
   end;
+  if  dm.QParametrosUsa_FacturacionElectronica.Value  then
+    begin
+    GenerarCodigoQR(QFacturaUrlCodigoQR.Value, qrImgQRCode)  end
+    else
+    begin
+      qrImgQRCode.Visible:=False;
+      lblcodigoseg.Caption:= '';
+      lblFirmaDigital.Caption:='';
+      QRDBText16.Visible:=False;
+      QRDBText26.Visible:=False;
+    end;
 
+   if not QFacturaAceptadoDGII.Value then
+   begin
+      lblcodigoseg.Caption:= '';
+      lblFirmaDigital.Caption:='';
+      QRDBText16.Visible:=False;
+      QRDBText26.Visible:=False;
+   end;
 end;
 
 end.

@@ -141,7 +141,7 @@ try
     qryTemp.Close;   //emp_cuenta_bancaria
     qryTemp.SQL.Clear;
     qryTemp.SQL.Add('select e.emp_email,e.emp_cuenta_bancaria,e.ban_codigo,e.emp_tipo_cuenta,b.codigo_banco from empleados e inner join  Bancos b on b.ban_codigo= e.ban_codigo  where e.emp_codigo = :emp');
-    qryTemp.SQL.Add('and e.emp_numero = :cod');
+    qryTemp.SQL.Add('and e.emp_numero = :cod' and emp_cuenta_bancaria<>'');
     qryTemp.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
     i := 1; i2 := 1;
     while i <= frmNomina.sgnomina.RowCount-1 do
@@ -189,7 +189,7 @@ try
 
            IF (strtipo='PS') then
            begin
-            idValue:= idValue+pchar(' ');
+              idValue := idValue + ' ';
            end;
 
            inc(i2,1);

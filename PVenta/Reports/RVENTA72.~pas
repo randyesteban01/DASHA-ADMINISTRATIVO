@@ -98,7 +98,7 @@ type
     QRLabel25: TQRLabel;
     QRLabel26: TQRLabel;
     QRLabel27: TQRLabel;
-    QRDBText19: TQRDBText;
+    qrdbtxtdev_nombre: TQRDBText;
     QRDBText20: TQRDBText;
     QRDBText21: TQRDBText;
     QRDBText22: TQRDBText;

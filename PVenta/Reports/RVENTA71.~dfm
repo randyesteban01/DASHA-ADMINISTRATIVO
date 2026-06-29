@@ -1,8 +1,8 @@
 object RFacturaPreImpresa: TRFacturaPreImpresa
-  Left = 193
-  Top = 106
-  Width = 1055
-  Height = 615
+  Left = -7
+  Top = 2
+  Width = 1020
+  Height = 592
   VertScrollBar.Position = 308
   Caption = 'RFacturaPreImpresa'
   Color = clBtnFace
@@ -17235,8 +17235,8 @@ object RFacturaPreImpresa: TRFacturaPreImpresa
     end
   end
   object QRMSConsulting: TQuickRep
-    Left = 832
-    Top = 488
+    Left = 944
+    Top = 744
     Width = 816
     Height = 1056
     Frame.Color = clBlack
@@ -19490,8 +19490,8 @@ object RFacturaPreImpresa: TRFacturaPreImpresa
     end
   end
   object QRTHorton2: TQuickRep
-    Left = 1360
-    Top = 356
+    Left = 1504
+    Top = 724
     Width = 816
     Height = 1056
     Frame.Color = clBlack
@@ -24327,8 +24327,8 @@ object RFacturaPreImpresa: TRFacturaPreImpresa
     end
   end
   object QRTHorton: TQuickRep
-    Left = 1008
-    Top = 169
+    Left = 1256
+    Top = 737
     Width = 816
     Height = 1056
     Frame.Color = clBlack

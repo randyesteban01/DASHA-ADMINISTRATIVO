@@ -4,18 +4,29 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, ComCtrls;
+  Dialogs, StdCtrls, Buttons, ComCtrls, DB, ADODB;
 
 type
   TFrmSelFecha = class(TForm)
     dtp1: TDateTimePicker;
     btn1: TBitBtn;
+    QSucursal: TADOQuery;
+    QSucursalsuc_codigo: TIntegerField;
+    QSucursalsuc_nombre: TStringField;
+    QSucursalalm_codigo: TIntegerField;
+    QSucursalemp_codigo: TIntegerField;
+    QSucursalsuc_direccion: TStringField;
+    QSucursalsuc_localidad: TStringField;
+    QSucursalsuc_telefono: TStringField;
+    QSucursalsuc_rnc: TStringField;
     procedure btn1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
   private
     { Private declarations }
   public
+    
     { Public declarations }
   end;
 
@@ -40,6 +51,7 @@ begin
           FrmSelFecha.Close;
 end;
 
+
 procedure TFrmSelFecha.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
@@ -52,6 +64,13 @@ begin
 Width := 152;
 Height := 114;
 dtp1.Date := Date;
+end;
+
+procedure TFrmSelFecha.FormActivate(Sender: TObject);
+begin
+QSucursal.Parameters.ParamByName('usu').Value := dm.Usuario;
+QSucursal.Parameters.ParamByName('emp_codigo').Value := dm.vp_cia;
+QSucursal.Open;
 end;
 
 end.

@@ -6,9 +6,12 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Buttons, Grids, DBGrids, DB,
   IBCustomDataSet, IBQuery, ComCtrls, IBUpdateSQL, ADODB,
-  QuerySearchDlgADO, DBCtrls;
+  QuerySearchDlgADO, DBCtrls,ComObj,FacturacionElectronicaDGII_TLB,uFrmPopupDGII,
+  Menus;
 
 type
+  TEnvioResultado = (erAceptado, erRechazado, erError);
+  
   TfrmConsNC = class(TForm)
     Panel1: TPanel;
     cbGrupo: TRadioGroup;
@@ -115,6 +118,16 @@ type
     Splitter1: TSplitter;
     QNotasncr_fecha_factura: TDateTimeField;
     QUpdNC: TADOQuery;
+    btnEnviarDGII: TBitBtn;
+    cbStatusDGII: TRadioGroup;
+    QNotasEnviado_DGII: TBooleanField;
+    QNotasError_DGII: TBooleanField;
+    QNotasAceptadoDGII: TBooleanField;
+    QNotaseNCF: TStringField;
+    QNotasemp_rnc: TStringField;
+    QNotascli_rnc: TStringField;
+    PopupMenu2: TPopupMenu;
+    FrmPopupDGIIQDGIIParametersParamByNamecaja1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure btCloseClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -164,6 +177,11 @@ type
     procedure QDetalleAfterEdit(DataSet: TDataSet);
     procedure QDetalleAfterInsert(DataSet: TDataSet);
     procedure QDetalleBeforeDelete(DataSet: TDataSet);
+    procedure DBGrid1DrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumn; State: TGridDrawState);
+    procedure btnEnviarDGIIClick(Sender: TObject);
+    procedure FrmPopupDGIIQDGIIParametersParamByNamecaja1Click(
+      Sender: TObject);
   private
     { Private declarations }
   public
@@ -184,6 +202,18 @@ uses RVENTA09, SIGMA00, SIGMA01;
 
 procedure TfrmConsNC.FormCreate(Sender: TObject);
 begin
+
+  if not dm.QParametrosUsa_FacturacionElectronica.AsBoolean then
+  begin
+    btnEnviarDGII.Visible := False;
+  end
+  else
+  begin
+    btnEnviarDGII.Visible := True;
+    DBGrid1.Columns[4].FieldName := 'eNCF';
+    DBGrid1.Columns[4].Title.Caption :='eNCF';
+  end;
+
   Fecha1.date := date;
   Fecha2.date := date;
   Memo1.lines := QNotas.sql;
@@ -244,6 +274,18 @@ begin
        QNotas.sql.add('and c.cli_referencia = '+#39+trim(edCliente.text)+#39);
   if trim(edUsuario.text) <> '' then
     QNotas.sql.add('and n.usu_codigo = '+trim(edUsuario.text));
+
+    if cbStatusDGII.ItemIndex = 1 then
+    QNotas.SQL.Add('and AceptadoDGII = 1')
+    else if cbStatusDGII.ItemIndex = 2 then
+      QNotas.SQL.Add('and Enviado_DGII = 1 and Error_DGII = 1')
+    else if cbStatusDGII.ItemIndex = 3 then
+    begin
+      QNotas.SQL.Add('and CASE n.Enviado_DGII WHEN 0 THEN d.Enviado_DGII ELSE 0 END = 1');
+      QNotas.SQL.Add('and CASE n.Error_DGII WHEN 0 THEN d.Error_DGII ELSE 0 END = 0');
+      QNotas.SQL.Add('and (CASE n.AceptadoDGII WHEN 0 THEN d.AceptadoDGII ELSE 0 END = 0');
+      QNotas.SQL.Add('     OR CASE n.AceptadoDGII WHEN 0 THEN d.AceptadoDGII ELSE 0 END IS NULL)');
+    end;
 
   if cbStatus.ItemIndex = 1 then
      QNotas.sql.add('and n.ncr_status = '+#39+'ANU'+#39)
@@ -806,6 +848,221 @@ end;
 procedure TfrmConsNC.QDetalleBeforeDelete(DataSet: TDataSet);
 begin
   if not Elimina then Abort;
+end;
+
+procedure TfrmConsNC.DBGrid1DrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumn;
+  State: TGridDrawState);
+
+
+function SafeBool(ADataSet: TDataSet; const AField: string): Boolean;
+  var F: TField;
+  begin
+    Result := False;
+    if (ADataSet = nil) then Exit;
+    F := ADataSet.FindField(AField);
+    if (F <> nil) and (not F.IsNull) then
+      Result := F.AsBoolean;
+  end;
+
+var
+  DS: TDataSet;
+  aceptado, enviado, errorDGII: Boolean;
+  COLOR_ERROR_SUAVE, COLOR_AZUL_CLARO: TColor;
+begin
+  COLOR_ERROR_SUAVE := RGB(255, 204, 204); // Rojo claro
+  COLOR_AZUL_CLARO  := RGB(204, 229, 255); // Azul claro
+
+  if not dm.QParametrosUsa_FacturacionElectronica.AsBoolean then
+  begin
+    DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+    Exit;
+  end;
+
+  if (DBGrid1.DataSource = nil) or (DBGrid1.DataSource.DataSet = nil) then
+  begin
+    DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+    Exit;
+  end;
+
+  DS := DBGrid1.DataSource.DataSet;
+  if not DS.Active then
+  begin
+    DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+    Exit;
+  end;
+
+  aceptado  := SafeBool(DS, 'AceptadoDGII');
+  enviado   := SafeBool(DS, 'Enviado_DGII');
+  errorDGII := SafeBool(DS, 'Error_DGII');
+
+  if gdSelected in State then
+  begin
+    DBGrid1.Canvas.Brush.Color := clHighlight;
+    DBGrid1.Canvas.Font.Color  := clHighlightText;
+  end
+  else
+  begin
+    if aceptado then
+    begin
+      DBGrid1.Canvas.Brush.Color := clWhite;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end
+    else if errorDGII then
+    begin
+      DBGrid1.Canvas.Brush.Color := COLOR_ERROR_SUAVE;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end
+    else if enviado then
+    begin
+      DBGrid1.Canvas.Brush.Color := COLOR_AZUL_CLARO;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end
+    else
+    begin
+      DBGrid1.Canvas.Brush.Color := clWhite;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end;
+  end;
+
+  DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+end;
+procedure TfrmConsNC.btnEnviarDGIIClick(Sender: TObject);
+var
+  Servicio : FacturaElectronicaService;
+  Resultado: WideString;
+  ncfNuevo : string;
+begin
+  ncfNuevo := '';
+
+  // ============================================================
+  // Validar si ya fue enviada / lógica de REENVÍO con nueva secuencia
+  // ============================================================
+  if not QNotasAceptadoDGII.IsNull then
+  begin
+    if QNotasEnviado_DGII.AsBoolean then
+    begin
+      if QNotasAceptadoDGII.AsBoolean then
+      begin
+        ShowMessage('Esta nota de crédito ya fue enviada y ACEPTADA por la DGII.');
+        Exit;
+      end
+      else if QNotasError_DGII.AsBoolean then
+      begin
+        // Verificar permiso para reenviar rechazadas
+        if VarIsNull(dm.usu_reenvia_dgii) or not dm.usu_reenvia_dgii then
+        begin
+          ShowMessage('Esta nota de crédito ya fue enviada y RECHAZADA por la DGII.');
+          Exit;
+        end
+        else
+        begin
+          // >>> CONFIRMACIÓN <<<
+          if MessageDlg(
+               'Esta nota de crédito fue RECHAZADA por la DGII.' + sLineBreak +
+               '¿Está seguro que desea reenviarla?' + sLineBreak +
+               'Se generará una NUEVA SECUENCIA.',
+               mtConfirmation, [mbYes, mbNo], 0
+             ) = mrNo then
+          begin
+            Exit;
+          end;
+
+          // 1) Obtener NUEVA SECUENCIA desde SQL
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('SELECT dbo.fn_obtenerSecuenciaDGI(:emp, :tipo) AS NuevaSecuencia;');
+          dm.Query1.Parameters.ParamByName('emp').Value  := QNotasEMP_CODIGO.AsInteger;
+          dm.Query1.Parameters.ParamByName('tipo').Value := 34; // Tipo eCF NC
+
+          dm.Query1.Open;
+
+          if not dm.Query1.FieldByName('NuevaSecuencia').IsNull then
+            ncfNuevo := Trim(dm.Query1.FieldByName('NuevaSecuencia').AsString)
+          else
+          begin
+            ShowMessage('No se pudo obtener una nueva secuencia DGII.');
+            dm.Query1.Close;
+            Exit;
+          end;
+          dm.Query1.Close;
+
+          // 2) Guardar ese eNCF nuevo en la NOTA DE CRÉDITO (AJUSTA nombre tabla/campos si difiere)
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('UPDATE NotasCredito SET eNCF = :ncfNuevo, Enviado_DGII = 1, AceptadoDGII = 0, Error_DGII = 0 ');
+          dm.Query1.SQL.Add('WHERE emp_codigo = :emp AND ncr_numero = :num AND suc_codigo = :suc');
+          dm.Query1.Parameters.ParamByName('ncfNuevo').Value := ncfNuevo;
+          dm.Query1.Parameters.ParamByName('emp').Value      := QNotasEMP_CODIGO.AsInteger;
+          dm.Query1.Parameters.ParamByName('num').Value      := QNotasNCR_NUMERO.AsInteger;
+          dm.Query1.Parameters.ParamByName('suc').Value      := QNotassuc_codigo.AsInteger;
+          dm.Query1.ExecSQL;
+
+          // 3) Actualizar secuencia (igual que en devolución)
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('UPDATE SecuenciaDGII SET Ultima_secuencia_DGII = Ultima_secuencia_DGII + 1 ');
+          dm.Query1.SQL.Add('WHERE emp_codigo = :emp AND Tipo = :tipo');
+          dm.Query1.Parameters.ParamByName('emp').Value  := QNotasEMP_CODIGO.AsInteger;
+          dm.Query1.Parameters.ParamByName('tipo').Value := 34;
+          dm.Query1.ExecSQL;    
+
+        end;
+      end;
+    end;
+  end;
+
+  // ============================================================
+  // Envío COM (se mantiene igual)
+  // ============================================================
+  try
+    Servicio := CoFacturaElectronicaService.Create;
+
+    Resultado := Servicio.EnviarNotasCredito(
+      IntToStr(QNotasEMP_CODIGO.AsInteger),
+      IntToStr(QNotassuc_codigo.AsInteger),
+      '',
+      IntToStr(QNotasNCR_NUMERO.AsInteger),
+      QNotasemp_rnc.AsString,
+      QNotaseNCF.AsString,     // ya vendrá actualizado si hubo reenvío
+      QNotascli_rnc.AsString,
+      '',
+      '',
+      '34'
+    );
+
+    if Pos('ACEPTADO', UpperCase(string(Resultado))) > 0 then
+      ShowMessage('Nota de crédito enviada correctamente.');
+
+  except
+    on E: EOleSysError do
+      ShowMessage(Format('COM 0x%x: %s', [E.ErrorCode, E.Message]));
+    on E: Exception do
+      ShowMessage('Error: ' + E.Message);
+  end;
+
+  btRefreshClick(Self);
+end;
+
+procedure TfrmConsNC.FrmPopupDGIIQDGIIParametersParamByNamecaja1Click(
+  Sender: TObject);
+begin
+Application.CreateForm(TFrmPopupDGII, FrmPopupDGII);
+try
+  FrmPopupDGII.QDGII.Close;
+  FrmPopupDGII.QDGII.Parameters.ParamByName('tipo').Value := 'NOTA_CREDITO';
+  FrmPopupDGII.QDGII.Parameters.ParamByName('emp_codigo').Value := QNotasEMP_CODIGO.Value;
+  FrmPopupDGII.QDGII.Parameters.ParamByName('fac_numero').Value := QNotasNCR_NUMERO.Value;
+  FrmPopupDGII.QDGII.Parameters.ParamByName('caja').Value := 0;
+  FrmPopupDGII.QDGII.Parameters.ParamByName('usu_codigo').Value := 0;
+  FrmPopupDGII.QDGII.Parameters.ParamByName('sup_codigo').Value := 0;
+  FrmPopupDGII.QDGII.Open;
+
+  FrmPopupDGII.ShowModal;
+finally
+  FrmPopupDGII.Free;
+  FrmPopupDGII := nil;
+end;
 end;
 
 end.

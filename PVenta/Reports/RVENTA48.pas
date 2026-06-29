@@ -16,7 +16,7 @@ type
     QRLabel18: TQRLabel;
     QRLabel21: TQRLabel;
     QRBand3: TQRBand;
-    QRDBText10: TQRDBText;
+    TXTSUPNOMBRE: TQRDBText;
     QDocs: TADOQuery;
     QProv: TADOQuery;
     QRSubDetail1: TQRSubDetail;
@@ -24,7 +24,7 @@ type
     QRLabel6: TQRLabel;
     QRLabel7: TQRLabel;
     lbCodigo: TQRDBText;
-    QRDBText7: TQRDBText;
+    TEXTELEFONOSUP: TQRDBText;
     dsProv: TDataSource;
     QRDBText12: TQRDBText;
     QRDBText13: TQRDBText;
@@ -35,9 +35,9 @@ type
     QRDBText17: TQRDBText;
     QRDBText18: TQRDBText;
     QRDBText19: TQRDBText;
-    QRLabel3: TQRLabel;
-    QRLabel8: TQRLabel;
-    QRDBText22: TQRDBText;
+    LBLTELEFONOSUP: TQRLabel;
+    LBLRNCSUP: TQRLabel;
+    TEXTRNCSUP: TQRDBText;
     QRLabel11: TQRLabel;
     lbBalance1: TQRLabel;
     lbBalance2: TQRLabel;
@@ -278,8 +278,24 @@ begin
  Balance := Balance + QDocsFAC_TOTAL.Value;
   lbBalance1.Caption := format('%n',[Balance]);
   IF Balance > 0 THEN
-  PrintBand := True ELSE
-  PrintBand := False;
+  begin
+        PrintBand := True;
+        LBLTELEFONOSUP.Visible:=True;
+        LBLRNCSUP.Visible:= True;
+        TXTSUPNOMBRE.Visible:=True;
+        TEXTRNCSUP.Visible:=True;
+        TEXTELEFONOSUP.Visible:=True
+  end
+  ELSE
+  begin
+       PrintBand := False;
+       LBLTELEFONOSUP.Visible:=False;
+       LBLRNCSUP.Visible:= False;
+       TXTSUPNOMBRE.Visible:=False;
+       TEXTRNCSUP.Visible:=False;
+       TEXTELEFONOSUP.Visible:=False;
+  end;
+
 end;
 
 procedure TREstadoCtaProv.QRSubDetail2BeforePrint(Sender: TQRCustomBand;

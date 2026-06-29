@@ -247,6 +247,7 @@ begin
   REstadoCtaProv.vl_suc := 0;
   REstadoCtaProv.QProv.Close;
   REstadoCtaProv.QProv.SQL.Clear;
+
   REstadoCtaProv.QProv.SQL.Add('declare @emp int, @fecha datetime, @suc int, @mon int, @tip int, @sup int, @bal int');
   REstadoCtaProv.QProv.SQL.Add('set @emp = :EMP');
   REstadoCtaProv.QProv.SQL.Add('set @fecha = :FECHA');
@@ -328,9 +329,7 @@ begin
   REstadoCtaProv.QProv.Parameters.ParamByName('TIP').Value := 0;
 
   REstadoCtaProv.QProv.Parameters.ParamByName('BAL').Value := cbBalance.ItemIndex;
-  REstadoCtaProv.QProv.Open;
-
-
+  REstadoCtaProv.QProv.Open;          
 
     REstadoCtaProv.QDocs.Close;
     REstadoCtaProv.QDocs.SQL.Clear;

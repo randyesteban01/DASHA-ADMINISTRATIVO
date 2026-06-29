@@ -1,12 +1,12 @@
 object frmDevolucion: TfrmDevolucion
-  Left = 413
-  Top = 170
+  Left = 409
+  Top = 110
   ActiveControl = PageControl1
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Devoluciones'
-  ClientHeight = 474
-  ClientWidth = 687
+  ClientHeight = 497
+  ClientWidth = 696
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,6 +21,7 @@ object frmDevolucion: TfrmDevolucion
   OnActivate = FormActivate
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnKeyDown = RG
   OnKeyPress = FormKeyPress
   OnPaint = FormPaint
@@ -28,8 +29,8 @@ object frmDevolucion: TfrmDevolucion
   TextHeight = 13
   object Panel5: TPanel
     Left = 0
-    Top = 376
-    Width = 687
+    Top = 399
+    Width = 696
     Height = 98
     Align = alBottom
     BevelInner = bvRaised
@@ -274,9 +275,9 @@ object frmDevolucion: TfrmDevolucion
   end
   object Grid: TDBGrid
     Left = 0
-    Top = 193
-    Width = 687
-    Height = 183
+    Top = 225
+    Width = 696
+    Height = 174
     Align = alClient
     Ctl3D = False
     DataSource = dsDetalle
@@ -423,8 +424,8 @@ object frmDevolucion: TfrmDevolucion
   object Panel3: TPanel
     Left = 0
     Top = 0
-    Width = 687
-    Height = 193
+    Width = 696
+    Height = 225
     Align = alTop
     BevelInner = bvRaised
     BevelOuter = bvLowered
@@ -450,14 +451,14 @@ object frmDevolucion: TfrmDevolucion
       Caption = 'Fecha'
     end
     object Label21: TLabel
-      Left = 152
-      Top = 32
+      Left = 149
+      Top = 34
       Width = 32
       Height = 13
       Caption = 'Motivo'
     end
     object btmotivo: TSpeedButton
-      Left = 229
+      Left = 249
       Top = 32
       Width = 23
       Height = 22
@@ -476,6 +477,33 @@ object frmDevolucion: TfrmDevolucion
         777770000000}
       OnClick = btmotivoClick
     end
+    object Label24: TLabel
+      Left = 148
+      Top = 59
+      Width = 57
+      Height = 13
+      Caption = 'Motivo DGII'
+    end
+    object SpeedButton2: TSpeedButton
+      Left = 249
+      Top = 54
+      Width = 23
+      Height = 22
+      Flat = True
+      Glyph.Data = {
+        42010000424D4201000000000000760000002800000011000000110000000100
+        040000000000CC00000000000000000000001000000010000000000000000000
+        BF0000BF000000BFBF00BF000000BF00BF00BFBF0000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777777
+        77777000000077777777777777777000000070000077777000007000000070B0
+        00777770F0007000000070F000777770B0007000000070000000700000007000
+        0000700B000000B0000070000000700F000700F0000070000000700B000700B0
+        0000700000007700000000000007700000007770B00070B00077700000007770
+        0000700000777000000077770007770007777000000077770B07770B07777000
+        0000777700077700077770000000777777777777777770000000777777777777
+        777770000000}
+      OnClick = SpeedButton2Click
+    end
     object rbForma: TRadioGroup
       Left = 650
       Top = 239
@@ -493,7 +521,7 @@ object frmDevolucion: TfrmDevolucion
     object DBLookupComboBox2: TDBLookupComboBox
       Left = 70
       Top = 8
-      Width = 375
+      Width = 395
       Height = 21
       DataField = 'suc_codigo'
       DataSource = dsDevolucion
@@ -528,8 +556,8 @@ object frmDevolucion: TfrmDevolucion
     end
     object PageControl1: TPageControl
       Left = 2
-      Top = 60
-      Width = 683
+      Top = 92
+      Width = 692
       Height = 131
       ActivePage = TabSheet1
       Align = alBottom
@@ -580,9 +608,9 @@ object frmDevolucion: TfrmDevolucion
         object Label7: TLabel
           Left = 8
           Top = 60
-          Width = 20
+          Width = 26
           Height = 13
-          Caption = 'NCF'
+          Caption = 'eNCF'
         end
         object Label12: TLabel
           Left = 320
@@ -947,7 +975,7 @@ object frmDevolucion: TfrmDevolucion
       OnClick = rgtipoClick
     end
     object DBEdit13: TDBEdit
-      Left = 192
+      Left = 212
       Top = 32
       Width = 33
       Height = 21
@@ -964,7 +992,7 @@ object frmDevolucion: TfrmDevolucion
       TabOrder = 3
     end
     object tmotivo: TEdit
-      Left = 256
+      Left = 276
       Top = 32
       Width = 188
       Height = 21
@@ -979,6 +1007,40 @@ object frmDevolucion: TfrmDevolucion
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 6
+    end
+    object tmotivodgi: TEdit
+      Left = 276
+      Top = 56
+      Width = 188
+      Height = 21
+      BevelKind = bkFlat
+      BorderStyle = bsNone
+      Color = clInfoBk
+      Enabled = False
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 7
+    end
+    object DBEdit15: TDBEdit
+      Left = 212
+      Top = 56
+      Width = 33
+      Height = 21
+      BevelKind = bkFlat
+      BorderStyle = bsNone
+      DataField = 'motivo_dgi'
+      DataSource = dsDevolucion
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 8
     end
   end
   object QDevolucion: TADOQuery
@@ -1017,24 +1079,28 @@ object frmDevolucion: TfrmDevolucion
         'select DEV_DESCUENTO, DEV_DEVDINERO, DEV_FECHA, DEV_ITBIS, DEV_N' +
         'UMERO,'
       
-        'DEV_STATUS, DEV_TOTAL, EMP_CODIGO, FAC_FORMA, FAC_NUMERO, TFA_CO' +
-        'DIGO,'
+        'DEV_STATUS, DEV_TOTAL, D.EMP_CODIGO, FAC_FORMA, FAC_NUMERO, D.TF' +
+        'A_CODIGO,'
       
-        'USU_CODIGO, VEN_CODIGO, CLI_CODIGO, CAJ_CODIGO, DEV_PORCCOMISION' +
-        ','
+        'D.USU_CODIGO, D.VEN_CODIGO, D.CLI_CODIGO, CAJ_CODIGO, DEV_PORCCO' +
+        'MISION,'
       'DEV_COMISION, DEV_NOMBRE,'
-      'BAN_CODIGO, CHE_NUMERO, dev_conitbis, suc_codigo,'
+      'BAN_CODIGO, CHE_NUMERO, dev_conitbis, D.suc_codigo,'
       
         'dev_selectivo_ad, dev_selectivo_con,  NCF, ticket_caja, ticket_c' +
         'ajero, ticket_numero,'
       
         'ticket_fecha, mot_codigo, dev_fecha_factura, DEV_RECARGO, TDesc_' +
         'gral, porc_desc_gral,'
-      'DEV_TASA, DEV_HORA'
-      'from DEVOLUCION'
-      'where emp_codigo = :emp_codigo'
+      'DEV_TASA, DEV_HORA, E.emp_rnc, prov.cli_rnc,d.eNCF,motivo_dgi'
+      'from DEVOLUCION D'
+      ' INNER JOIN Empresas e '
+      '        ON e.emp_codigo = D.emp_codigo'
+      '  LEFT JOIN Clientes prov '
+      '        ON prov.cli_codigo = D.cli_codigo'
+      'where d.emp_codigo = :emp_codigo'
       'and dev_numero = :numero'
-      'and suc_codigo = :suc')
+      'and d.suc_codigo = :suc')
     Left = 320
     Top = 192
     object QDevolucionDEV_DESCUENTO: TFloatField
@@ -1201,6 +1267,19 @@ object frmDevolucion: TfrmDevolucion
     object QDevolucionDEV_HORA: TStringField
       FieldName = 'DEV_HORA'
       Size = 15
+    end
+    object QDevolucionemp_rnc: TStringField
+      FieldName = 'emp_rnc'
+    end
+    object QDevolucioncli_rnc: TStringField
+      FieldName = 'cli_rnc'
+    end
+    object QDevolucioneNCF: TStringField
+      FieldName = 'eNCF'
+    end
+    object QDevolucionmotivo_dgi: TIntegerField
+      FieldName = 'motivo_dgi'
+      OnGetText = QDevolucionmotivo_dgiGetText
     end
   end
   object dsDevolucion: TDataSource

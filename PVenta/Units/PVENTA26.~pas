@@ -218,6 +218,9 @@ type
     pnCorreo: TPanel;
     mmo1: TMemo;
     qEjec: TADOQuery;
+    lblLbTotalUS: TLabel;
+    EDT_COT_TOTALUS: TDBEdit;
+    QCotizacionCOT_TOTALUS: TCurrencyField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -282,7 +285,7 @@ type
     procedure QCotizacionAfterOpen(DataSet: TDataSet);
   private
     vl_monto : Double;
-    DesactivarCargaProductos :Boolean;
+    DesactivarCargaProductos, vModProducto :Boolean;
     vl_dest, vl_tipoclie, vl_clienteN, vl_asunto, vl_factnum, vl_adjunto1, vl_adjunto2, vl_cuerpo :String;
     procedure EnvioMail(Reporte: TQuickRep; Tipo: String);
     { Private declarations }
@@ -301,7 +304,7 @@ implementation
 
 uses PVENTA33, PVENTA34, RVENTA36, SIGMA01, SIGMA00, PVENTA117, RVENTA65,
   PVENTA36, RVENTA85, PVENTA15, PVENTA138, PVENTA186, StrUtils, PVENTA209,
-  DateUtils, RVENTA131;
+  DateUtils, RVENTA131, RVENTA135;
 
 {$R *.DFM}
 
@@ -438,6 +441,8 @@ DBGrid_1.Left := 0;
     QCotizacion.insert;
     chkMail.Checked := DM.QParametrosPar_Envio_Cotiz_Correo.Value;
   end;
+
+vModProducto := DM.QUsuariosusu_modifica_nombreprod.Value;
 end;
 
 procedure TfrmCotizacion.FormCreate(Sender: TObject);
@@ -531,6 +536,20 @@ begin
       dm.Query1.Parameters.parambyname('emp').Value := dm.QParametrosPAR_INVEMPRESA.Value;
       dm.Query1.Parameters.parambyname('cod').Value := QDetallePRO_CODIGO.value;
       dm.Query1.open;
+      if dm.Query1.RecordCount = 0 then
+      begin
+        MessageDlg('ESTE PRODUCTO NO ESTA REGISTRADO EN EL MAESTRO',
+        mtError,[mbok],0);
+        //CAMBIO REALIZADO POR JHONATTAN GOMEZ 14/02/2018
+        QDetalle.Delete;
+        totalizar;
+        QDetalle.Append;
+        Grid.SetFocus;
+        Exit;
+        //FIN CAMBIO REALIZADO POR JHONATTAN GOMEZ 14/02/2018
+      end
+      else
+      begin
       QDetallePRO_RORIGINAL.value     := dm.Query1.fieldbyname('pro_roriginal').asstring;
       QDetallePRO_RFABRIC.value       := dm.Query1.fieldbyname('pro_rfabric').asstring;
       QDetallePRO_NOMBRE.value        := dm.Query1.fieldbyname('pro_nombre').asstring;
@@ -632,7 +651,8 @@ begin
           QDetalleDET_DESCMAX.Value   := dm.Query1.fieldbyname('pro_descmax').asfloat;
           end;
   end;
-      
+  end;
+
 
 
 
@@ -657,6 +677,20 @@ begin
       dm.Query1.Parameters.parambyname('emp').Value := dm.QParametrosPAR_INVEMPRESA.Value;
       dm.Query1.Parameters.parambyname('cod').Value := QDetallePRO_RFABRIC.value;
       dm.Query1.open;
+      if dm.Query1.RecordCount = 0 then
+      begin
+        MessageDlg('ESTE PRODUCTO NO ESTA REGISTRADO EN EL MAESTRO',
+        mtError,[mbok],0);
+        //CAMBIO REALIZADO POR JHONATTAN GOMEZ 14/02/2018
+        QDetalle.Delete;
+        totalizar;
+        QDetalle.Append;
+        Grid.SetFocus;
+        Exit;
+        //FIN CAMBIO REALIZADO POR JHONATTAN GOMEZ 14/02/2018
+      end
+      else
+      begin
       QDetallePRO_CODIGO.value        := dm.Query1.fieldbyname('pro_codigo').asinteger;
       QDetallePRO_RORIGINAL.value     := dm.Query1.fieldbyname('pro_roriginal').asstring;
       QDetallePRO_NOMBRE.value        := dm.Query1.fieldbyname('pro_nombre').asstring;
@@ -746,7 +780,8 @@ begin
       end;
     end;
 
-   
+    end;
+
   end;
 end;
 
@@ -770,6 +805,20 @@ begin
       dm.Query1.Parameters.parambyname('emp').Value := dm.QParametrosPAR_INVEMPRESA.Value;
       dm.Query1.Parameters.parambyname('cod').Value := QDetallePRO_RORIGINAL.value;
       dm.Query1.open;
+      if dm.Query1.RecordCount = 0 then
+      begin
+        MessageDlg('ESTE PRODUCTO NO ESTA REGISTRADO EN EL MAESTRO',
+        mtError,[mbok],0);
+        //CAMBIO REALIZADO POR JHONATTAN GOMEZ 14/02/2018
+        QDetalle.Delete;
+        totalizar;
+        QDetalle.Append;
+        Grid.SetFocus;
+        Exit;
+        //FIN CAMBIO REALIZADO POR JHONATTAN GOMEZ 14/02/2018
+      end
+      else
+      begin
       QDetallePRO_CODIGO.value        := dm.Query1.fieldbyname('pro_codigo').asinteger;
       QDetallePRO_RFABRIC.value       := dm.Query1.fieldbyname('pro_rfabric').asstring;
       QDetallePRO_NOMBRE.value        := dm.Query1.fieldbyname('pro_nombre').asstring;
@@ -825,7 +874,7 @@ begin
         QDetalledet_margen.Value := dm.Query1.fieldbyname('pro_beneficio3').AsFloat
       else if dm.QParametrosPAR_PRECIOUND.Value = 'Precio4' then
         QDetalledet_margen.Value := dm.Query1.fieldbyname('pro_beneficio4').AsFloat;}
-        
+
       //Empaque
       if QDetalleDET_MEDIDA.Value = 'Emp' then
         QDetalleDET_PRECIO.Value := QDetalle.FieldByName('det_'+dm.QParametrosPAR_PRECIOEMP.Value).AsFloat;
@@ -876,6 +925,7 @@ begin
         else
           QDetalleDET_DESCMAX.Value   := dm.Query1.fieldbyname('pro_descmax').asfloat;
           end;
+  end;
   end;
 
 
@@ -1159,6 +1209,13 @@ begin
     Grid.SelectedIndex := 0;
     QDetalle.Append;
   end;
+
+if uppercase(Grid.Columns[Grid.selectedindex].FieldName) = 'PRO_NOMBRE' then BEGIN
+  if vModProducto = True then
+Grid.Columns[Grid.selectedindex].ReadOnly := False else
+Grid.Columns[Grid.selectedindex].ReadOnly := True;
+end;
+
 end;
 
 procedure TfrmCotizacion.QCotizacionBeforePost(DataSet: TDataSet);
@@ -1256,6 +1313,18 @@ end;
 procedure TfrmCotizacion.QCotizacionCalcFields(DataSet: TDataSet);
 begin
   QCotizacionSubTotal.value := Total;
+
+IF QCotizacioncot_Tasa.Value > 1 THEN BEGIN
+QCotizacioncot_TOTALUS.Value := QCotizacioncot_TOTAL.Value / QCotizacioncot_TASA.Value;
+lblLbTotalUS.Visible :=  True;
+EDT_COT_TOTALUS.Visible :=  True;
+end
+else
+begin
+QCotizacioncot_TOTALUS.Value := 0;
+lblLbTotalUS.Visible :=  False;
+EDT_COT_TOTALUS.Visible :=  False;
+end;
 end;
 
 procedure TfrmCotizacion.QDetalleAfterPost(DataSet: TDataSet);
@@ -1268,7 +1337,7 @@ var
   a : integer;
   aPDF : TQRPDFDocumentFilter;
 begin
-  if QCotizacionCOT_TOTAL.Value > 0 then
+if QCotizacionCOT_TOTAL.Value > 0 then
   begin
     if trim(DBEdit7.text) = '' then
     begin
@@ -1360,6 +1429,23 @@ begin
             RCotizacionPreimpresa.Release;
           end
           else
+          if dm.QParametrospar_formato_preimpreso.Value = 'FUNDGRUBEL' then
+          begin
+          Application.CreateForm(tRCotizacionFUNDGRUBEL, RCotizacionFUNDGRUBEL);
+          RCotizacionFUNDGRUBEL.QCotizacion.Parameters.ParamByName('numero').Value := QCotizacionCOT_NUMERO.Value;
+          RCotizacionFUNDGRUBEL.QCotizacion.Open;
+          RCotizacionFUNDGRUBEL.QDetalle.Open;
+          RCotizacionFUNDGRUBEL.lbEmp4.Enabled := False;
+          RCotizacionFUNDGRUBEL.lbEmp5.Enabled := False;
+          RCotizacionFUNDGRUBEL.lbEmp6.Enabled := False;
+          RCotizacionFUNDGRUBEL.lbEmp7.Enabled := False;
+          RCotizacionFUNDGRUBEL.lbEmp8.Enabled := False;
+          RCotizacionFUNDGRUBEL.lbEmp9.Enabled := False;
+          RCotizacionFUNDGRUBEL.PrinterSetup;
+          RCotizacionFUNDGRUBEL.Preview;
+          RCotizacionFUNDGRUBEL.Destroy;
+          end
+          ELSE
           if dm.QParametrospar_formato_preimpreso.Value = 'Caceres&Equipos' then
           begin
           application.createform(TRCotizacionCaceresEquipos, RCotizacionCaceresEquipos);
@@ -2026,6 +2112,7 @@ procedure TfrmCotizacion.btnuevonumeroClick(Sender: TObject);
 var
   a : integer;
 begin
+  btLimpiarClick(Sender);
   Search.Query.clear;
   Search.Query.add('select cot_numero, substring(cot_nombre,1,50) as cot_nombre');
   Search.Query.add('from cotizacion');
@@ -2234,6 +2321,7 @@ begin
     frmProductos.btDelete.visible := vDel;
     frmProductos.QProductos.Close;
     frmProductos.QProductos.Parameters.ParamByName('prod').Value := QDetallePRO_CODIGO.Value;
+    frmProductos.QProductos.Parameters.ParamByName('PAR_INVEMPRESA').Value:= dm.QParametrosPAR_INVEMPRESA.Value;
     frmProductos.QProductos.Open;
 
     frmProductos.QProvee.Close;

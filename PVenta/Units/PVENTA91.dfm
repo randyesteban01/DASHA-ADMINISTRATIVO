@@ -1,8 +1,8 @@
 object frmActBalance: TfrmActBalance
   Left = 577
   Top = 236
-  Width = 469
-  Height = 119
+  Width = 452
+  Height = 133
   BorderIcons = []
   Caption = 'Actualiza Balance'
   Color = clBtnFace

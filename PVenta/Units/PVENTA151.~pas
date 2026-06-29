@@ -5,9 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DBCtrls, ComCtrls, StdCtrls, ExtCtrls, Buttons, Grids, DBGrids,
-  DB, ADODB, QuerySearchDlgADO, QuickRpt, QRCtrls, Menus;
+  DB, ADODB, QuerySearchDlgADO, QuickRpt, QRCtrls, Menus,uFrmPopupDGII;
 
 type
+  TEnvioResultado = (erAceptado, erRechazado, erError);
   TfrmConsTicket = class(TForm)
     Panel1: TPanel;
     Label3: TLabel;
@@ -170,6 +171,17 @@ type
     chkEmpresa: TCheckBox;
     chkSucursal: TCheckBox;
     QTicketssuc_codigo: TIntegerField;
+    btnEnviarDGII: TBitBtn;
+    QTicketsError_DGII: TBooleanField;
+    QTicketsemp_rnc: TStringField;
+    QTicketseNCF: TStringField;
+    QTicketscod_dgii: TIntegerField;
+    QTicketsEnviado_DGII: TBooleanField;
+    QTicketsAceptadoDGII: TBooleanField;
+    cbStatusDGII: TRadioGroup;
+    btnEnviarDGIIMasivo: TBitBtn;
+    ProgressBar1: TProgressBar;
+    FrmPopupDGIIQDGIIParametersParamByNamecaja1: TMenuItem;
     procedure FormPaint(Sender: TObject);
     procedure btCloseClick(Sender: TObject);
     procedure QTicketsCalcFields(DataSet: TDataSet);
@@ -212,11 +224,29 @@ type
     procedure Cambiarempresa1Click(Sender: TObject);
     procedure QFormapagoCalcFields(DataSet: TDataSet);
     procedure QEmpresasAfterOpen(DataSet: TDataSet);
+    procedure DBGrid1DrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumn; State: TGridDrawState);
+    procedure cbStatusDGIIClick(Sender: TObject);
+    procedure btnEnviarDGIIClick(Sender: TObject);
+    procedure btnEnviarDGIIMasivoClick(Sender: TObject);
+    procedure FrmPopupDGIIQDGIIParametersParamByNamecaja1Click(
+      Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
     Producto, CodCliente : Integer;
+    function EnviarFacturaActual(
+      out ResultadoTexto: WideString;
+      MostrarMensajes: Boolean = True
+    ): TEnvioResultado;
+
+        function ValidarENCFDisponible(
+      AEmp: Integer; ATipo: Integer;
+      out AMsg: string;
+      out ASiguienteCorrelativo: Int64
+    ): Boolean;
+
   end;
 
 var
@@ -225,9 +255,82 @@ var
 implementation
 
 uses SIGMA00, SIGMA01, RVENTA73, RVENTA74, CAJA12, RVENTA91, RVENTA101,
-  PVENTA33, RVENTA102, CONT76, PVENTA218;
+  PVENTA33, RVENTA102, CONT76, PVENTA218,DelphiZXingQRCode,FacturacionElectronicaDGII_TLB;
 
 {$R *.dfm}
+function TfrmConsTicket.ValidarENCFDisponible(
+  AEmp: Integer; ATipo: Integer;
+  out AMsg: string;
+  out ASiguienteCorrelativo: Int64  // opcional, informativo
+): Boolean;
+var
+  Q: TADOQuery;
+  desde, ultima, cantidad, hasta, siguiente: Int64;
+  vence: TDateTime;
+  activa: Boolean;
+begin
+  Result := False;
+  AMsg := '';
+  ASiguienteCorrelativo := 0;
+
+  Q := dm.Query1; // reutiliza tu query
+  Q.Close;
+  Q.SQL.Clear;
+  Q.SQL.Add('SELECT s.Secuencia_Inicial_DGII, s.Ultima_secuencia_DGII, ');
+  Q.SQL.Add('     CONVERT(datetime, s.FechaVencimientoSecuenciaDGII, 120) AS FechaVencimientoSecuenciaDGII, s.Activa, s.Cantidad');
+  Q.SQL.Add('FROM SecuenciaDGII s');
+  Q.SQL.Add('JOIN TipoNCF t ON t.emp_codigo = s.emp_codigo AND s.Tipo = t.cod_dgii');
+  Q.SQL.Add('WHERE s.emp_codigo = :emp AND t.cod_dgii = :tip');
+  Q.Parameters.ParamByName('emp').Value := AEmp;
+  Q.Parameters.ParamByName('tip').Value := ATipo;
+
+  Q.Open;
+
+  if Q.Eof then
+  begin
+    AMsg := 'SECUENCIA_NO_CONFIGURADA';
+    Exit;
+  end;
+
+  desde    := Q.FieldByName('Secuencia_Inicial_DGII').AsInteger;
+  ultima   := Q.FieldByName('Ultima_secuencia_DGII').AsInteger;
+  cantidad := Q.FieldByName('Cantidad').AsInteger;
+
+  if not Q.FieldByName('FechaVencimientoSecuenciaDGII').IsNull then
+  begin
+    vence := Q.FieldByName('FechaVencimientoSecuenciaDGII').AsDateTime;
+    if Now > vence then
+    begin
+      AMsg := 'La secuencia estï¿½ vencida.';
+      Exit;
+    end;
+  end;
+
+
+  if not Q.FieldByName('Activa').IsNull then
+  activa := Q.FieldByName('Activa').AsBoolean
+  else
+    activa := False; // por defecto
+
+  hasta     := desde + cantidad - 1;
+  siguiente := ultima + 1;
+
+  if activa = False then
+  begin
+    AMsg := 'SECUENCIA_INACTIVA';
+    Exit;
+  end;
+
+  if siguiente > hasta then
+  begin
+    AMsg := 'SECUENCIA_AGOTADA';
+    Exit;
+  end;
+
+  // Hay secuencia vï¿½lida y disponible (sin reservar)
+  ASiguienteCorrelativo := siguiente;
+  Result := True;
+end;
 
 procedure TfrmConsTicket.FormPaint(Sender: TObject);
 begin
@@ -263,6 +366,18 @@ procedure TfrmConsTicket.FormCreate(Sender: TObject);
 begin
   btAnula.Visible := dm.qusuariosusu_anula_ticket.Value = 'True';
   btcambiarnc.Visible := dm.qusuariosusu_anula_ticket.Value = 'True';
+
+  if not dm.QParametrosUsa_FacturacionElectronica.AsBoolean then
+  begin
+    btnEnviarDGII.Visible := False;
+   
+  end
+  else
+  begin
+    btnEnviarDGII.Visible := True;
+    DBGrid1.Columns[4].FieldName := 'eNCF';
+    DBGrid1.Columns[4].Title.Caption :='eNCF';
+  end;
 
   Memo1.Lines := QTickets.SQL;
   fecha1.Date := date;
@@ -346,6 +461,13 @@ begin
 
   if chkSucursal.Checked then
   QTickets.SQL.Add('and m.suc_codigo = :suc_codigo');
+
+    if cbStatusDGII.ItemIndex = 1 then
+     QTickets.sql.add('and AceptadoDGII = 1')
+  else if cbStatusDGII.ItemIndex = 2 then
+     QTickets.sql.add('and  Error_DGII=1 ')
+  else if cbStatusDGII.ItemIndex = 3 then
+     QTickets.sql.add('and m.Error_DGII=0 and (m.AceptadoDGII = 0 OR m.AceptadoDGII IS NULL)');
 
 
 
@@ -478,7 +600,7 @@ procedure TfrmConsTicket.SpeedButton1Click(Sender: TObject);
 begin
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('Cï¿½digo');
   Search.Query.clear;
   Search.Query.add('select usu_nombre, usu_codigo');
   Search.Query.add('from usuarios');
@@ -725,7 +847,7 @@ procedure TfrmConsTicket.btAnulaClick(Sender: TObject);
 var
   t : TBookmark;
 begin
-  if MessageDlg('Está seguro?',mtConfirmation,[mbyes,mbno],0) = mryes then
+  if MessageDlg('Estï¿½ seguro?',mtConfirmation,[mbyes,mbno],0) = mryes then
   begin
     t := QTickets.GetBookmark;
     dm.Query1.Close;
@@ -753,7 +875,7 @@ begin
     MessageDlg('Debe seleccionar una sola fecha',mtError,[mbok],0)
   else
   begin}
-    if MessageDlg('Está seguro que desea generar la entrada?',mtConfirmation,[mbyes,mbno],0) = mryes then
+    if MessageDlg('Estï¿½ seguro que desea generar la entrada?',mtConfirmation,[mbyes,mbno],0) = mryes then
     begin
      { if PageControl1.ActivePageIndex = 0 then
       begin
@@ -1121,7 +1243,7 @@ procedure TfrmConsTicket.SpeedButton3Click(Sender: TObject);
 begin
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('Cï¿½digo');
   search.AliasFields.add('Referencia');
   Search.Query.clear;
   Search.Query.add('select cli_nombre, cli_codigo, cli_referencia');
@@ -1189,18 +1311,21 @@ begin
     rnc := InputBox('RNC','RNC:',QTicketsrnc.AsString);
     if trim(rnc) <> '' then
     begin
-      dm.Query1.Close;
-      dm.Query1.SQL.Clear;
-      dm.Query1.SQL.Add('select razon_social from rnc where rnc_cedula = :rnc');
-      dm.Query1.Parameters.ParamByName('rnc').Value := trim(rnc);
-      dm.Query1.Open;
-      if MessageDlg('EL NUEVO CLIENTE ES '+dm.Query1.FieldByName('razon_social').AsString+'?',mtConfirmation,[mbyes,mbno],0) = mryes then
+      with dm.ConsultarRncCompleto(trim(rnc)) do
       begin
-        Application.CreateForm(tfrmSeleccionNCF, frmSeleccionNCF);
-        frmSeleccionNCF.ShowModal;
-        if frmSeleccionNCF.ncf > 0 then
+        if not Encontrado then
         begin
-          cliente := dm.Query1.FieldByName('razon_social').AsString;
+          if Mensaje <> '' then
+            MessageDlg(Mensaje, mtInformation, [mbok], 0);
+          Exit;
+        end;
+        if MessageDlg('EL NUEVO CLIENTE ES '+RazonSocial+'?',mtConfirmation,[mbyes,mbno],0) = mryes then
+        begin
+          Application.CreateForm(tfrmSeleccionNCF, frmSeleccionNCF);
+          frmSeleccionNCF.ShowModal;
+          if frmSeleccionNCF.ncf > 0 then
+          begin
+          cliente := RazonSocial;
 
           dm.Query1.Close;
           dm.Query1.SQL.Clear;
@@ -1283,7 +1408,7 @@ begin
             dm.Query1.Parameters.ParamByName('emp').Value := QTicketsemp_codigo.Value;
             dm.Query1.Parameters.ParamByName('suc').Value := QTicketssuc_codigo.Value;
             dm.Query1.Parameters.ParamByName('nom').Value := cliente;
-            dm.Query1.Parameters.ParamByName('rnc').Value := rnc;
+            dm.Query1.Parameters.ParamByName('rnc').Value := RncCedula;
             dm.Query1.Parameters.ParamByName('num').Value := num;
             dm.Query1.Parameters.ParamByName('caj').Value := QTicketscaja.Value;
             dm.Query1.Parameters.ParamByName('usu').Value := QTicketsusu_codigo.Value;
@@ -1435,6 +1560,7 @@ begin
     end;
   end;
 end;
+end;
 
 procedure TfrmConsTicket.btcambiarncClick(Sender: TObject);
 var
@@ -1447,15 +1573,18 @@ begin
 
     if trim(rnc) <> '' then
     begin
-      dm.Query1.Close;
-      dm.Query1.SQL.Clear;
-      dm.Query1.SQL.Add('select razon_social from rnc where rnc_cedula = :rnc');
-      dm.Query1.Parameters.ParamByName('rnc').Value := trim(rnc);
-      dm.Query1.Open;
-      if MessageDlg('EL NUEVO CLIENTE ES '+dm.Query1.FieldByName('razon_social').AsString+'?',mtConfirmation,[mbyes,mbno],0) = mryes then
+      with dm.ConsultarRncCompleto(trim(rnc)) do
       begin
-        nombre := dm.Query1.FieldByName('razon_social').AsString;
-        Screen.Cursor := crHourGlass;
+        if not Encontrado then
+        begin
+          if Mensaje <> '' then
+            MessageDlg(Mensaje, mtInformation, [mbok], 0);
+          Exit;
+        end;
+        if MessageDlg('EL NUEVO CLIENTE ES '+RazonSocial+'?',mtConfirmation,[mbyes,mbno],0) = mryes then
+        begin
+          nombre := RazonSocial;
+          Screen.Cursor := crHourGlass;
 
         dm.Query1.Close;
         dm.Query1.SQL.Clear;
@@ -1467,7 +1596,7 @@ begin
         dm.Query1.Parameters.ParamByName('fec').DataType := ftDate;
         dm.Query1.Parameters.ParamByName('fec').Value := QTicketsfecha.Value;
         dm.Query1.Parameters.ParamByName('tic').Value := QTicketsticket.Value;
-        dm.Query1.Parameters.ParamByName('rnc').Value := rnc;
+        dm.Query1.Parameters.ParamByName('rnc').Value := RncCedula;
         dm.Query1.Parameters.ParamByName('nom').Value := nombre;
         dm.Query1.ExecSQL;
 
@@ -1477,6 +1606,7 @@ begin
         QTickets.GotoBookmark(punt);
 
         Screen.Cursor := crDefault;
+      end;
       end;
     end;
   end;
@@ -1501,7 +1631,7 @@ begin
   empticket := QTicketsemp_codigo.Value;
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('Cï¿½digo');
   Search.Query.clear;
   Search.Query.add('select emp_nombre, emp_codigo');
   Search.Query.add('from empresas');
@@ -1546,5 +1676,444 @@ qSucursal.Close;
 qSucursal.Open;
 end;
 
+procedure TfrmConsTicket.DBGrid1DrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumn;
+  State: TGridDrawState);
+
+    function SafeBool(ADataSet: TDataSet; const AField: string): Boolean;
+  var F: TField;
+  begin
+    Result := False;
+    if (ADataSet = nil) then Exit;
+    F := ADataSet.FindField(AField);
+    if (F <> nil) and (not F.IsNull) then
+      Result := F.AsBoolean;
+  end;
+
+  var
+  DS: TDataSet;
+  aceptado, enviado, errorDGII: Boolean;
+  COLOR_ERROR_SUAVE, COLOR_AZUL_CLARO: TColor;
+
+begin
+  COLOR_ERROR_SUAVE := RGB(255, 204, 204); // Rojo claro
+  COLOR_AZUL_CLARO  := RGB(204, 229, 255); // Azul claro
+
+  if not dm.QParametrosUsa_FacturacionElectronica.AsBoolean then
+  begin
+    DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+    Exit;
+  end;
+
+  if (DBGrid1.DataSource = nil) or (DBGrid1.DataSource.DataSet = nil) then
+  begin
+    DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+    Exit;
+  end;
+
+   DS := DBGrid1.DataSource.DataSet;
+  if not DS.Active then
+  begin
+    DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+    Exit;
+  end;
+
+  aceptado  := SafeBool(DS, 'AceptadoDGII');
+  enviado   := SafeBool(DS, 'Enviado_DGII');
+  errorDGII := SafeBool(DS, 'Error_DGII');
+
+  if gdSelected in State then
+  begin
+    DBGrid1.Canvas.Brush.Color := clHighlight;
+    DBGrid1.Canvas.Font.Color  := clHighlightText;
+  end
+  else
+  begin
+    if aceptado then
+    begin
+      DBGrid1.Canvas.Brush.Color := clWhite;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end
+    else if errorDGII then
+    begin
+      DBGrid1.Canvas.Brush.Color := COLOR_ERROR_SUAVE;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end
+    else if enviado
+    then
+    begin
+      DBGrid1.Canvas.Brush.Color := COLOR_AZUL_CLARO;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end
+    else
+    begin
+      DBGrid1.Canvas.Brush.Color := COLOR_AZUL_CLARO;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end;
+  end;
+
+  DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+
+end;
+
+procedure TfrmConsTicket.cbStatusDGIIClick(Sender: TObject);
+begin
+btRefreshClick(self);
+end;
+function ExtraerValorJSON(const JSON, Campo: string): string;
+var
+  P1, P2: Integer;
+  Buscar: string;
+begin
+  Result := '';
+  Buscar := '"' + Campo + '":"';
+
+  P1 := Pos(Buscar, JSON);
+  if P1 > 0 then
+  begin
+    P1 := P1 + Length(Buscar);
+    P2 := P1;
+    while (P2 <= Length(JSON)) and (JSON[P2] <> '"') do
+      Inc(P2);
+
+    Result := Copy(JSON, P1, P2 - P1);
+  end;
+end;
+
+procedure TfrmConsTicket.btnEnviarDGIIClick(Sender: TObject);
+var
+  Servicio : FacturaElectronicaService;
+  resultado: WideString;
+  ncfNuevo : string;
+
+  ok: Boolean;
+  msg: string;
+  prox: Int64;
+
+begin
+ ncfNuevo := '';
+
+  if DM.QParametrosPAR_FE_DetenerFacturacion.Value then
+        begin
+          ok := ValidarENCFDisponible(
+                        QTicketsemp_codigo.Value,
+                        QTicketscod_dgii.Value,
+                        msg, prox);
+          if (not ok) then
+          begin
+            ShowMessage('No hay comprobantes fiscales disponibles para esta factura.');
+            Exit;
+          end;
+        end;
+
+  // Validar si ya fue enviada
+  if not QTicketsAceptadoDGII.IsNull then
+  begin
+    if QTicketsEnviado_DGII.Value then
+    begin
+      if QTicketsAceptadoDGII.Value then
+      begin
+        ShowMessage('Esta factura ya fue enviada y ACEPTADA por la DGII.');
+        Exit;
+      end
+      else if QTicketsError_DGII.Value then
+      begin
+        // Verificar permiso para reenviar rechazadas
+        if VarIsNull(dm.usu_reenvia_dgii) or not dm.usu_reenvia_dgii then
+        begin
+          ShowMessage('Esta factura ya fue enviada y RECHAZADA por la DGII.');
+          Exit;
+        end
+        else
+        begin
+            // >>> CONFIRMACIï¿½N <<<
+          if MessageDlg(
+               'Esta factura fue RECHAZADA por la DGII.' + sLineBreak +
+               'ï¿½Estï¿½ seguro que desea reenviarla?' + sLineBreak +
+               'Se generarï¿½ una NUEVA SECUENCIA.',
+               mtConfirmation, [mbYes, mbNo], 0
+             ) = mrNo then
+          begin
+            Exit; // si cancela, no hace nada
+          end;
+          // 1) Obtener NUEVA SECUENCIA desde SQL
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('SELECT dbo.fn_obtenerSecuenciaDGI(:emp, :tipo) AS NuevaSecuencia;');
+          dm.Query1.Parameters.ParamByName('emp').Value  := QTicketsemp_codigo.Value;
+          dm.Query1.Parameters.ParamByName('tipo').Value := QTicketscod_dgii.Value;
+
+          // IMPORTANTE: usar Open (no ExecSQL) para leer resultados
+          dm.Query1.Open;
+
+          if not dm.Query1.Fields[0].IsNull then
+            ncfNuevo := dm.Query1.FieldByName('NuevaSecuencia').AsString
+          else
+          begin
+            ShowMessage('No se pudo obtener una nueva secuencia DGII.');
+            Exit;
+          end;
+
+          dm.Query1.Close;
+
+          // 2) Guardar ese NCF nuevo en la factura (en dataset o directo en BD)
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('UPDATE Montos_Ticket SET eNCF = :ncfNuevo, Enviado_DGII = 1, AceptadoDGII = 0, Error_DGII = 0 ');
+          dm.Query1.SQL.Add('WHERE emp_codigo = :emp AND ticket = :ticket AND suc_codigo = :suc and usu_codigo= :usu_codigo and caja= :caja');
+          dm.Query1.Parameters.ParamByName('ncfNuevo').Value := ncfNuevo;
+          dm.Query1.Parameters.ParamByName('emp').Value      := QTicketsemp_codigo.Value;
+          dm.Query1.Parameters.ParamByName('ticket').Value      := QTicketsticket.Value;
+          dm.Query1.Parameters.ParamByName('suc').Value      := QTicketssuc_codigo.Value;
+          dm.Query1.Parameters.ParamByName('caja').Value    := QTicketscaja.Value;
+          dm.Query1.Parameters.ParamByName('usu_codigo').Value      := QTicketsusu_codigo.Value;
+          dm.Query1.ExecSQL;
+
+          //Actualizar secuencia
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('UPDATE SecuenciaDGII SET Ultima_secuencia_DGII = Ultima_secuencia_DGII + 1 ');
+          dm.Query1.SQL.Add('WHERE emp_codigo = :emp AND Tipo = :tipo');
+          dm.Query1.Parameters.ParamByName('emp').Value      := QTicketsemp_codigo.Value;
+          dm.Query1.Parameters.ParamByName('tipo').Value     := QTicketscod_dgii.Value;
+          dm.Query1.ExecSQL;
+
+        end;
+      end;
+    end;
+  end;
+
+  // Si hubo nueva secuencia, ya estï¿½ en QFacturaseNCF.Value
+  // Enviar segï¿½n tipo
+  if (QTicketstotal.Value <= 250000) and (QTicketscod_dgii.Value = 32) then
+  begin
+    Servicio := CoFacturaElectronicaService.Create;
+    resultado := Servicio.EnviarFacturaResumenPOS(
+      IntToStr(QTicketsemp_codigo.Value),
+      IntToStr(QTicketssuc_codigo.Value),
+      IntToStr(QTicketsticket.Value),
+      QTicketsemp_rnc.Value,
+      QTicketseNCF.Value,         // aquï¿½ ya va el NCF actualizado
+      QTicketsrnc.Value,
+      IntToStr(QTicketsusu_codigo.Value),
+      IntToStr(QTicketscaja.Value),
+      IntToStr(QTicketscod_dgii.Value)
+    );
+
+    if SameText(resultado, 'Aceptado') then
+      ShowMessage('Factura enviada y ACEPTADA por DGII.')
+    else
+      begin
+        ShowMessage(
+          'Factura no es ACEPTADA: ' +
+          ExtraerValorJSON(resultado, 'mensaje')
+        );
+      end;
+  end
+  else
+  begin
+    Servicio := CoFacturaElectronicaService.Create;
+    resultado := Servicio.EnviarFacturaElectronicaPOS(
+      IntToStr(QTicketsemp_codigo.Value),
+      IntToStr(QTicketssuc_codigo.Value),
+      IntToStr(QTicketsticket.Value),
+      QTicketsemp_rnc.Value,
+      QTicketseNCF.Value,         // NCF ya con nueva secuencia si aplicï¿½
+      QTicketsrnc.Value,
+      IntToStr(QTicketsusu_codigo.Value),
+      IntToStr(QTicketscaja.Value),
+      IntToStr(QTicketscod_dgii.Value)
+    );
+
+    if Pos(UpperCase('ACEPTADO'), UpperCase(resultado)) > 0 then
+      ShowMessage('Factura enviada correctamente.')
+   else
+      begin
+        ShowMessage(
+          'Factura no es ACEPTADA: ' +
+          ExtraerValorJSON(resultado, 'mensaje')
+        );
+      end;
+  end;
+
+  btRefreshClick(Self);
+end;
+
+procedure TfrmConsTicket.btnEnviarDGIIMasivoClick(Sender: TObject);
+var
+  total, proc, acept, rech, errores: Integer;
+  r: TEnvioResultado;
+  txt: WideString;
+  wasActive: Boolean;
+begin
+  if QTickets.IsEmpty then
+  begin
+    ShowMessage('No hay facturas cargadas.');
+    Exit;
+  end;
+  // CONFIRMACIï¿½N
+  if MessageDlg('ï¿½Estï¿½ seguro que desea enviar todas las facturas pendientes a la DGII?',
+                mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    Exit;
+  // prepara progreso
+  ProgressBar1.Position := 0;
+  ProgressBar1.Min := 0;
+  ProgressBar1.Max := QTickets.RecordCount;
+  ProgressBar1.Visible := True;
+
+  acept := 0; rech := 0; errores := 0; proc := 0;
+
+  // evita refrescos/lookup mientras recorres
+  QTickets.DisableControls;
+  try
+    QTickets.First;
+
+    // contar solo las pendientes (para un progreso real opcional)
+    total := 0;
+    while not QTickets.Eof do
+    begin
+      if  (QTicketsAceptadoDGII.AsBoolean=False) and (QTicketsError_DGII.AsBoolean = False)  then
+        Inc(total);
+      QTickets.Next;
+    end;
+
+    // si quieres que el Max sea las pendientes:
+    if total > 0 then ProgressBar1.Max := total else ProgressBar1.Max := 1;
+
+    // vuelta a empezar y procesar
+    QTickets.First;
+    while not QTickets.Eof do
+    begin
+      if  (QTicketsAceptadoDGII.AsBoolean=False) and (QTicketsError_DGII.AsBoolean = False) then
+      begin
+        r := EnviarFacturaActual(txt, False);  // funciï¿½n que llama al webservice
+
+        case r of
+          erAceptado:  Inc(acept);
+          erRechazado: Inc(rech);
+          erError:     Inc(errores);
+        end;
+
+        Inc(proc);
+        ProgressBar1.Position := proc;
+        Application.ProcessMessages; // para que la UI avance
+      end;
+
+      QTickets.Next;
+    end;
+  finally
+    QTickets.EnableControls;
+    ProgressBar1.Visible := False;
+  end;
+
+  btRefreshClick(Self); // refresca grilla si corresponde
+
+  ShowMessage(Format('Envï¿½o terminado.'#13#10 +
+                     'Aceptadas: %d  |  Rechazadas: %d  |  Errores: %d',
+                     [acept, rech, errores]));
+
+end;
+
+function TfrmConsTicket.EnviarFacturaActual(
+  out ResultadoTexto: WideString;
+  MostrarMensajes: Boolean = True
+): TEnvioResultado;
+var
+  Servicio: FacturaElectronicaService;
+  resultado: WideString;
+begin
+  ResultadoTexto := '';
+  Result := erError;
+
+  try
+    Servicio := CoFacturaElectronicaService.Create;
+    try
+      // DECIDIR QUï¿½ SERVICIO USAR
+      if (QTicketstotal.Value <= 250000) and (QTicketscod_dgii.Value = 32) then
+      begin
+        resultado := Servicio.EnviarFacturaResumenPOS(
+          IntToStr(QTicketsemp_codigo.Value),
+          IntToStr(QTicketssuc_codigo.Value),
+          IntToStr(QTicketsticket.Value),
+          QTicketsemp_rnc.Value,
+          QTicketseNCF.Value,
+          QTicketsrnc.Value,
+          IntToStr(QTicketsusu_codigo.Value),
+          IntToStr(QTicketscaja.Value),
+          IntToStr(QTicketscod_dgii.Value)
+        );
+
+        if MostrarMensajes then
+        begin
+          if SameText(resultado, 'Aceptado') then
+            ShowMessage('Factura enviada y ACEPTADA por DGII.')
+          else
+            ShowMessage('Factura enviada pero RECHAZADA por DGII.');
+        end;
+      end
+      else
+      begin
+        resultado := Servicio.EnviarFacturaElectronicaPOS(
+          IntToStr(QTicketsemp_codigo.Value),
+          IntToStr(QTicketssuc_codigo.Value),
+          IntToStr(QTicketsticket.Value),
+          QTicketsemp_rnc.Value,
+          QTicketseNCF.Value,
+          QTicketsrnc.Value,
+          IntToStr(QTicketsusu_codigo.Value),
+          IntToStr(QTicketscaja.Value),
+          IntToStr(QTicketscod_dgii.Value)
+        );
+
+        if MostrarMensajes then
+        begin
+          if Pos('ACEPTADO', UpperCase(resultado)) > 0 then
+            ShowMessage('Factura enviada y ACEPTADA por DGII.')
+          else
+            ShowMessage('Factura enviada pero RECHAZADA por DGII.');
+        end;
+      end;
+
+      ResultadoTexto := resultado;
+
+      if Pos('ACEPTADO', UpperCase(resultado)) > 0 then
+        Result := erAceptado
+      else
+        Result := erRechazado;
+
+    finally
+      Servicio := nil;
+    end;
+  except
+    on E: Exception do
+    begin
+      ResultadoTexto := 'ERROR: ' + E.Message;
+      Result := erError;
+
+      if MostrarMensajes then
+        ShowMessage('Error enviando factura: ' + E.Message);
+    end;
+  end;
+end;
+procedure TfrmConsTicket.FrmPopupDGIIQDGIIParametersParamByNamecaja1Click(
+  Sender: TObject);
+begin
+Application.CreateForm(TFrmPopupDGII, FrmPopupDGII);
+try
+  FrmPopupDGII.QDGII.Close;
+  FrmPopupDGII.QDGII.Parameters.ParamByName('tipo').Value := 'MONTOS_TICKET';
+  FrmPopupDGII.QDGII.Parameters.ParamByName('emp_codigo').Value := QTicketsemp_codigo.Value;
+  FrmPopupDGII.QDGII.Parameters.ParamByName('fac_numero').Value := QTicketsticket.Value;
+  FrmPopupDGII.QDGII.Parameters.ParamByName('caja').Value := QTicketscaja.Value;
+  FrmPopupDGII.QDGII.Parameters.ParamByName('usu_codigo').Value := QTicketsusu_codigo.Value;
+  FrmPopupDGII.QDGII.Parameters.ParamByName('sup_codigo').Value := 0;
+  FrmPopupDGII.QDGII.Open;
+
+  FrmPopupDGII.ShowModal;
+finally
+  FrmPopupDGII.Free;
+  FrmPopupDGII := nil;
+end;
+ end;
 end.
 

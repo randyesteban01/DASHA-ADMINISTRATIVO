@@ -1,6 +1,6 @@
 object frmCargosBanco: TfrmCargosBanco
-  Left = 263
-  Top = 230
+  Left = 375
+  Top = 249
   ActiveControl = DBEdit1
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -465,7 +465,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 12
+      TabOrder = 11
     end
     object DBEdit6: TDBEdit
       Left = 72
@@ -512,29 +512,12 @@ object frmCargosBanco: TfrmCargosBanco
         'CXP Proveedores'
         'CxC Clientes'
         'Otros')
-      TabOrder = 20
+      TabOrder = 19
       Values.Strings = (
         'SUP'
         'CLI'
         'OTR')
-      OnClick = rbTipoClick
-    end
-    object tbenef: TEdit
-      Left = 96
-      Top = 128
-      Width = 321
-      Height = 21
-      BevelKind = bkFlat
-      BorderStyle = bsNone
-      Color = clInfoBk
-      Enabled = False
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 8
+      OnChange = rbTipoChange
     end
     object rbForma: TDBRadioGroup
       Left = 576
@@ -546,7 +529,7 @@ object frmCargosBanco: TfrmCargosBanco
       Items.Strings = (
         'Debito'
         'Credito')
-      TabOrder = 18
+      TabOrder = 17
       Values.Strings = (
         'D'
         'C')
@@ -605,7 +588,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 17
+      TabOrder = 16
     end
     object DBEdit11: TDBEdit
       Left = 480
@@ -623,7 +606,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 14
+      TabOrder = 13
     end
     object DBEdit9: TDBEdit
       Left = 480
@@ -640,7 +623,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 13
+      TabOrder = 12
     end
     object DBEdit10: TDBEdit
       Left = 480
@@ -659,7 +642,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 15
+      TabOrder = 14
     end
     object DBEdit12: TDBEdit
       Left = 480
@@ -678,7 +661,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 16
+      TabOrder = 15
     end
     object DBEdit13: TDBEdit
       Left = 73
@@ -697,7 +680,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Style = []
       MaxLength = 19
       ParentFont = False
-      TabOrder = 9
+      TabOrder = 8
     end
     object DBEdit14: TDBEdit
       Left = 328
@@ -714,7 +697,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 10
+      TabOrder = 9
       OnKeyPress = DBEdit14KeyPress
     end
     object DBEdit21: TDBEdit
@@ -732,7 +715,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 11
+      TabOrder = 10
     end
     object tTipo: TEdit
       Left = 144
@@ -749,7 +732,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 19
+      TabOrder = 18
     end
     object dbedtcont_numeroSucursal: TDBEdit
       Left = 72
@@ -767,7 +750,7 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 21
+      TabOrder = 20
       OnChange = dbedtcont_numeroSucursalChange
       OnKeyDown = dbedtcont_numeroSucursalKeyDown
     end
@@ -785,6 +768,23 @@ object frmCargosBanco: TfrmCargosBanco
       Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 21
+    end
+    object tbenef: TDBEdit
+      Left = 98
+      Top = 129
+      Width = 318
+      Height = 20
+      BevelKind = bkFlat
+      BorderStyle = bsNone
+      DataField = 'car_benef'
+      DataSource = dsCargos
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -9
+      Font.Name = 'Tahoma'
+      Font.Style = []
       ParentFont = False
       TabOrder = 22
     end
@@ -954,7 +954,6 @@ object frmCargosBanco: TfrmCargosBanco
             FieldName = 'DET_ORIGEN'
             Title.Alignment = taCenter
             Title.Caption = 'Origen'
-            Width = 53
             Visible = True
           end
           item
@@ -973,7 +972,7 @@ object frmCargosBanco: TfrmCargosBanco
       object lbFacturas: TStaticText
         Left = 0
         Top = 0
-        Width = 683
+        Width = 467
         Height = 17
         Align = alTop
         Alignment = taCenter
@@ -1113,7 +1112,6 @@ object frmCargosBanco: TfrmCargosBanco
     AfterInsert = QCargosAfterInsert
     AfterEdit = QCargosAfterEdit
     OnNewRecord = QCargosNewRecord
-    DataSource = DM.dsEmpresas
     Parameters = <
       item
         Name = 'EMP_CODIGO'
@@ -1171,7 +1169,7 @@ object frmCargosBanco: TfrmCargosBanco
       'USU_CODIGO, CAR_FORMA, CAR_ABONO, SUC_CODIGO,'
       'REC_NUMERO, CAR_COMISION, CAR_MONTO_BANCO,'
       'SUP_CODIGO, CAR_TASA, car_descuento, car_retencion,'
-      'car_rnc, car_ncf, tip_codigo, cont_numeroSucursal'
+      'car_rnc, car_ncf, tip_codigo, cont_numeroSucursal, car_benef'
       'FROM'
       'CARGOSBANCO'
       'WHERE'
@@ -1319,6 +1317,10 @@ object frmCargosBanco: TfrmCargosBanco
       FieldName = 'cont_numeroSucursal'
       Size = 5
     end
+    object QCargoscar_benef: TStringField
+      FieldName = 'car_benef'
+      Size = 255
+    end
   end
   object dsCargos: TDataSource
     AutoEdit = False
@@ -1399,7 +1401,7 @@ object frmCargosBanco: TfrmCargosBanco
       'ORDER BY'
       'DET_SECUENCIA')
     Left = 512
-    Top = 296
+    Top = 328
     object QDetalleBAN_CODIGO: TIntegerField
       FieldName = 'BAN_CODIGO'
       Origin = 'DET_CARGOSBANCO.BAN_CODIGO'
@@ -1799,5 +1801,82 @@ object frmCargosBanco: TfrmCargosBanco
     DataSet = QCentro
     Left = 448
     Top = 296
+  end
+  object qRepBalanceFact: TADOQuery
+    Connection = DM.ADOSigma
+    CommandTimeout = 120
+    Parameters = <
+      item
+        Name = 'EMP'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'SUP'
+        Size = -1
+        Value = Null
+      end>
+    SQL.Strings = (
+      
+        'DECLARE @SUC INT, @FAC INT, @tipo INT, @FORMA CHAR(1), @PAGO NUM' +
+        'ERIC(18,2), @CLI INT, @EMPRESA INT, @SUP INT, @FACSUP VARCHAR(20' +
+        ')'
+      ''
+      'SET @EMPRESA = :EMP'
+      'SET @SUP           = :SUP'
+      ''
+      ''
+      ''
+      'DECLARE Cr_Actualiza_CXP CURSOR FOR '
+      
+        'SELECT F.EMP_CODIGO, F.suc_codigo SUC, F.FAC_numero FAC, F.sup_c' +
+        'odigo SUP'
+      'FROM ProvFacturas F'
+      
+        'WHERE F.fac_status NOT IN ('#39'ANU'#39') AND F.EMP_CODIGO = @EMPRESA AN' +
+        'D F.SUP_CODIGO = @SUP'
+      'ORDER BY F.sup_codigo, F.fac_numero'
+      ''
+      ''
+      'OPEN Cr_Actualiza_CXP'
+      
+        'FETCH NEXT FROM Cr_Actualiza_CXP INTO @EMPRESA, @SUC, @FACSUP, @' +
+        'SUP'
+      'WHILE @@fetch_status = 0'
+      'BEGIN'
+      'SET @PAGO = 0'
+      ''
+      'set @pago = @pago + '
+      
+        'isnull((select isnull(sum(monto),0) from pr_pagos_cxp(@empresa, ' +
+        '@sup,@FACSUP)),0)'
+      ''
+      ''
+      ''
+      'UPDATE PROVFACTURAS'
+      'SET fac_abono = isnull(@PAGO,0),'
+      
+        '    fac_status = (CASE WHEN (FAC_TOTAL-isnull(@PAGO,0))<=1 THEN ' +
+        #39'PAG'#39' ELSE '#39'PEN'#39' END)'
+      
+        'WHERE emp_codigo = @EMPRESA AND suc_codigo = @SUC AND sup_codigo' +
+        ' = @SUP'
+      'AND FAC_STATUS <> '#39'ANU'#39
+      'AND RTRIM(fac_numero) = @FACSUP'
+      ''
+      
+        'FETCH NEXT FROM Cr_Actualiza_CXP INTO @EMPRESA, @SUC, @FACSUP, @' +
+        'SUP'
+      'END'
+      'CLOSE Cr_Actualiza_CXP'
+      'DEALLOCATE Cr_Actualiza_CXP'
+      ''
+      'exec pr_actualiza_bce @empresa'
+      ''
+      ''
+      '')
+    Left = 328
+    Top = 192
   end
 end

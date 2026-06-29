@@ -12,9 +12,10 @@ uses
   cxGridCustomView, cxGrid, cxDBLookupComboBox, frxClass, frxDBSet, cxContainer,
   cxTextEdit, cxMaskEdit, cxCalendar, QRPDFFilt, QRExport, QuickRpt, QRCtrls,
   vmaxFiscal, iFiscal, OCXFISLib_TLB, AppEvnts,Variants,Tfhkaif, frxBarcode,
-  uJSON;
+  uJSON,DelphiZXingQRCode;
 
 type
+  
   TfrmFactura = class(TForm)
     Panel2: TPanel;
     Label2: TLabel;
@@ -960,6 +961,19 @@ type
     QDetalleTMPfac_nombre: TStringField;
     QFacTMPfac_tasacambio: TFloatField;
     QEnvioCantidad: TFloatField;
+    QFacturaeNCF: TStringField;
+    QFacturaemp_rnc: TStringField;
+    QFacturacli_rnc: TStringField;
+    QFacturaTipoeNCF: TIntegerField;
+    dtFechaLimite: TDBEdit;
+    QFacturaFechaLimitePago: TDateField;
+    QFacTMPFechaLimitePago: TDateField;
+    QDetalledet_servicio_construccion: TBooleanField;
+    QDetalleporc_vendedor: TCurrencyField;
+    btBuscaVendPorc: TBitBtn;
+    QParametrospar_comision_vend: TBooleanField;
+    lbVendedor: TLabel;
+    qBuscVend: TADOQuery;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -1085,6 +1099,7 @@ type
     procedure QFacTMPCalcFields(DataSet: TDataSet);
     procedure QFacturafac_rncChange(Sender: TField);
     procedure DBEdit14KeyPress(Sender: TObject; var Key: Char);
+    procedure DBEdit14Exit(Sender: TObject);
     procedure QSeriesBeforeOpen(DataSet: TDataSet);
     procedure QFacturaAfterOpen(DataSet: TDataSet);
     procedure QDetallepro_unidad_medidaChange(Sender: TField);
@@ -1119,6 +1134,9 @@ type
     procedure dbCajaChange(Sender: TObject);
     procedure DBLookupComboBox2Click(Sender: TObject);
     procedure QEnvioBeforeOpen(DataSet: TDataSet);
+    procedure QFacturaFechaLimitePagoValidate(Sender: TField);
+    procedure btBuscaVendPorcClick(Sender: TObject);
+    procedure QParametrosAfterOpen(DataSet: TDataSet);
   private
     vSer, DesactivarCargaProductos :Boolean;
     vSecuencia, vl_index, vl_index2:Integer;
@@ -1136,7 +1154,7 @@ type
     function  IDEnvio:Integer;
     procedure DevolverExistencia;
     function  TIPOFACTURA(emp,tipo:Integer):String;
-
+    function  DetalleTieneServicioConstruccion():Boolean ;
 
   public
     { Public declarations }
@@ -1189,6 +1207,12 @@ type
 
     procedure BuscaProducto (Cod : String);
     function DescuentoGeneral(desc_gral:Real):Boolean;
+     function ValidarENCFDisponible(
+      AEmp: Integer; ATipo: Integer;
+      out AMsg: string;
+      out ASiguienteCorrelativo: Int64
+    ): Boolean;
+    
   end;
 
 var
@@ -1236,10 +1260,259 @@ uses PVENTA37, PVENTA33, PVENTA34, PVENTA36, PVENTA40, PVENTA42,
   PVENTA143, RVENTA71, RVENTA79, RVENTA32, PVENTA185, PVENTA186, PVENTA209,
   RVENTA115, PVENTA28, PVENTA83, PVENTA222, PVENTA223, PVENTA224,
   SIGMA06, RVENTA122, PVENTA15, PVENTA138, uEnvios, PVENTA125, StrUtils,
-  PVenta233, StdConvs, RVENTA126, PVENTAPRODUCTOSXALMACEN,
-  RVENTA128, PVENTA238, RVENTA41, RVENTA130, RVENTA134;
+  PVenta233, StdConvs, RVENTA126, PVENTAPRODUCTOSXALMACEN,  POS24,
+  RVENTA128, PVENTA238, RVENTA41, RVENTA130, RVENTA134,FacturacionElectronicaDGII_TLB,RVENTA136,RVENTA137 ,
+  PVENTA253, JPEG;
 
 {$R *.DFM}
+
+
+// --- Copias tfa_copias ---
+var
+  CopiasExtraImp: Integer;
+
+procedure CargarCopiasTipoFactura;
+var
+  vTipo: Integer;
+begin
+  CopiasExtraImp := 0;
+  frmFactura.copias := 0;
+
+  if (not frmFactura.QFacturaTFA_CODIGO.IsNull) and (frmFactura.QFacturaTFA_CODIGO.Value > 0) then
+    vTipo := frmFactura.QFacturaTFA_CODIGO.Value
+  else
+    vTipo := StrToIntDef(Trim(frmFactura.edTipo.Text), 0);
+
+  if vTipo <= 0 then
+    Exit;
+
+  with frmFactura.Query1 do
+  begin
+    Close;
+    SQL.Clear;
+    SQL.Add('select ISNULL(tfa_copias,0) tfa_copias from tiposfactura');
+    SQL.Add('where emp_codigo = :emp');
+    SQL.Add('and tfa_codigo = :cod');
+    Parameters.ParamByName('emp').Value := dm.vp_cia;
+    Parameters.ParamByName('cod').Value := vTipo;
+    Open;
+    if not IsEmpty then
+      CopiasExtraImp := FieldByName('tfa_copias').AsInteger;
+    Close;
+  end;
+
+  if CopiasExtraImp < 0 then
+    CopiasExtraImp := 0;
+
+  frmFactura.copias := CopiasExtraImp;
+end;
+
+procedure EstablecerEtiquetaCopia(Reporte: TQuickRep; NumCopia, TotalCopias: Integer);
+var
+  Lbl: TQRLabel;
+  Comp: TComponent;
+  sTexto: string;
+begin
+  if Reporte = nil then
+    Exit;
+
+  Comp := Reporte.FindComponent('lbNumCopia');
+  if (Comp = nil) or not (Comp is TQRLabel) then
+    Exit;
+
+  Lbl := TQRLabel(Comp);
+  sTexto := '';
+  if TotalCopias >= 1 then
+  begin
+    if NumCopia = 0 then
+      sTexto := 'ORIGINAL'
+    else
+      sTexto := Format('Copia %d de %d', [NumCopia, TotalCopias]);
+  end;
+  Lbl.Hint := sTexto;
+  Lbl.Caption := sTexto;
+end;
+
+procedure ImprimirQuickRep(Reporte: TQuickRep);
+begin
+  if Reporte is TRFactura then
+    TRFactura(Reporte).ImprimirConTotalPaginas
+  else
+    Reporte.Print;
+end;
+
+procedure ImprimirQuickRepCopias(Reporte: TQuickRep);
+var
+  a, vExtra, vTotal: Integer;
+begin
+  CargarCopiasTipoFactura;
+  vExtra := CopiasExtraImp;
+  if vExtra < 0 then vExtra := 0;
+
+  if vExtra = 0 then
+  begin
+    EstablecerEtiquetaCopia(Reporte, 0, 0);
+    ImprimirQuickRep(Reporte);
+    Exit;
+  end;
+
+  vTotal := 1 + vExtra;
+  a := 1;
+  while a <= vTotal do
+  begin
+    if a = 1 then
+      EstablecerEtiquetaCopia(Reporte, 0, vExtra)
+    else
+      EstablecerEtiquetaCopia(Reporte, a - 1, vExtra);
+    ImprimirQuickRep(Reporte);
+    Inc(a);
+  end;
+end;
+
+procedure ImprimirFrxReportCopias(Reporte: TfrxReport);
+var
+  a, vExtra, vTotal: Integer;
+  sCopia: string;
+begin
+  CargarCopiasTipoFactura;
+  vExtra := CopiasExtraImp;
+  if vExtra < 0 then vExtra := 0;
+  vTotal := 1 + vExtra;
+
+  a := 1;
+  while a <= vTotal do
+  begin
+    if vExtra >= 1 then
+    begin
+      if a = 1 then
+        sCopia := 'ORIGINAL'
+      else
+        sCopia := Format('Copia %d de %d', [a - 1, vExtra]);
+    end
+    else
+      sCopia := '';
+    try
+      Reporte.Variables['NumCopia'] := QuotedStr(sCopia);
+    except
+    end;
+    Reporte.ShowReport();
+    Inc(a);
+  end;
+end;
+
+// --- Helpers ESC/POS ---
+function ESC(const b: Byte): AnsiString;
+begin
+  Result := AnsiChar(#27) + AnsiChar(b);
+end;
+
+function GS(const b: Byte): AnsiString;
+begin
+  Result := AnsiChar(#29) + AnsiChar(b);
+end;
+
+procedure ImprimirLogoTicket(var F: TextFile);
+const
+  MaxLogoWidth = 384;
+  MaxLogoHeight = 200;
+var
+  Stream: TMemoryStream;
+  SrcBmp: TBitmap;
+  Jpg: TJPEGImage;
+  Bmp: TBitmap;
+  Scale: Double;
+  LogoWidth, LogoHeight, WidthBytes: Integer;
+  x, y, Bit: Integer;
+  ByteValue: Byte;
+  ColorRef: DWORD;
+  Gray: Integer;
+  Data: AnsiString;
+begin
+  if Trim(dm.QParametrospar_imprime_logo.Value) <> 'True' then
+    Exit;
+  if DM.QEmpresasEMP_LOGO.IsNull then
+    Exit;
+
+  Stream := TMemoryStream.Create;
+  SrcBmp := TBitmap.Create;
+  Bmp := TBitmap.Create;
+  try
+    try
+      DM.QEmpresasEMP_LOGO.SaveToStream(Stream);
+      if Stream.Size = 0 then
+        Exit;
+
+      Stream.Position := 0;
+      try
+        SrcBmp.LoadFromStream(Stream);
+      except
+        Stream.Position := 0;
+        Jpg := TJPEGImage.Create;
+        try
+          Jpg.LoadFromStream(Stream);
+          SrcBmp.Assign(Jpg);
+        finally
+          Jpg.Free;
+        end;
+      end;
+
+      if (SrcBmp.Width = 0) or (SrcBmp.Height = 0) then
+        Exit;
+
+      Scale := 1;
+      if SrcBmp.Width > MaxLogoWidth then
+        Scale := MaxLogoWidth / SrcBmp.Width;
+      if (SrcBmp.Height * Scale) > MaxLogoHeight then
+        Scale := MaxLogoHeight / SrcBmp.Height;
+
+      LogoWidth := Round(SrcBmp.Width * Scale);
+      LogoHeight := Round(SrcBmp.Height * Scale);
+      if (LogoWidth <= 0) or (LogoHeight <= 0) then
+        Exit;
+
+      Bmp.PixelFormat := pf24bit;
+      Bmp.Width := LogoWidth;
+      Bmp.Height := LogoHeight;
+      Bmp.Canvas.Brush.Color := clWhite;
+      Bmp.Canvas.FillRect(Rect(0, 0, LogoWidth, LogoHeight));
+      Bmp.Canvas.StretchDraw(Rect(0, 0, LogoWidth, LogoHeight), SrcBmp);
+
+      WidthBytes := (LogoWidth + 7) div 8;
+      SetLength(Data, WidthBytes * LogoHeight);
+      for y := 0 to LogoHeight - 1 do
+      begin
+        for x := 0 to WidthBytes - 1 do
+        begin
+          ByteValue := 0;
+          for Bit := 0 to 7 do
+          begin
+            if (x * 8 + Bit) < LogoWidth then
+            begin
+              ColorRef := GetPixel(Bmp.Canvas.Handle, x * 8 + Bit, y);
+              Gray := (GetRValue(ColorRef) * 30 + GetGValue(ColorRef) * 59 + GetBValue(ColorRef) * 11) div 100;
+              if Gray < 160 then
+                ByteValue := ByteValue or (128 shr Bit);
+            end;
+          end;
+          Data[(y * WidthBytes) + x + 1] := AnsiChar(ByteValue);
+        end;
+      end;
+
+      Write(F, ESC($61) + AnsiChar(#1));
+      Write(F, GS($76) + AnsiChar(#48) + AnsiChar(#0) +
+        AnsiChar(WidthBytes and $FF) + AnsiChar(WidthBytes shr 8) +
+        AnsiChar(LogoHeight and $FF) + AnsiChar(LogoHeight shr 8) + Data);
+      Writeln(F);
+      Write(F, ESC($61) + AnsiChar(#0));
+    except
+      // If the saved logo is not supported, keep printing the ticket without it.
+    end;
+  finally
+    Bmp.Free;
+    SrcBmp.Free;
+    Stream.Free;
+  end;
+end;
 
 function IntToBinRec(valor,digitos:integer):string;
  begin
@@ -1261,28 +1534,23 @@ begin
 end;
 
 procedure TfrmFactura.QFacturafac_rncChange(Sender: TField);
+var
+  D: TDatoRncConsulta;
+  RncBuscar: string;
 begin
-   if (not QFacturafac_rnc.IsNull) and (Trim(edCliente.Text) = '') then
+  RncBuscar := Trim(DBEdit14.Text);
+  if RncBuscar = '' then
+    RncBuscar := Trim(QFacturafac_rnc.AsString);
+  if RncBuscar = '' then
+    Exit;
+
+  D := dm.ConsultarRncCompleto(RncBuscar);
+  if D.Encontrado then
   begin
-    dm.Query1.Close;
-    dm.Query1.SQL.Clear;
-    dm.Query1.SQL.Add('select c.cli_codigo, rnc_cedula, razon_social, nombre_comercial,');
-    dm.Query1.SQL.Add('actividad_economica, direccion, numero, urbanizacion,');
-    dm.Query1.SQL.Add('telefono, estatus from rnc');
-    dm.Query1.SQL.Add(' left join clientes c on rnc.rnc_cedula = c.cli_rnc'); {20170704}
-    dm.Query1.SQL.Add('where rnc_cedula = :rnc');
-    dm.Query1.Parameters.ParamByName('rnc').Value := QFacturafac_rnc.Value;
-    dm.Query1.Open;
-    if dm.Query1.RecordCount > 0 then
-    begin
-      edCliente.Text              :=  dm.Query1.FieldByName('cli_codigo').AsString; {20170704}
-      QFacturaCLI_CODIGO.Value    := dm.Query1.FieldByName('cli_codigo').AsInteger;{20170704}
-      QFacturaFAC_NOMBRE.Value    := dm.Query1.FieldByName('razon_social').AsString;
-      QFacturaFAC_DIRECCION.Value := dm.Query1.FieldByName('direccion').AsString;
-      QFacturaFAC_LOCALIDAD.Value := Trim(dm.Query1.FieldByName('urbanizacion').AsString)+
-                                     Trim(dm.Query1.FieldByName('numero').AsString);
-      QFacturaFAC_TELEFONO.Value  := dm.Query1.FieldByName('telefono').AsString;
-    end;
+    QFacturaFAC_NOMBRE.Value := D.RazonSocial;
+    QFacturaFAC_DIRECCION.Value := D.Direccion;
+    QFacturaFAC_LOCALIDAD.Value := Trim(D.Urbanizacion) + Trim(D.Numero);
+    QFacturaFAC_TELEFONO.Value := D.Telefono;
   end;
 end;
 
@@ -1370,6 +1638,7 @@ end;
 procedure TfrmFactura.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+  if key = vk_f11  then btBuscaVendPorcClick(self); 
   if key = vk_f10 then btSalirClick(self);
   if key = vk_f3  then btLimpiarClick(self);
   if key = vk_f8  then btNotaClick(self);
@@ -1434,6 +1703,8 @@ DBGrid_1.Left := 0;
 
     vModProducto := DM.QUsuariosusu_modifica_nombreprod.Value;
 
+      
+
     if not QFactura.active then
     begin
       QSucursal.Parameters.ParamByName('usu').Value := dm.Usuario;
@@ -1456,6 +1727,7 @@ DBGrid_1.Left := 0;
       QFactura.Parameters.ParamByName('numero').Value := -1;
       QFactura.Parameters.ParamByName('suc').Value := -1;
       QFactura.open;
+
       QFactura.insert;
      // QFacturaALM_CODIGO.Value := QSucursalalm_codigo.Value;
 
@@ -1550,7 +1822,7 @@ begin
   search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('C?digo');
   search.ResultField := 'tfa_codigo';
   search.Title := 'Tipos de factura';
   if search.execute then
@@ -1580,6 +1852,7 @@ begin
       ModificaNombre := fieldbyname('tfa_modifica_nombre').asstring;
       CtaTipoFactura := fieldbyname('cat_cuenta').asstring;
       copias     := fieldbyname('tfa_copias').asinteger;
+      CopiasExtraImp := copias;
       FPagoIni   := fieldbyname('fpa_codigo').asinteger;
       Precio     := fieldbyname('tfa_precio').asstring;
       PuertoImp  := fieldbyname('tfa_puertoimp').asstring;
@@ -1592,6 +1865,7 @@ begin
       tiponcf    := fieldbyname('tipo').AsInteger;
       dbCondi.Enabled := SelCondi;
       btCondi.Enabled := SelCondi;
+      dtFechaLimite.Enabled := SelCondi;
       QFacturaFAC_MENSAJE1.Value := trim(fieldbyname('tfa_mensaje1').asstring);
       QFacturaFAC_MENSAJE2.Value := fieldbyname('tfa_mensaje2').asstring;
       QFacturaFAC_MENSAJE3.Value := fieldbyname('tfa_mensaje3').asstring;
@@ -1636,21 +1910,74 @@ begin
     SelectNext(activecontrol, true, true);
   end;
 
+
 procedure TfrmFactura.btCondiClick(Sender: TObject);
+var
+  q: TADOQuery;
+  codCondi, dias: Integer;
+  fechaBase, fechaLim: TDateTime;
 begin
-  Search.AliasFields.clear;
-  Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
-  Search.Query.clear;
-  Search.Query.add('select cpa_nombre, cpa_codigo');
-  Search.Query.add('from condiciones');
-  Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
-  Search.ResultField := 'cpa_Codigo';
+  Search.AliasFields.Clear;
+  Search.AliasFields.Add('Nombre');
+  Search.AliasFields.Add('C?digo');
+
+  Search.Query.Clear;
+  Search.Query.Add('select cpa_nombre, cpa_codigo'); // no necesitas cpa_dias aqu?
+  Search.Query.Add('from condiciones');
+  Search.Query.Add('where emp_codigo = ' + IntToStr(dm.vp_cia));
+
+  Search.ResultField := 'cpa_codigo';
   Search.Title := 'Condiciones de pago';
-  if Search.execute then
+
+  if Search.Execute then
   begin
-    QFacturaCPA_CODIGO.value := strtoint(Search.ValueField);
-    dbCondi.setfocus;
+    // 1) Guardar c?digo seleccionado
+    codCondi := StrToIntDef(Search.ValueField, 0);
+    //QFactura.Edit;
+    QFacturaCPA_CODIGO.AsInteger := codCondi;
+    dbCondi.SetFocus;
+
+    // 2) Leer cpa_dias con un query r?pido
+    q := TADOQuery.Create(nil);
+    try
+      q.Connection := DM.ADOSigma; // AliasName = DM.ADOSigma
+      q.SQL.Text :=
+        'select cpa_dias ' +
+        'from condiciones ' +
+        'where emp_codigo = :emp and cpa_codigo = :cod';
+      q.Parameters.ParamByName('emp').Value := dm.vp_cia;
+      q.Parameters.ParamByName('cod').Value := codCondi;
+      q.Open;
+
+      dias := 0;
+      if not q.Fields[0].IsNull then
+        dias := q.Fields[0].AsInteger;
+    finally
+      q.Free;
+    end;
+
+    // 3) Calcular fecha l?mite (base = hoy o la fecha de la factura)
+    // Usa la fecha de la factura si la tienes en el dataset:
+    if QFactura.FindField('FAC_FECHA') <> nil then
+      fechaBase := QFactura.FieldByName('FAC_FECHA').AsDateTime
+    else
+      fechaBase := Date;
+
+    // Con DateUtils: fechaLim := IncDay(fechaBase, dias);
+    fechaLim := fechaBase + dias;
+
+    // 4) Asignar a tu TBEdit dtFechaLimite (o al campo de la tabla si est? ligado)
+    // Si dtFechaLimite es un TEdit/TBEdit:
+    dtFechaLimite.Text := FormatDateTime('dd/mm/yyyy', fechaLim);
+
+    // Si adem?s tienes un campo en QFactura para guardar la fecha l?mite:
+    if QFactura.FindField('FechaLimitePago') <> nil then
+      QFactura.FieldByName('FechaLimitePago').AsDateTime := fechaLim;
+
+    if QFactura.FindField('fac_vence') <> nil then
+      QFactura.FieldByName('fac_vence').AsDateTime := fechaLim;
+
+  //  QFactura.Post;
   end;
 end;
 
@@ -1658,7 +1985,7 @@ procedure TfrmFactura.btVendedorClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('C?digo');
   Search.Query.clear;
   Search.Query.add('select ven_nombre, ven_codigo');
   Search.Query.add('from vendedores');
@@ -1667,11 +1994,13 @@ begin
   Search.Title := 'Listado de Vendedores';
   if Search.execute then
   begin
+    if not (QFactura.State in [dsEdit, dsInsert]) then
+      QFactura.Edit;
+
     QFacturaVEN_CODIGO.value := strtoint(Search.ValueField);
     dbVendedor.setfocus;
   end;
 end;
-
 procedure TfrmFactura.QFacturaVEN_CODIGOGetText(Sender: TField;
   var Text: String; DisplayText: Boolean);
 begin
@@ -1700,6 +2029,10 @@ end;
 
 procedure TfrmFactura.QFacturaCPA_CODIGOGetText(Sender: TField;
   var Text: String; DisplayText: Boolean);
+ var
+  fechaBase, fechaLim: TDateTime;
+  q: TADOQuery;
+  codCondi, dias: Integer;
 begin
   if not QFacturaCPA_CODIGO.isnull then
   begin
@@ -1722,7 +2055,33 @@ begin
       Intervalo := dm.Query1.fieldbyname('cpa_intervalo').asinteger;
       Cuotas := dm.Query1.fieldbyname('cpa_cuotas').asstring;
       Intereses := dm.Query1.fieldbyname('cpa_intereses').asstring;
+
+      // 1) Guardar c?digo seleccionado
+      codCondi := QFacturaCPA_CODIGO.value;
       //dbinteres.Enabled := intereses = 'True';
+
+      // 2) Calcular fecha l?mite (base = hoy o la fecha de la factura)
+      // Usa la fecha de la factura si la tienes en el dataset:
+      if QFactura.FindField('FAC_FECHA') <> nil then
+        fechaBase := QFactura.FieldByName('FAC_FECHA').AsDateTime
+      else
+        fechaBase := Date;
+
+       // Con DateUtils: fechaLim := IncDay(fechaBase, dias);
+      fechaLim := fechaBase + dias;
+
+      // 4) Asignar a tu TBEdit dtFechaLimite (o al campo de la tabla si est? ligado)
+      // Si dtFechaLimite es un TEdit/TBEdit:
+      dtFechaLimite.Text := FormatDateTime('dd/mm/yyyy', fechaLim);
+
+      // Si adem?s tienes un campo en QFactura para guardar la fecha l?mite:
+      if QFactura.FindField('FECHA_LIMITE') <> nil then
+      begin
+        QFactura.Edit;
+        QFactura.FieldByName('FECHA_LIMITE').AsDateTime := fechaLim;
+        QFactura.Post;
+      end;
+
     end;
   end
   else
@@ -1900,6 +2259,7 @@ begin
   vtfa_espcliente := DM.Query1.FieldByName('espcliente').AsString;
   ModificaNombre := dm.Query1.fieldbyname('tfa_modifica_nombre').asstring;
   copias     := dm.Query1.fieldbyname('tfa_copias').asinteger;
+  CopiasExtraImp := copias;
   FPagoIni   := dm.Query1.fieldbyname('fpa_codigo').asinteger;
   Precio     := dm.Query1.fieldbyname('tfa_precio').asstring;
   PuertoImp  := dm.Query1.fieldbyname('tfa_puertoimp').asstring;
@@ -2297,13 +2657,16 @@ end;
 procedure TfrmFactura.btBuscaCliClick(Sender: TObject);
 var
   Cliente : integer;
+  fechaBase, fechaLim: TDateTime;
+  q: TADOQuery;
+  codCondi, dias: Integer;
 begin
   Search.Query.clear;
   Search.AliasFields.clear;
   Search.AliasFields.Add('Nombre');
   Search.AliasFields.Add('Telefono');
-  Search.AliasFields.Add('Cédula/RNC');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?dula/RNC');
+  Search.AliasFields.Add('C?digo');
   Search.Query.add('select substring(cli_nombre,1,50) as cli_nombre, cli_telefono, cli_cedula, cli_codigo, cli_referencia');
   if dm.QParametrosPAR_CODIGOCLIENTE.value = 'I' then
     Search.ResultField := 'cli_codigo'
@@ -2389,6 +2752,7 @@ begin
 
       ModificaNombre := dm.Query1.fieldbyname('tfa_modifica_nombre').asstring;
       copias     := dm.Query1.fieldbyname('tfa_copias').asinteger;
+  CopiasExtraImp := copias;
       FPagoIni   := dm.Query1.fieldbyname('fpa_codigo').asinteger;
       Precio     := dm.Query1.fieldbyname('tfa_precio').asstring;
       PuertoImp  := dm.Query1.fieldbyname('tfa_puertoimp').asstring;
@@ -2522,7 +2886,55 @@ begin
 
       if actbalance = 'True' then
         if dbCondi.Enabled = True then
-        dbCondi.SetFocus
+        begin
+             dbCondi.SetFocus;
+           // 1) Guardar c?digo seleccionado
+          codCondi := StrToIntDef(dbCondi.Text, 0);
+          QFactura.Edit;
+          QFacturaCPA_CODIGO.AsInteger := codCondi;
+          dbCondi.SetFocus;
+
+    // 2) Leer cpa_dias con un query r?pido
+    q := TADOQuery.Create(nil);
+    try
+      q.Connection := DM.ADOSigma; // AliasName = DM.ADOSigma
+      q.SQL.Text :=
+        'select cpa_dias ' +
+        'from condiciones ' +
+        'where emp_codigo = :emp and cpa_codigo = :cod';
+      q.Parameters.ParamByName('emp').Value := dm.vp_cia;
+      q.Parameters.ParamByName('cod').Value := codCondi;
+      q.Open;
+
+      dias := 0;
+      if not q.Fields[0].IsNull then
+        dias := q.Fields[0].AsInteger;
+    finally
+      q.Free;
+    end;
+
+    // 3) Calcular fecha l?mite (base = hoy o la fecha de la factura)
+    // Usa la fecha de la factura si la tienes en el dataset:
+    if QFactura.FindField('FAC_FECHA') <> nil then
+      fechaBase := QFactura.FieldByName('FAC_FECHA').AsDateTime
+    else
+      fechaBase := Date;
+
+    // Con DateUtils: fechaLim := IncDay(fechaBase, dias);
+    fechaLim := fechaBase + dias;
+
+    // 4) Asignar a tu TBEdit dtFechaLimite (o al campo de la tabla si est? ligado)
+    // Si dtFechaLimite es un TEdit/TBEdit:
+    dtFechaLimite.Text := FormatDateTime('dd/mm/yyyy', fechaLim);
+
+    // Si adem?s tienes un campo en QFactura para guardar la fecha l?mite:
+    if QFactura.FindField('FECHA_LIMITE') <> nil then
+      QFactura.FieldByName('FECHA_LIMITE').AsDateTime := fechaLim;
+
+    QFactura.Post;
+
+        end
+
       else
       begin
         PageControl1.ActivePageIndex := 0;
@@ -2537,7 +2949,14 @@ var
   Venta, VentaUSD, NumItbis : Currency;
   a : integer;
 begin
-  NumItbis := (QDetalleDET_ITBIS.Value/100)+1;
+
+   if (dm.QParametrospar_fac_preimpresa.Value = 'True') and
+   (dm.QParametrosservicio_construccion.AsBoolean = True) and
+   (QDetalle.FieldByName('det_servicio_construccion').AsBoolean) then
+    begin
+          NumItbis := 0;
+    end else  NumItbis := (QDetalleDET_ITBIS.Value/100)+1;
+
   if (QDetalleDET_CONITBIS.value = 'S') and (QFacturaFAC_CONITBIS.Value = 'True') then
   begin
     if (dm.QParametrospar_itbisincluido.Value = 'True') then
@@ -2573,7 +2992,13 @@ begin
 
     if (ckItbis.Checked)  then
       begin
-        QDetalleCalcItbis.value := (((QDetalleDET_PRECIO.value * QDetalleDET_CANTIDAD.Value) - QDetalleCalcDesc.value)* QDetalleDET_ITBIS.value) / 100  ;
+         if (dm.QParametrospar_fac_preimpresa.Value = 'True') and
+         (dm.QParametrosservicio_construccion.AsBoolean = True) and
+         (QDetalle.FieldByName('det_servicio_construccion').AsBoolean) then
+         begin
+          QDetalleCalcItbis.value := 0;
+         end else
+          QDetalleCalcItbis.value := (((QDetalleDET_PRECIO.value * QDetalleDET_CANTIDAD.Value) - QDetalleCalcDesc.value)* QDetalleDET_ITBIS.value) / 100  ;
 
       end
       else
@@ -2759,7 +3184,7 @@ begin
     Grid.Columns[0].Width     := 30;
     Grid.Columns[0].Title.Caption := 'Cant.';
     Grid.Columns[2].Width     := 60;
-    Grid.Columns[2].Title.Caption := 'Código';
+    Grid.Columns[2].Title.Caption := 'C?digo';
     if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'I' then
        Grid.Columns[2].FieldName := 'PRO_CODIGO'
     else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'F' then
@@ -2781,6 +3206,9 @@ begin
   begin
     DBLookupComboBox2.KeyValue := dm.suc_default;
   end;
+
+
+ 
 
 
 end;
@@ -2821,7 +3249,7 @@ if (RG_BuscaDet.ItemIndex = 2) and (Buscando = False) and (Not realizado) and (D
       dm.Query1.sql.add('p.pro_servicio, p.pro_vence, p.PRO_PRECIOMENOR, p.pro_escala,');
       dm.Query1.sql.add('p.PRO_COSTOEMPAQUE, p.pro_combo, p.pro_preciomenoremp, p.pro_cantempaque,');
       dm.Query1.sql.add('p.pro_selectivo_ad, p.pro_selectivo_con, p.pro_minimo_venta, p.pro_montoitbis,');
-      dm.Query1.sql.add('p.mar_codigo, p.pro_ctainvent, p.pro_ctacosto, p.fam_codigo, p.UnidadID, p.pro_utilizamedidor,p.pro_UtilizaEnvio,p.pro_serializado');
+      dm.Query1.sql.add('p.pro_comision, p.mar_codigo, p.pro_ctainvent, p.pro_ctacosto, p.fam_codigo, p.UnidadID, p.pro_utilizamedidor,p.pro_UtilizaEnvio,p.pro_serializado, with_servicio_construccion');
       dm.Query1.sql.add('from productos p');
       dm.Query1.sql.add('where p.emp_codigo = :emp');
       dm.Query1.sql.add('and p.pro_RFABRIC = :cod');
@@ -2901,7 +3329,42 @@ if (RG_BuscaDet.ItemIndex = 2) and (Buscando = False) and (Not realizado) and (D
         QDetalleDET_MANEJAESCALA.Value    := dm.Query1.fieldbyname('pro_escala').asstring;
         QDetallePRO_SERVICIO.Value        := dm.Query1.fieldbyname('pro_servicio').asstring;
         QDetallepro_serializado.Value  := dm.Query1.fieldbyname('pro_serializado').AsString;
-        if (ckItbis.Checked)  then 
+
+        //Jhonattan Gomez 2026-05-23 20:555  - Comision por producto
+        if btBuscaVendPorc.Visible = True then begin
+        if (not dm.Query1.FieldByName('pro_comision').IsNull) and
+           (dm.Query1.FieldByName('pro_comision').Value > 0) then begin
+        application.createform(TfrmSelVendPorc, frmSelVendPorc);
+
+        frmSelVendPorc.QVendedores.Close;
+        frmSelVendPorc.QVendedores.Parameters.ParamByName('EMP').Value := QFacturaEMP_CODIGO.Value;
+        frmSelVendPorc.QVendedores.Open;
+
+        if not frmSelVendPorc.QVendedores.IsEmpty then begin
+        frmSelVendPorc.showmodal;
+        if (frmSelVendPorc.vl_porciento <> 0) and (frmSelVendPorc.vl_vendedor <> 0) then
+        begin
+        QDetalleVEN_CODIGO.value := frmSelVendPorc.vl_vendedor;
+        if dm.Query1.FieldByName('pro_comision').Value < frmSelVendPorc.vl_porciento then
+        QDetalleporc_vendedor.value := dm.Query1.FieldByName('pro_comision').Value else
+        QDetalleporc_vendedor.value := frmSelVendPorc.vl_porciento;
+        FrmSelVendPorc.Release;
+        end;
+        end
+        else
+        begin
+        ShowMessage('Debes indicar los vendedores en el maestro de vendedores');
+        end;
+
+        end;
+        end;
+
+        if dm.Query1.FieldByName('with_servicio_construccion').IsNull then
+          QDetalleDet_servicio_construccion.Value := False
+        else
+          QDetalleDet_servicio_construccion.Value := dm.Query1.FieldByName('with_servicio_construccion').AsBoolean;
+
+        if (ckItbis.Checked)  then
         QDetalleDET_ITBIS.Value           := dm.Query1.fieldbyname('pro_montoitbis').asfloat else
         QDetalleDET_ITBIS.Value           := 0;
         if not QFacturaALM_CODIGO.IsNull then
@@ -2959,7 +3422,6 @@ if (RG_BuscaDet.ItemIndex = 2) and (Buscando = False) and (Not realizado) and (D
         if QDetalleDET_DESCUENTO.ReadOnly = False then 
         QDetalleDET_DESCUENTO.value := descuento;
         QDetalleDEP_CODIGO.value    := dm.Query1.fieldbyname('dep_codigo').asinteger;
-        QDetalleVEN_CODIGO.Value    := QFacturaVEN_CODIGO.Value;
         QDetalleDET_PRECIO1.Value      := dm.Query1.fieldbyname('pro_precio1').AsFloat;
         QDetalleDET_PRECIO2.Value      := dm.Query1.fieldbyname('pro_precio2').AsFloat;
         QDetalleDET_PRECIO3.Value      := dm.Query1.fieldbyname('pro_precio3').AsFloat;
@@ -3423,7 +3885,7 @@ if (RG_BuscaDet.ItemIndex = 1) and (Buscando = False) and (Not realizado) and (D
       dm.Query1.sql.add('p.pro_servicio, p.pro_vence, p.PRO_PRECIOMENOR, p.pro_escala,');
       dm.Query1.sql.add('p.PRO_COSTOEMPAQUE, p.pro_combo, p.pro_preciomenoremp, p.pro_cantempaque,');
       dm.Query1.sql.add('p.pro_selectivo_ad, p.pro_selectivo_con, p.pro_minimo_venta, p.pro_montoitbis,');
-      dm.Query1.sql.add('p.mar_codigo, p.pro_ctainvent, p.pro_ctacosto, p.fam_codigo, p.UnidadID, p.pro_utilizamedidor,p.pro_UtilizaEnvio,p.pro_serializado');
+      dm.Query1.sql.add('p.pro_comision, p.mar_codigo, p.pro_ctainvent, p.pro_ctacosto, p.fam_codigo, p.UnidadID, p.pro_utilizamedidor,p.pro_UtilizaEnvio,p.pro_serializado,with_servicio_construccion');
       dm.Query1.sql.add('from productos p');
       dm.Query1.sql.add('where p.emp_codigo = :emp');
       dm.Query1.sql.add('and p.pro_RORIGINAL = :cod');
@@ -3504,6 +3966,41 @@ if (RG_BuscaDet.ItemIndex = 1) and (Buscando = False) and (Not realizado) and (D
         QDetalleDET_MANEJAESCALA.Value    := dm.Query1.fieldbyname('pro_escala').asstring;
         QDetallePRO_SERVICIO.Value        := dm.Query1.fieldbyname('pro_servicio').asstring;
         QDetallepro_serializado.Value     := dm.Query1.fieldbyname('pro_serializado').AsString;
+
+        //Jhonattan Gomez 2026-05-23 20:555  - Comision por producto
+        if btBuscaVendPorc.Visible = True then begin
+        if (not dm.Query1.FieldByName('pro_comision').IsNull) and
+           (dm.Query1.FieldByName('pro_comision').Value > 0) then begin
+        application.createform(TfrmSelVendPorc, frmSelVendPorc);
+
+        frmSelVendPorc.QVendedores.Close;
+        frmSelVendPorc.QVendedores.Parameters.ParamByName('EMP').Value := QFacturaEMP_CODIGO.Value;
+        frmSelVendPorc.QVendedores.Open;
+
+        if not frmSelVendPorc.QVendedores.IsEmpty then begin
+        frmSelVendPorc.showmodal;
+        if (frmSelVendPorc.vl_porciento <> 0) and (frmSelVendPorc.vl_vendedor <> 0) then
+        begin
+        QDetalleVEN_CODIGO.value := frmSelVendPorc.vl_vendedor;
+        if dm.Query1.FieldByName('pro_comision').Value < frmSelVendPorc.vl_porciento then
+        QDetalleporc_vendedor.value := dm.Query1.FieldByName('pro_comision').Value else
+        QDetalleporc_vendedor.value := frmSelVendPorc.vl_porciento;
+        FrmSelVendPorc.Release;
+        end;
+        end
+        else
+        begin
+        ShowMessage('Debes indicar los vendedores en el maestro de vendedores');
+        end;
+
+        end;
+        end;
+
+        if dm.Query1.FieldByName('with_servicio_construccion').IsNull then
+          QDetalleDet_servicio_construccion.Value := False
+        else
+          QDetalleDet_servicio_construccion.Value := dm.Query1.FieldByName('with_servicio_construccion').AsBoolean;
+
         if (ckItbis.Checked)  then
         QDetalleDET_ITBIS.Value           := dm.Query1.fieldbyname('pro_montoitbis').asfloat else
         QDetalleDET_ITBIS.Value           := 0;
@@ -3564,7 +4061,6 @@ if (RG_BuscaDet.ItemIndex = 1) and (Buscando = False) and (Not realizado) and (D
         if QDetalleDET_DESCUENTO.ReadOnly = False then 
         QDetalleDET_DESCUENTO.value := descuento;
         QDetalleDEP_CODIGO.value    := dm.Query1.fieldbyname('dep_codigo').asinteger;
-        QDetalleVEN_CODIGO.Value    := QFacturaVEN_CODIGO.Value;
         QDetalleDET_PRECIO1.Value      := dm.Query1.fieldbyname('pro_precio1').AsFloat;
         QDetalleDET_PRECIO2.Value      := dm.Query1.fieldbyname('pro_precio2').AsFloat;
         QDetalleDET_PRECIO3.Value      := dm.Query1.fieldbyname('pro_precio3').AsFloat;
@@ -4036,7 +4532,8 @@ if (not FileExists('.\Transporte.Txt')) then begin
       dm.Query1.sql.add('p.pro_servicio, p.pro_vence, p.PRO_PRECIOMENOR, p.pro_escala,');
       dm.Query1.sql.add('p.PRO_COSTOEMPAQUE, p.pro_combo, p.pro_preciomenoremp, p.pro_cantempaque,');
       dm.Query1.sql.add('p.pro_selectivo_ad, p.pro_selectivo_con, p.pro_minimo_venta, p.pro_montoitbis,');
-      dm.Query1.sql.add('p.mar_codigo, p.pro_ctainvent, p.pro_ctacosto, p.fam_codigo, p.UnidadID, p.pro_utilizamedidor,p.pro_UtilizaEnvio,p.pro_serializado');
+      dm.Query1.sql.add('p.mar_codigo, p.pro_ctainvent, p.pro_ctacosto, p.fam_codigo, p.UnidadID,');
+      dm.Query1.sql.add('pro_comision, p.pro_utilizamedidor,p.pro_UtilizaEnvio,p.pro_serializado, with_servicio_construccion');
       dm.Query1.sql.add('from productos p');
       dm.Query1.sql.add('where p.emp_codigo = :emp');
       dm.Query1.sql.add('and p.pro_codigo = :cod');
@@ -4044,7 +4541,6 @@ if (not FileExists('.\Transporte.Txt')) then begin
       dm.Query1.Parameters.parambyname('emp').Value := dm.QParametrosPAR_INVEMPRESA.Value;
       dm.Query1.Parameters.parambyname('cod').Value := QDetallePRO_CODIGO.Value;
       dm.Query1.open;
-
 
       if not dm.Query1.fieldbyname('pro_codigo').IsNull  then
         IDProducto := dm.Query1.fieldbyname('pro_codigo').AsInteger;
@@ -4118,6 +4614,44 @@ if (not FileExists('.\Transporte.Txt')) then begin
         QDetalleDET_MANEJAESCALA.Value    := dm.Query1.fieldbyname('pro_escala').asstring;
         QDetallePRO_SERVICIO.Value        := dm.Query1.fieldbyname('pro_servicio').asstring;
         QDetallepro_serializado.Value  := dm.Query1.fieldbyname('pro_serializado').AsString;
+
+        //Jhonattan Gomez 2026-05-23 20:555  - Comision por producto
+        if btBuscaVendPorc.Visible = True then begin
+        if (not dm.Query1.FieldByName('pro_comision').IsNull) and
+           (dm.Query1.FieldByName('pro_comision').Value > 0) then begin
+        application.createform(TfrmSelVendPorc, frmSelVendPorc);
+
+        frmSelVendPorc.QVendedores.Close;
+        frmSelVendPorc.QVendedores.Parameters.ParamByName('EMP').Value := QFacturaEMP_CODIGO.Value;
+        frmSelVendPorc.QVendedores.Open;
+
+        if not frmSelVendPorc.QVendedores.IsEmpty then begin
+        frmSelVendPorc.showmodal;
+        if (frmSelVendPorc.vl_porciento <> 0) and (frmSelVendPorc.vl_vendedor <> 0) then
+        begin
+        QDetalleVEN_CODIGO.value := frmSelVendPorc.vl_vendedor;
+        if dm.Query1.FieldByName('pro_comision').Value < frmSelVendPorc.vl_porciento then
+        QDetalleporc_vendedor.value := dm.Query1.FieldByName('pro_comision').Value else
+        QDetalleporc_vendedor.value := frmSelVendPorc.vl_porciento;
+        FrmSelVendPorc.Release;
+        end;
+        end
+        else
+        begin
+        ShowMessage('Debes indicar los vendedores en el maestro de vendedores');
+        end;
+
+        end;
+        end;
+
+
+        if dm.Query1.FieldByName('with_servicio_construccion').IsNull then
+          QDetalleDet_servicio_construccion.Value := False
+        else
+          QDetalleDet_servicio_construccion.Value := dm.Query1.FieldByName('with_servicio_construccion').AsBoolean;
+
+
+
         if (ckItbis.Checked)  then 
         QDetalleDET_ITBIS.Value           := dm.Query1.fieldbyname('pro_montoitbis').asfloat else
         QDetalleDET_ITBIS.Value           := 0;
@@ -4175,7 +4709,6 @@ if (not FileExists('.\Transporte.Txt')) then begin
         if QDetalleDET_DESCUENTO.ReadOnly = False then 
         QDetalleDET_DESCUENTO.value := descuento;
         QDetalleDEP_CODIGO.value    := dm.Query1.fieldbyname('dep_codigo').asinteger;
-        QDetalleVEN_CODIGO.Value    := QFacturaVEN_CODIGO.Value;
         QDetalleDET_PRECIO1.Value      := dm.Query1.fieldbyname('pro_precio1').AsFloat;
         QDetalleDET_PRECIO2.Value      := dm.Query1.fieldbyname('pro_precio2').AsFloat;
         QDetalleDET_PRECIO3.Value      := dm.Query1.fieldbyname('pro_precio3').AsFloat;
@@ -4641,6 +5174,7 @@ end;
 procedure TfrmFactura.GridKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+
   if (key = vk_f4) and (btBuscaProd.Enabled = True) then btBuscaProdClick(self);
   if key = vk_f7  then btPrecioClick(Self);
 
@@ -4669,6 +5203,7 @@ var
   a : integer;
   b : String;
 begin
+
 if dm.QParametrospar_busq_incrementada.Value = True then begin
 if Grid.selectedindex = 0 then begin
 ed1.Text := Trim(ed1.Text)+Key;
@@ -5337,6 +5872,8 @@ end;
 if QDetallePRO_CODIGO.Text = '' then
 QDetalle.Cancel;
 
+
+
 end;
 
 end;
@@ -5695,6 +6232,8 @@ var
   vTotal_x_DescGral_sin_Itbis:Currency;
   vSubTotaltmp_con_Itbis :Currency;
   ValorTmp,par_monto_domicilio:Currency;
+  HayServicioConstruccionConItbis: Boolean;
+  vDetalleTieneServicioConstruccion: Boolean;
 begin
   vPorc_Desc_Gral := 0;
   vTotal_x_DescGral :=0;
@@ -5705,6 +6244,8 @@ begin
   vSubTotaltmp_con_Itbis :=0;
   TGralItbis := 0;
   TItbis2 := 0;
+
+  vDetalleTieneServicioConstruccion := DetalleTieneServicioConstruccion;
 
   if Totaliza = true then
   begin   //--[0]--
@@ -5786,6 +6327,8 @@ begin
     cant := 0;
     sSubTotal :=0;
     TItbis2 := 0;
+    HayServicioConstruccionConItbis := False;
+
     while not QDetalle.eof do
     begin //--[2]--
       sPreciosinItbis :=0;
@@ -5829,6 +6372,9 @@ begin
       end
       else
         begin
+          if not (QDetalle.State in [dsEdit, dsInsert]) then
+          QDetalle.Edit;
+
           QDetalleDET_CONITBIS.Value := 'N'; //Agregado por Titin porque devolucion trae itbis
           QDetalleDET_ITBIS.value := 0;
           Total  := Total  + QDetalleDET_PRECIO.value*QDetalledet_cantidad.Value;
@@ -5840,9 +6386,10 @@ begin
         grabado := grabado + ((QDetallePrecioItbis.value-QDetalleCalcDesc.Value));
 
       if QDetalleDET_CONITBIS.Value = 'N' then
-        exento := exento + ((QDetalleDET_PRECIO.value-QDetalleCalcDesc.Value));
+        exento := exento + ((QDetalleDET_PRECIO.value-QDetalleCalcDesc.Value)); 
 
-
+      if (vDetalleTieneServicioConstruccion) and (QDetalleDET_CONITBIS.Value = 'S') then
+        HayServicioConstruccionConItbis := True;
 
       SelectivoAd  := SelectivoAd  + (QDetalledet_selectivo_ad.Value);
       SelectivoCon := SelectivoCon + (QDetalledet_selectivo_con.Value);
@@ -5977,14 +6524,41 @@ begin
                                     QFacturafac_selectivo_ad.Value-
                                     vTotal_x_DescGral_sin_Itbis-
                                     TDesc;
-    
-    if (dm.QParametrospar_fac_preimpresa.Value = 'True') and (dm.QParametrospar_formato_preimpreso.Value = 'SteelTec') then begin
-    IF QFactura.State IN [DSEDIT, DSINSERT] THEN BEGIN
-    QFacturaSubTotal.VALUE:=(QFacturaFAC_TOTAL.Value*0.88231827112);
-    QFacturaFAC_SERVICIOS.VALUE:=(QFacturaFAC_TOTAL.Value*0.10);
-    QFacturaFAC_ITBIS.VALUE:=((QFacturaSubTotal.Value+QFacturaFAC_SERVICIOS.Value+QFacturaRecargo.Value)*0.10*0.18);
+
+   if (dm.QParametrospar_fac_preimpresa.Value = 'True') and
+   (dm.QParametrosservicio_construccion.AsBoolean = True) and
+   (DetalleTieneServicioConstruccion) then
+  begin
+  if QFactura.State in [dsEdit, dsInsert] then
+  begin
+    if HayServicioConstruccionConItbis then
+    begin                             
+
+      QFacturaSubTotal.Value := sSubTotal;
+      QFacturaFAC_SERVICIOS.Value := (QFacturaSubTotal.Value * 0.10);
+      QFacturaFAC_ITBIS.Value := QFacturaFAC_SERVICIOS.Value * 0.18;
+
+      QFacturaFAC_TOTAL.Value :=
+          sSubTotal +
+          QFacturaFAC_ITBIS.Value +
+          QFacturaFAC_OTROS.Value +
+          par_monto_domicilio +
+          QFacturafac_selectivo_con.Value +
+          QFacturafac_selectivo_ad.Value -
+          vTotal_x_DescGral_sin_Itbis -
+          TDesc;
+    end
+    else
+    begin
+      // l?gica vieja para servicio sin ITBIS
+      QFacturaSubTotal.Value := (QFacturaFAC_TOTAL.Value * 0.88231827112);
+      QFacturaFAC_SERVICIOS.Value := (QFacturaFAC_TOTAL.Value * 0.10);
+      QFacturaFAC_ITBIS.Value := ((QFacturaSubTotal.Value +
+                                   QFacturaFAC_SERVICIOS.Value +
+                                   QFacturaRecargo.Value) * 0.10 * 0.18);
     end;
-    end;
+  end;
+end;
 
 
     {
@@ -6184,6 +6758,36 @@ begin
   end;  //--[0]--
 end;
 
+function TfrmFactura.DetalleTieneServicioConstruccion: Boolean;
+var
+  bm: TBookmark;
+begin
+  Result := False;
+
+  if (QDetalle = nil) or (not QDetalle.Active) or (QDetalle.RecordCount = 0) then
+    Exit;
+
+  QDetalle.DisableControls;
+  bm := QDetalle.GetBookmark;
+  try
+    QDetalle.First;
+    while not QDetalle.Eof do
+    begin
+      // Campo booleano del detalle
+      if QDetalle.FieldByName('det_servicio_construccion').AsBoolean then
+      begin
+        Result := True;
+        Exit;
+      end;
+      QDetalle.Next;
+    end;
+  finally
+    if QDetalle.BookmarkValid(bm) then
+      QDetalle.GotoBookmark(bm);
+    QDetalle.FreeBookmark(bm);
+    QDetalle.EnableControls;
+  end;
+end;
 
 procedure TfrmFactura.QDetalleAfterPost(DataSet: TDataSet);
 begin
@@ -6193,20 +6797,21 @@ begin
   IF QDetalle.RecordCount > 0 THEN
     DBLookupComboBox2.Enabled := False;
 
-
-{IF QFactura.State IN [DSEDIT, DSINSERT] then BEGIN
+{
+IF QFactura.State IN [DSEDIT, DSINSERT] then BEGIN
 if not ((dm.QParametrospar_formato_preimpreso.Text = 'Sarita & Asociados') AND
           (DM.QParametrospar_fac_preimpresa.Value = 'True')) then
-QFacturaFAC_ITBIS.Value := QFacturaFAC_ITBIS.Value;}
+QFacturaFAC_ITBIS.Value := QFacturaFAC_ITBIS.Value;
 
-{if (ckItbis.Checked)  then begin
+if (ckItbis.Checked)  then begin
 QFacturaFAC_TOTAL.Value := QFacturaSubTotal.Value -  QFacturaFAC_DESCUENTO.Value+
 QFacturaFAC_ITBIS.Value + QFacturaRecargo.Value + QFacturaFAC_PROPINA.Value-QFacturaTdesc_gral_sin_Itbis.Value
 end
 ELSE
 QFacturaFAC_TOTAL.Value := QFacturaSubTotal.Value -  QFacturaTdesc_gral_sin_Itbis.Value - QFacturaFAC_DESCUENTO.Value+
 QFacturaRecargo.Value + QFacturaFAC_PROPINA.Value;
-}
+
+end; }
 end;
 
 procedure TfrmFactura.QDetalleBeforeDelete(DataSet: TDataSet);
@@ -6347,22 +6952,105 @@ begin
   end;
 end;
 
+function TfrmFactura.ValidarENCFDisponible(
+  AEmp: Integer; ATipo: Integer;
+  out AMsg: string;
+  out ASiguienteCorrelativo: Int64  // opcional, informativo
+): Boolean;
+var
+  Q: TADOQuery;
+  desde, ultima, cantidad, hasta, siguiente: Int64;
+  vence: TDateTime;
+  activa: Boolean;
+begin
+  Result := False;
+  AMsg := '';
+  ASiguienteCorrelativo := 0;
+
+  Q := dm.Query1; // reutiliza tu query
+  Q.Close;
+  Q.SQL.Clear;
+  Q.SQL.Add('SELECT s.Secuencia_Inicial_DGII, s.Ultima_secuencia_DGII, ');
+  Q.SQL.Add('     CONVERT(datetime, s.FechaVencimientoSecuenciaDGII, 120) AS FechaVencimientoSecuenciaDGII, s.Activa, s.Cantidad');
+  Q.SQL.Add('FROM SecuenciaDGII s');
+  Q.SQL.Add('JOIN TipoNCF t ON t.emp_codigo = s.emp_codigo AND s.Tipo = t.cod_dgii');
+  Q.SQL.Add('WHERE s.emp_codigo = :emp AND t.tip_codigo = :tip');
+  Q.Parameters.ParamByName('emp').Value := AEmp;
+  Q.Parameters.ParamByName('tip').Value := ATipo;
+
+  Q.Open;
+
+  if Q.Eof then
+  begin
+    AMsg := 'SECUENCIA_NO_CONFIGURADA';
+    Exit;
+  end;
+
+  desde    := Q.FieldByName('Secuencia_Inicial_DGII').AsInteger;
+  ultima   := Q.FieldByName('Ultima_secuencia_DGII').AsInteger;
+  cantidad := Q.FieldByName('Cantidad').AsInteger;
+
+  if not Q.FieldByName('FechaVencimientoSecuenciaDGII').IsNull then
+  begin
+    vence := Q.FieldByName('FechaVencimientoSecuenciaDGII').AsDateTime;
+    if Now > vence then
+    begin
+      AMsg := 'La secuencia est? vencida.';
+      Exit;
+    end;
+  end;
+
+
+  if not Q.FieldByName('Activa').IsNull then
+  activa := Q.FieldByName('Activa').AsBoolean
+  else
+    activa := False; // por defecto
+
+  hasta     := desde + cantidad - 1;
+  siguiente := ultima + 1;
+
+  if activa = False then
+  begin
+    AMsg := 'SECUENCIA_INACTIVA';
+    Exit;
+  end;
+
+  if siguiente > hasta then
+  begin
+    AMsg := 'SECUENCIA_AGOTADA';
+    Exit;
+  end;
+
+  // Hay secuencia v?lida y disponible (sin reservar)
+  ASiguienteCorrelativo := siguiente;
+  Result := True;
+end;
+
+
 procedure TfrmFactura.btGrabarClick(Sender: TObject);
 var
   I, a, rec, fila : integer;
   TipoMov, Abono, rnc, nombre : String;
   valido : boolean;
+   Servicio: FacturaElectronicaService;
+   resultado: WideString;
+   ok: Boolean;
+   msg: string;
+   prox: Int64; // o Int64 si usas valores grandes
+
+  empRNC: string;
+  FacturaTieneITBIS, existeProdConITBIS: Boolean;
+
 begin
 if  btGrabar.Enabled = True then begin
 
-
-if QFacturafac_caja.IsNull then
+if QFacturaCAJ_CODIGO.IsNull then
      begin
       ShowMessage('DEBES INDICAR UNA CAJA VALIDA......');
       dbCaja.SetFocus;
       Exit;
      end;
-     
+
  if Producto_sin_Serializar = True then
       begin
       ShowMessage('HAY PRODUCTOS SERIALIZADOS SIN SERIALIZAR, Verifique...');
@@ -6382,6 +7070,20 @@ with QVerificaNCF do begin
     end;
     end;
   end;
+
+  if (DM.QParametrosPAR_FE_DetenerFacturacion.Value and dm.QParametrosUsa_FacturacionElectronica.Value) then
+        begin
+          ok := ValidarENCFDisponible(
+                        dm.vp_cia,
+                        QFacturatip_codigo.Value,
+                        msg, prox);
+          if (not ok) then
+          begin
+            ShowMessage('No hay comprobantes fiscales disponibles para esta factura.');
+            Exit;
+          end;
+        end;
+
 
 If vtfa_espcliente = 'True' then begin
 if edCliente.Text = '' then begin
@@ -6422,13 +7124,16 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
       break;
     end;
   end;
-              
+
   if ((QFacturafac_caja.IsNull) or  (QFacturafac_caja.Value = 0) )  then
   begin
     MessageDlg('DEBES DE LLENAR EL NUMERO DE LA CAJA'+#13+#10+'Y PRESIONAR ENTER',mtError,[mbok],0);
     dbCaja.SetFocus();
     exit;
   end;
+
+     if not (QFactura.State in [dsEdit, dsInsert]) then
+    QFactura.Edit;
 
   //verificando si el cierre se hizo para esta fecha
   dm.Query1.Close;
@@ -6500,6 +7205,77 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
   end
   else
   begin
+        // ================= VALIDACI?N ITBIS GENERAL SEG?N RNC EMPRESA =================
+        // 1) Solo aplica a empresas con estos RNC
+        empRNC := '';
+        dm.Query1.Close;
+        dm.Query1.SQL.Clear;
+        dm.Query1.SQL.Add('select emp_rnc from empresas');
+        dm.Query1.SQL.Add('where emp_codigo = :emp');
+        dm.Query1.Parameters.ParamByName('emp').Value := QFacturaEMP_CODIGO.Value;
+        dm.Query1.Open;
+        if not dm.Query1.IsEmpty then
+          empRNC := Trim(dm.Query1.FieldByName('emp_rnc').AsString);
+
+     {   // Aqu? ajusta el campo del total de ITBIS de la factura:
+        // Ejemplo: QFacturaFAC_ITBIS.Value, QFacturaFAC_TOTALITBIS.Value, etc.
+        FacturaTieneITBIS := False;
+        if (not QFactura.State in [dsInsert, dsEdit]) then
+          QFactura.Edit;
+        // ?? CAMBIA ESTE CAMPO POR TU CAMPO REAL DE TOTAL ITBIS
+        FacturaTieneITBIS := (Assigned(QFacturaFAC_ITBIS) and (QFacturaFAC_ITBIS.Value > 0));
+        // Si tu campo se llama diferente, por ejemplo:
+        // FacturaTieneITBIS := (QFacturaFAC_TOTALITBIS.Value > 0);
+
+        if (FacturaTieneITBIS)
+           and ((empRNC = '105081105') or (empRNC = '131861717')) then
+        begin
+          existeProdConITBIS := False;
+
+          QDetalle.DisableControls;
+          try
+            QDetalle.First;
+            while not QDetalle.Eof do
+            begin
+              dm.adoMultiUso.Close;
+              dm.adoMultiUso.SQL.Clear;
+              dm.adoMultiUso.SQL.Add('select isnull(pro_montoitbis,0) as pro_montoitbis');
+              dm.adoMultiUso.SQL.Add('from productos');
+              dm.adoMultiUso.SQL.Add('where emp_codigo = :emp');
+              dm.adoMultiUso.SQL.Add('and pro_codigo = :pro');
+              dm.adoMultiUso.Parameters.ParamByName('emp').Value := QFacturaEMP_CODIGO.Value;
+              dm.adoMultiUso.Parameters.ParamByName('pro').Value := QDetallePRO_CODIGO.Value; // ajusta nombre si es distinto
+              dm.adoMultiUso.Open;
+
+              if (not dm.adoMultiUso.IsEmpty) and
+                 (dm.adoMultiUso.FieldByName('pro_montoitbis').AsFloat > 0) then
+              begin
+                existeProdConITBIS := True;
+                Break; // ya encontramos uno
+              end;
+
+              QDetalle.Next;
+            end;
+          finally
+            QDetalle.EnableControls;
+          end;
+
+          // Regla final:
+          // Si la factura tiene ITBIS general, pero NING?N producto tiene pro_montoitbis > 0 -> error
+          if not existeProdConITBIS then
+          begin
+            MessageDlg(
+              'Esta empresa (' + empRNC + ') solo puede facturar ITBIS' + #13 +
+              'si al menos un producto tiene ITBIS configurado en el maestro (pro_montoitbis > 0).' + #13#13 +
+              'Actualmente la factura tiene ITBIS general,' + #13 +
+              'pero ninguno de los productos tiene ITBIS configurado.' + #13#13 +
+              'Corrija los productos o quite el ITBIS de la factura.',
+              mtError, [mbOK], 0);
+            Exit;
+          end;
+        end;
+    // ================= FIN VALIDACI?N ITBIS GENERAL SEG?N RNC EMPRESA =================
+        }
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
     dm.Query1.SQL.Add('select tfa_nombre from tiposfactura');
@@ -6521,8 +7297,9 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
         QDetalle.Post;
       end;
       end;
-
+      QFactura.Edit;
       QFacturafac_abono.Value := 0;
+      QFactura.Post;
      // Totaliza := False;
 
      if QFacturaCON_NUMERO.Value = 0 then begin
@@ -6550,8 +7327,9 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
         edCliente.setfocus;
         Exit;
       end
-      else if (dm.Query1.fieldbyname('tfa_selcondi').asstring = 'True')
-      and ((QFacturaCPA_CODIGO.isnull) or (QFacturaCPA_CODIGO.Value = 0)) then
+      else //if (dm.Query1.fieldbyname('tfa_selcondi').asstring = 'True') and
+       if (edTipo.text= '2') and
+       ((QFacturaCPA_CODIGO.isnull) or (QFacturaCPA_CODIGO.Value = 0)) then
       begin
         showmessage('DEBE ESPECIFICAR LAS CONDICIONES DE PAGO');
         dbCondi.setfocus;
@@ -6566,6 +7344,9 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
       end
       else
       begin
+         if not (QFactura.State in [dsEdit, dsInsert]) then
+          QFactura.Edit;
+
          QFacturaTFA_CODIGO.Value := StrToInt(Trim(edTipo.Text));
           frmFormaPagoFac.QNota.Close;
           frmFormaPagoFac.QNota.Open;
@@ -6594,9 +7375,27 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
           frmFormaPagoFac.Inserta := True;
           //frmFormaPagoFac.QNota.Close;
           //frmFormaPagoFac.QNota.Open;
-          TraerFormaPago := dm.Query1.fieldbyname('tfa_traerformapago').asstring;
-          CodMov := dm.Query1.fieldbyname('tmo_codigo').asinteger;
+
+          TraerFormaPago := 'False';
+          CodMov := 0;
+
+          try
+            TraerFormaPago := dm.Query1.FieldByName('tfa_traerformapago').AsString;
+          except
+            TraerFormaPago := 'False';
+          end;
+
+          try
+            CodMov := dm.Query1.FieldByName('tmo_codigo').AsInteger;
+          except
+            CodMov := 0;
+          end;
+
           Facturar := True;
+
+         { TraerFormaPago := dm.Query1.fieldbyname('tfa_traerformapago').asstring;
+          CodMov := dm.Query1.fieldbyname('tmo_codigo').asinteger;
+          Facturar := True;  }
 
           if TraerFormaPago = 'True' then
           begin
@@ -6895,6 +7694,10 @@ if vl_accion = 1 then begin
       dm.Query1.Parameters.parambyname('forma').Value := QFacturaFAC_FORMA.value;
       dm.Query1.Parameters.parambyname('suc').Value := QFacturaSUC_CODIGO.value;
       dm.Query1.open;
+
+      if not (QFactura.State in [dsEdit, dsInsert]) then
+      QFactura.Edit;
+
       QFacturaFAC_NUMERO.value := dm.Query1.fieldbyname('maximo').asinteger+1;
     end;
     QFactura.Post;
@@ -6957,13 +7760,14 @@ end;
               QDetalle.UpdateBatch;
 
 
-
+              CodificarCuentas;
               //Cuentas contables
+              if QCuentas.RecordCount > 0 then begin
               QCuentas.DisableControls;
               QCuentas.first;
               a := 0;
               while not QCuentas.eof do
-              begin     
+              begin
                 a := a + 1;
                 QCuentas.edit;
                 QCuentasDET_SECUENCIA.value := a;
@@ -6977,6 +7781,7 @@ end;
               end;
               QCuentas.enableControls;
               QCuentas.UpdateBatch;
+              end;
 
               if vl_accion = 1 then begin
               //Procedimeinto que graba la factura
@@ -7006,6 +7811,10 @@ end;
               if vl_accion = 2 then begin
               Totaliza := True;
               Totalizar;
+
+              if not (QFactura.State in [dsEdit, dsInsert]) then
+                QFactura.Edit;
+
               QFacturafac_hold.Text := 'False';
               QFactura.UpdateBatch(arAll);
 
@@ -7022,16 +7831,169 @@ end;
               dm.Query1.ExecSQL;
               end;
 
+             if dm.QParametrosUsa_FacturacionElectronica.Value then
+              begin
+                if DM.QParametrosPAR_FE_DetenerFacturacion.Value then 
+                begin
+                    // 1) Validar disponibilidad de secuencia SIN reservar ni asignar
+                ok := ValidarENCFDisponible(
+                        QFacturaEMP_CODIGO.Value,
+                        QFacturatip_codigo.Value,
+                        msg, prox);
+                end else  ok :=True;
 
+                if (not ok) then
+                begin
+                  ShowMessage('No hay comprobantes fiscales disponibles para esta factura.');
+                  Exit;
+                end;
+                if ok then
+                begin
+                  // Proceso para enviar la Facturaci?n Electr?nica (DGII o LUGANIS)
+                  try
+                    QFactura.Edit;
+                    // ==========================
+                    //  Emp_rnc
+                    // ==========================
+                    dm.Query1.Close;
+                    dm.Query1.SQL.Clear;
+                    dm.Query1.SQL.Add('select emp_rnc');
+                    dm.Query1.SQL.Add('from empresas');
+                    dm.Query1.SQL.Add('where emp_codigo = :emp');
+                    dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+                    dm.Query1.Open;
+                    QFacturaemp_rnc.Value := dm.Query1.FieldByName('emp_rnc').AsString;
+                    // ==========================
+                    //  Cli_rnc
+                    // ==========================
+                    dm.Query1.Close;
+                    dm.Query1.SQL.Clear;
+                    dm.Query1.SQL.Add('select cli_rnc');
+                    dm.Query1.SQL.Add('from Clientes');
+                    dm.Query1.SQL.Add('where cli_codigo = :cli');
+                    dm.Query1.Parameters.ParamByName('cli').Value := QFacturaCLI_CODIGO.Value;
+                    dm.Query1.Open;
+                    QFacturacli_rnc.Value := dm.Query1.FieldByName('cli_rnc').AsString;
+                    // ==========================
+                    //  eNCF actual
+                    // ==========================
+                    dm.Query1.Close;
+                    dm.Query1.SQL.Clear;
+                    dm.Query1.SQL.Add('select eNCF');
+                    dm.Query1.SQL.Add('from Facturas');
+                    dm.Query1.SQL.Add('where emp_codigo = :emp');
+                    dm.Query1.SQL.Add('  and tfa_codigo = :tipo');
+                    dm.Query1.SQL.Add('  and fac_numero = :numero');
+                    dm.Query1.SQL.Add('  and fac_forma = :forma');
+                    dm.Query1.SQL.Add('  and suc_codigo = :suc');
+                    dm.Query1.Parameters.ParamByName('emp').Value    := QFacturaEMP_CODIGO.Value;
+                    dm.Query1.Parameters.ParamByName('suc').Value    := QFacturaSUC_CODIGO.Value;
+                    dm.Query1.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+                    dm.Query1.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+                    dm.Query1.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+                    dm.Query1.Open;
+                    QFacturaeNCF.Value := dm.Query1.FieldByName('eNCF').AsString;
+                    // ==========================
+                    //  Tipo eNCF (cod_dgii)
+                    // ==========================
+                    dm.Query1.Close;
+                    dm.Query1.SQL.Clear;
+                    dm.Query1.SQL.Add('select cod_dgii');
+                    dm.Query1.SQL.Add('from TipoNCF');
+                    dm.Query1.SQL.Add('where tip_codigo = :tip_codigo');
+                    dm.Query1.Parameters.ParamByName('tip_codigo').Value := QFacturatip_codigo.Value;
+                    dm.Query1.Open;
+                    QFacturaTipoeNCF.Value := dm.Query1.FieldByName('cod_dgii').AsInteger;
+                    //QFactura.Post;
+                    //QFactura.UpdateBatch(arAll);
+                    // ==========================
+                    //  Decidir flujo: LUGANIS o DGII
+                    // ==========================
+                    if dm.QParametrosintegracion_luganis.Value then
+                    begin
+                      // ------------ LUGANIS ------------
 
+                      Servicio := CoFacturaElectronicaService.Create;
+                      resultado := Servicio.EnviarFacturaElectronicaLuganis(
+                        IntToStr(QFacturaEMP_CODIGO.Value),          // emp
+                        IntToStr(QFacturaSUC_CODIGO.Value),          // suc
+                        IntToStr(QFacturaFAC_NUMERO.Value),          // facNumero
+                        QFacturaemp_rnc.Value,                       // empRnc
+                        QFacturaeNCF.Value,                          // eNCF
+                        QFacturacli_rnc.Value,                       // RncCliente
+                        dm.QParametrospar_luganis_baseurl.AsString,  // baseUrl
+                        dm.QParametrospar_luganis_companycode.AsString, // companyCode
+                        dm.QParametrospar_luganis_username.AsString, // username
+                        dm.QParametrospar_luganis_password.AsString, // password
+                        dm.QParametrospar_luganis_appversion.AsString, // appVersion
+                        dm.QParametrospar_luganis_os.AsString,       // os
+                        dm.QParametrospar_luganis_deviceid.AsString, // deviceId
+                        dm.QParametrospar_luganis_latitude.AsString, // latitude
+                        dm.QParametrospar_luganis_longitude.AsString,// longitude
+                        dm.QParametrospar_luganis_providerip.AsString, // providerIpAddress
+                        QFacturaFAC_FORMA.Value,                     // facForma
+                        IntToStr(QFacturaTFA_CODIGO.Value),          // tfaCodigo
+                        IntToStr(QFacturaTipoeNCF.Value),            // tipoECF
+                        True,                                        // saveGeneratedTxt (TXT junto al XML)
+                        '',                                          // outputFolder (usa carpeta de la DLL/XML)
+                        False,                                       // isNotaCredito
+                        '',                                          // supCodigo
+                        False                                        // logDebug
+                      );
+                    end
+                    else
+                    begin
+                      // ------------ DGII ------------
+                      if (QFacturaFAC_TOTAL.Value <= 250000) and (QFacturaTipoeNCF.Value = 32) then
+                      begin
+                        Servicio := CoFacturaElectronicaService.Create;
+                        resultado := Servicio.EnviarFacturaResumen(
+                          IntToStr(QFacturaEMP_CODIGO.Value),
+                          IntToStr(QFacturaSUC_CODIGO.Value),
+                          IntToStr(QFacturaFAC_NUMERO.Value),
+                          QFacturaemp_rnc.Value,
+                          QFacturaeNCF.Value,
+                          QFacturacli_rnc.Value,
+                          QFacturaFAC_FORMA.Value,
+                          IntToStr(QFacturaTFA_CODIGO.Value),
+                          IntToStr(QFacturaTipoeNCF.Value)
+                        );
+                      end
+                      else
+                      begin
+                        Servicio := CoFacturaElectronicaService.Create;
+                        resultado := Servicio.EnviarFacturaElectronica(
+                          IntToStr(QFacturaEMP_CODIGO.Value),
+                          IntToStr(QFacturaSUC_CODIGO.Value),
+                          IntToStr(QFacturaFAC_NUMERO.Value),
+                          QFacturaemp_rnc.Value,
+                          QFacturaeNCF.Value,
+                          QFacturacli_rnc.Value,
+                          QFacturaFAC_FORMA.Value,
+                          IntToStr(QFacturaTFA_CODIGO.Value),
+                          IntToStr(QFacturaTipoeNCF.Value)
+                        );
+                      end;
+                    end;
+                    // aqu? puedes hacer ShowMessage('Resultado: ' + resultado); si quieres ver el JSON
+                  except
+                    on E: Exception do
+                    begin
+                      // Manejo de error (log, mensaje, etc.)
+                      // ShowMessage('Error: ' + E.Message);
+                    end;
+                  end;
+                end;
+              end;
               //Procedimeinto Graba combos en tablas detalle de combos
-              qGrabaCombos.close;
+             { qGrabaCombos.close;
               qGrabaCombos.Parameters.parambyname('emp').Value := QFacturaEMP_CODIGO.value;
               qGrabaCombos.Parameters.parambyname('suc').Value := QFacturaSUC_CODIGO.Value;
               qGrabaCombos.Parameters.parambyname('for').Value := QFacturaFAC_FORMA.value;
               qGrabaCombos.Parameters.parambyname('tfa').Value := QFacturaTFA_CODIGO.Value;
               qGrabaCombos.Parameters.parambyname('fac').Value := QFacturaFAC_NUMERO.value;
-              qGrabaCombos.ExecSQL;
+
+              qGrabaCombos.ExecSQL;    }
               end;
 
                                       {
@@ -7263,6 +8225,9 @@ end;
                 frmGeneraCuotas.vl_tasa := QFacturafac_interes.Value;
                 frmGeneraCuotas.Intervalo := Intervalo;
                 frmGeneraCuotas.ShowModal;
+                if frmGeneraCuotas.Acepta = False then
+                Exit
+                else
                 frmGeneraCuotas.Release;
               End;
 
@@ -7298,7 +8263,7 @@ end;
 
 
 
-              //CodificarCuentas;
+           //CodificarCuentas;
 
            with qGenNCF do begin
            Close;
@@ -7366,7 +8331,7 @@ end;
 
 
             if ((dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True') and
-            (MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,[mbyes,mbno],0) = mryes)
+            (MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,[mbyes,mbno],0) = mryes)
                 AND (FormatoImp <> 1)) then
                 begin
                 if dm.QParametrosPAR_CAJA.Value = 'S' then
@@ -7381,46 +8346,24 @@ end;
         begin
          if ((FormatoImp = 2) OR FileExists('.\Transporte.Txt')) then
                 begin
-                        application.createform(tRFactura, RFactura);
-                        RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
-                        RFactura.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.value;
-                        RFactura.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.value;
-                        RFactura.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.value;
-                        RFactura.QFactura.Parameters.ParamByName('suc').Value    := QFacturaSUC_CODIGO.Value;
-                        RFactura.QFactura.open;
-                        RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+                   application.createform(tRFacturaCorta, RFacturaCorta);
+                   RFacturaCorta.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+                   RFacturaCorta.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+                   RFacturaCorta.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+                   RFacturaCorta.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+                   RFacturaCorta.QFactura.Parameters.ParamByName('suc').Value := QFacturaSUC_CODIGO.Value;;
+                   RFacturaCorta.QFactura.open;
+                   RFacturaCorta.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+                   RFacturaCorta.QDetalle.open;
+                   RFacturaCorta.lbReimpresion.Enabled := True;
 
-                          
-                      //VERIFICAMOS SI TIENE ACTIVO MULTIMONEDA     MRUIZ
-                  {      if dm.QParametrospar_mostrarfacturadolares.Value = true then
-                        BEGIN
-                              RFactura.lblTotalMultimoneda.Visible :=  True;
-                              RFactura.txtTotalMultimoneda.Visible :=  True;
+                   if RFacturaCorta.QDetalle.Locate('PRO_NOMBRE','SERVICIO DE ENVIO',[]) then
+                   RFacturaCorta.ChildBand3.Enabled := True else
+                   RFacturaCorta.ChildBand3.Enabled := False;
 
-                        end
-                        else
-                        begin
-                             RFactura.lblTotalMultimoneda.Visible :=  false;
-                              RFactura.txtTotalMultimoneda.Visible :=  false;
-                        end;  }
-                        RFactura.QDetalle.open;
-                        RFactura.PrinterSetup;
-
-                        if dm.QParametrospar_domicilio.Value = 'True' then
-                        begin
-                          a := 1;
-                          while a <= dm.QParametrospar_copias_domicilio.Value do
-                          begin
-                             RFactura.print;
-                             RFactura.Destroy;
-                             a := a + 1;
-                          end;
-                        end
-                        else begin
-                          RFactura.print;
-
-                        RFactura.Destroy;
-                        end;
+                   RFacturaCorta.PrinterSetup;
+                   ImprimirQuickRepCopias(RFacturaCorta);
+                   RFacturaCorta.Destroy;
                       end
                       else if FormatoImp = 4 then
            begin
@@ -7496,6 +8439,8 @@ end;
                       RFacturaPreImpresa.QFactura.open;
                       RFacturaPreImpresa.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
                       RFacturaPreImpresa.QDetalle.open;
+
+
                       if actbalance = 'False' then
                       begin
                         {if Trim(Devuelta) <> '' then
@@ -7513,7 +8458,7 @@ end;
                       if dm.QParametrospar_formato_preimpreso.Value = 'QRBelkis' then
                       begin
                         RFacturaPreImpresa.QRBelkis.PrinterSetup;
-                        RFacturaPreImpresa.QRBelkis.print;
+                        ImprimirQuickRepCopias(RFacturaPreImpresa.QRBelkis);
                         RFacturaPreImpresa.Release;
                       end
                       else
@@ -7612,21 +8557,8 @@ end;
                         RFacturaCaceresEquipos.QDetalle.open;
                         RFacturaCaceresEquipos.PrinterSetup;
 
-                        if dm.QParametrospar_domicilio.Value = 'True' then
-                        begin
-                          a := 1;
-                          while a <= dm.QParametrospar_copias_domicilio.Value do
-                          begin
-                             RFacturaCaceresEquipos.print;
-                             RFacturaCaceresEquipos.Destroy;
-                             a := a + 1;
-                          end;
-                        end
-                        else begin
-                          RFacturaCaceresEquipos.print;
-
+                        ImprimirQuickRepCopias(RFacturaCaceresEquipos);
                         RFacturaCaceresEquipos.Destroy;
-                        end;
                         end
                       else if dm.QParametrospar_formato_preimpreso.Value = 'FUNDGRUBEL' then
                       begin
@@ -7701,7 +8633,7 @@ end;
                     RFacturaSarita.QDetalle.open;
                     RFacturaSarita.lbReimpresion.Enabled := False;
                     RFacturaSarita.PrinterSetup;
-                    RFacturaSarita.print;
+                    ImprimirQuickRepCopias(RFacturaSarita);
                     RFacturaSarita.Destroy;
                     end else if dm.QParametrospar_formato_preimpreso.Value = 'Cepinta' then begin
                     qFacturaOrdTaller.Parameters.ParamByName('emp').Value    := DM.vp_cia;
@@ -7715,7 +8647,7 @@ end;
                     RFacturaPreImpresa.Release;
                     end else
                     Rpt_FacOrdTaller.ShowReport();
-                    end else if dm.QParametrospar_formato_preimpreso.Value = 'SteelTec' then begin
+                    end else if ((dm.QParametrospar_formato_preimpreso.Value = 'SteelTec') ) then begin
                     application.createform(tRFacturaSteelTec, RFacturaSteelTec);
                     RFacturaSteelTec.QFactura.Parameters.ParamByName('emp').Value    := DM.vp_cia;
                     RFacturaSteelTec.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.value;
@@ -7727,8 +8659,23 @@ end;
                     RFacturaSteelTec.QDetalle.open;
                     RFacturaSteelTec.lbReimpresion.Enabled := False;
                     RFacturaSteelTec.PrinterSetup;
-                    RFacturaSteelTec.print;
+                    ImprimirQuickRepCopias(RFacturaSteelTec);
                     RFacturaSteelTec.Destroy;
+
+                     end else if ((dm.QParametrospar_formato_preimpreso.Value = 'Construccion')) then begin
+                    application.createform(TRFacturaConstruccion, RFacturaContruccion);
+                    RFacturaContruccion.QFactura.Parameters.ParamByName('emp').Value    := DM.vp_cia;
+                    RFacturaContruccion.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.value;
+                    RFacturaContruccion.QFactura.Parameters.ParamByName('forma').Value   := QFacturaFAC_FORMA.value;
+                    RFacturaContruccion.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.value;
+                    RFacturaContruccion.QFactura.Parameters.ParamByName('suc').Value := QFacturaSUC_CODIGO.Value;
+                    RFacturaContruccion.QFactura.open;
+                    RFacturaContruccion.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+                    RFacturaContruccion.QDetalle.open;
+                    RFacturaContruccion.lbReimpresion.Enabled := False;
+                    RFacturaContruccion.PrinterSetup;
+                    ImprimirQuickRepCopias(RFacturaContruccion);
+                    RFacturaContruccion.Destroy;
 
            end;
            end;
@@ -7768,7 +8715,7 @@ end;
                 end;
               end;
 
-              //Si una nota de credito se utilizó
+              //Si una nota de credito se utiliz?
               dm.Query1.close;
                dm.Query1.sql.clear;
               dm.Query1.sql.add('select ncr_numero from FACNOTASCREDITO');
@@ -7876,8 +8823,8 @@ end;
 
             Totaliza := true;
             PageControl1.ActivePageIndex := 0;
-            dbvendedor.Text :='0';
-            tvendedor.Text :='';
+            //dbvendedor.Text :='0';
+            //tvendedor.Text :='';
             Grid.SetFocus;
 
  end;
@@ -7917,7 +8864,6 @@ begin
   IF QDetalleDET_DESCUENTO.ReadOnly = False THEN 
   QDetalleDET_DESCUENTO.Value    := 0;
   QDetalleDET_ITBIS.value  := 0;
-  QDetalleVEN_CODIGO.Value := QFacturaVEN_CODIGO.Value;
   QDetalleSUC_CODIGO.Value := QFacturaSUC_CODIGO.Value;
   QDetalleDET_CANTIDAD.Value  := 1;{20170705}
 
@@ -7970,7 +8916,7 @@ if DM.QParametrospar_formato_preimpreso.Value <> 'Cepinta' then begin
       Query1.sql.add('select d.pro_codigo, d.pro_roriginal, d.pro_rfabric, d.det_medida,');
       Query1.sql.add('d.det_cantidad, d.det_precio, d.det_conitbis, d.det_itbis, d.det_nota,');
       Query1.sql.add('d.det_descuento, d.det_descripcion, d.det_manejaescala, d.det_Escala,');
-      Query1.sql.add('p.pro_Servicio, p.pro_costo, p.dep_codigo, p.fam_codigo');
+      Query1.sql.add('p.pro_Servicio, p.pro_costo, p.dep_codigo, p.fam_codigo, ven_codigo, porc_vendedor');
       Query1.sql.add('from det_pedido d, productos p');
       Query1.sql.add('where d.pro_codigo = p.pro_codigo');
       Query1.sql.add('and d.emp_codigo = :emp');
@@ -8050,6 +8996,13 @@ else
 
         QDetalleDET_NOTA.Value      := Query1.fieldbyname('det_nota').Value;
         QDetallealm_codigo.Value    := QFacturaALM_CODIGO.Value;
+
+        IF NOT Query1.FieldByName('ven_codigo').IsNull THEN
+        QDetalleven_codigo.Value := Query1.FieldByName('ven_codigo').Value;
+
+        IF NOT Query1.FieldByName('porc_vendedor').IsNull THEN
+        QDetalleporc_vendedor.Value := Query1.FieldByName('porc_vendedor').Value;
+
 
         {if not Query1.fieldbyname('dep_codigo').IsNull then
         begin
@@ -9119,10 +10072,52 @@ begin
   DBEdit13.enabled  := dsFactura.State = dsInsert;
 
   if dsFactura.State = dsedit then
-    frmFactura.Caption := 'Facturación - Factura # '+QFacturaFAC_NUMERO.AsString
+    frmFactura.Caption := 'Facturaci?n - Factura # '+QFacturaFAC_NUMERO.AsString
   else
-    frmFactura.Caption := 'Facturación';
+    frmFactura.Caption := 'Facturaci?n';
 end;
+
+// Imprime QR nativo ESC/POS (module 1..16, EC: 48=L,49=M,50=Q,51=H)
+procedure WriteQR(var F: TextFile; const Data: AnsiString; ModuleSize: Byte = 6; ECLevel: Byte = 48);
+var pL, pH: AnsiChar;
+begin
+  // centrar
+  Write(F, ESC($61) + AnsiChar(#1));              // ESC a 1
+
+  // modelo
+  Write(F, GS($28) + 'k' + #04#00 + #49#65#50#00); // GS ( k 4 0 1 41 2 0
+  // tama?o de m?dulo
+  Write(F, GS($28) + 'k' + #03#00 + #49#67 + AnsiChar(ModuleSize));
+  // nivel de correcci?n
+  Write(F, GS($28) + 'k' + #03#00 + #49#69 + AnsiChar(ECLevel));
+
+  // almacenar datos
+  pL := AnsiChar((Length(Data)+3) and $FF);
+  pH := AnsiChar((Length(Data)+3) shr 8);
+  Write(F, GS($28) + 'k' + pL + pH + #49#80#48 + Data);
+
+  // imprimir
+  Write(F, GS($28) + 'k' + #03#00 + #49#81 + #48);
+
+  // salto y volver a izquierda
+  Writeln(F); Writeln(F);
+  Write(F, ESC($61) + AnsiChar(#0));              // ESC a 0
+end;
+
+
+// ---- Helper para imprimir cadenas largas envueltas a 40 columnas ----
+procedure PrintWrap40(var F: TextFile; const S: string);
+var
+  i: Integer;
+begin
+  i := 1;
+  while i <= Length(S) do
+  begin
+    Writeln(F, Copy(S, i, 40)); // imprime 40 caracteres por l?nea
+    Inc(i, 40);
+  end;
+end;
+
 
 procedure TfrmFactura.Imp40Columnas;
 var
@@ -9131,6 +10126,14 @@ var
   Tfac, Saldo, TDesc : double;
   puerto, lbitbis, impcodigo, pro_codigo, Unidad, codigoabre, t : string;
   a : integer;
+  qrData: AnsiString;
+  qrStr: string;
+  qrBits: TBytes;
+  qrW, qrH: Integer;
+  qrURL, codSeg, fechaFirma, codDGII: string;
+  aceptado: Boolean;
+  msg: string;
+
 begin
   codigoabre := Trim(DM.QParametrosPAR_CODIGO_ABRE_CAJA.Value);
       with dm.Query1 do begin
@@ -9140,7 +10143,7 @@ begin
       sql.add('where emp_codigo = :emp');
       sql.add('and tfa_codigo = :cod');
       Parameters.parambyname('emp').Value := dm.vp_cia;
-      Parameters.parambyname('cod').Value := edTipo.Text;
+      Parameters.parambyname('cod').Value := QFacturaTFA_CODIGO.Value;
       open;
       IF NOT IsEmpty THEN
       copias := FIELDBYNAME('tfa_copias').Value;
@@ -9159,7 +10162,6 @@ puerto := 'PRN' ELSE
 puerto := fieldbyname('puerto').Text;
 Close;
 end;
-
 
   if FileExists('.\puerto.txt') then
   begin
@@ -9183,12 +10185,6 @@ end;
   closefile(arch);
 
 
-
-  {AssignFile(arch, '.\imp.bat');
-  rewrite(arch);
-  writeln(arch, 'type .\t.txt > '+puerto);
-   }
-
   tfac := 0;
   TDesc := 0;
   application.CreateForm(tRFactura, RFactura);
@@ -9201,8 +10197,15 @@ end;
   RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
   RFactura.QDetalle.open;
   RFactura.QFormasPago.Open;
+
   AssignFile(arch, '.\t.txt');
   rewrite(arch);
+  // Inicializar impresora y codepage 850 (acentos y ?)
+  Write(arch, ESC($40));                     // ESC @ (init)
+  Write(arch, ESC($74) + AnsiChar(#2));      // ESC t 2 -> CP850
+  Writeln(arch);
+  ImprimirLogoTicket(arch);
+
 
   if ImprimeEncaqbezado = 'True' then
   begin
@@ -9211,11 +10214,6 @@ end;
     writeln(arch, dm.centro(QSucursalsuc_localidad.Value));
     writeln(arch, dm.centro(QSucursalsuc_telefono.Value));
     writeln(arch, dm.centro('RNC:'+QSucursalsuc_rnc.Value));
-{    writeln(arch, dm.centro(dm.QEmpresasemp_nombre.Value));
-    writeln(arch, dm.centro(dm.QEmpresasemp_direccion.Value));
-    writeln(arch, dm.centro(dm.QEmpresasEMP_LOCALIDAD.Value));
-    writeln(arch, dm.centro(dm.QEmpresasEMP_TELEFONO.Value));
-    writeln(arch, dm.centro('RNC:'+dm.QEmpresasEMP_RNC.Value));  }
     writeln(arch, ' ');
   end;
 //20170608  writeln(arch, dm.centro('*** F A C T U R A ***'));
@@ -9225,8 +10223,7 @@ end;
   writeln(arch, ' ');
 
   writeln(arch, 'Fecha .: '+DateToStr(RFactura.QFacturaFAC_FECHA.Value)+' Factura: '+formatfloat('0000000000',RFactura.QFacturaFAC_NUMERO.value));
-  writeln(arch, 'Caja ..: '+RFactura.QFacturaCAJ_CODIGO.Text);
-
+  writeln(arch, 'Caja ..: '+RFactura.QFacturaCAJ_CODIGO.Text);  
 
   Query1.Close;
   Query1.SQL.Clear;
@@ -9254,10 +10251,35 @@ end;
     writeln(arch, 'Cajero: '+copy(dm.Query1.FieldByName('caj_nombre').asstring,1,13)+s+'Hora: '+RFactura.QFacturaFAC_HORA.AsString);
   end;
 
-  if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
+  if Trim(RFactura.QFacturaeNCF.Value) <> '' then
   begin
     writeln(arch, ' ');
-    writeln(arch, 'NCF: '+RFactura.QFacturaNumeroCF.Value);
+    writeln(arch, 'eNCF: '+RFactura.QFacturaeNCF.Value);
+
+    //buscar vencimiento
+      with QDatos do
+      begin
+        Close;
+        SQL.Clear;
+        SQL.Add('SELECT TOP 1');
+        SQL.Add('    FechaVencimientoSecuenciaDGII');
+        SQL.Add('FROM SecuenciaDGII');
+        SQL.Add('WHERE FechaVencimientoSecuenciaDGII IS NOT NULL');
+        SQL.Add('  AND emp_codigo = :emp_codigo');
+        SQL.Add('  AND tipo       = :tipo');
+        SQL.Add('ORDER BY FechaVencimientoSecuenciaDGII');
+
+        Parameters.ParamByName('emp_codigo').Value := QFacturaEMP_CODIGO.Value;
+        Parameters.ParamByName('tipo').Value       := QFacturaTipoeNCF.Value;
+        Open;
+
+        if not IsEmpty then
+          Writeln(arch, 'Fecha Venc.: ' + FieldByName('FechaVencimientoSecuenciaDGII').AsString);
+      end;
+      end
+      else
+      begin
+      {
   //buscar vencimiento
       with QDatos do begin
       Close;
@@ -9275,7 +10297,7 @@ end;
       Open;
       if not IsEmpty then
       writeln(arch,'Fecha Venc.: '+FieldByName('FechaVenc').text);
-      end;
+      end;        }
 
       //buscar tipo documentos
       with QDatos do begin
@@ -9294,6 +10316,7 @@ end;
       writeln(arch,FieldByName('Nombre').AsString);
       end;
       end;
+      
 
   if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
   begin
@@ -9421,39 +10444,6 @@ end;
     end;
     if impcodigo = 'Si' then
     begin
-     { Unidad := copy(RFactura.QDetallepro_unidad_medida.Value,1,4);
-      //Unidad := copy(RFactura.QDetalleMEDIDA.Value,1,4);
-      if trim(Unidad) <> '' then begin
-      if Length(Trim(RFactura.QDetallePRO_NOMBRE.Value))>40 then begin
-      writeln(arch, Trim(RFactura.QDetalleDET_CANTIDAD.Text)+' '+Unidad+
-                      ' '+copy(trim(RFactura.QDetallePRO_NOMBRE.value),1,30));
-      writeln(arch, Copy(Trim(RFactura.QDetallePRO_NOMBRE.Value),31,71));
-      end
-      else
-      begin
-      writeln(arch, Trim(RFactura.QDetalleDET_CANTIDAD.Text)+' '+' '+Unidad+
-                      s6+' '+copy(trim(RFactura.QDetallePRO_NOMBRE.value),1,30));
-      writeln(arch, Copy(Trim(RFactura.QDetallePRO_NOMBRE.Value),31,74));
-      end;
-      end
-      else
-       writeln(arch, Trim(RFactura.QDetalleDET_CANTIDAD.Text)+' '+
-                     // s6+format('%n',[RFactura.QDetalledet_cantidad.value])+' '+
-                      copy(trim(RFactura.QDetallePRO_NOMBRE.value),1,33));
-
-      s1 := '';
-      FillChar(s1, 8-length(pro_codigo),' ');
-      s2 := '';
-      FillChar(s2, 10-length(Trim(RFactura.QDetalleDET_CANTIDAD.Text)),' ');
-      s3 := '';
-      FillChar(s3, 10-length(trim(FORMAT('%n',[RFactura.QDetalleCalcItbis.value]))),' ');
-      s4 := '';
-      FillChar(s4, 12-length(trim(FORMAT('%n',[RFactura.QDetalleValor.value]))), ' ');
-
-
-      writeln(arch, pro_codigo+s1+s2+FORMAT('%n',[RFactura.QDetalleDET_PRECIO.value])+s3
-                    +FORMAT('%n',[RFactura.QDetalleCalcItbis.value])+s4+
-                    format('%n',[RFactura.QDetalleValor.value]));    }
 
       Unidad := copy(RFactura.QDetallepro_unidad_medida.Value,1,4);
       s1 := '';
@@ -9548,39 +10538,9 @@ end;
       t := t + QSerieser_numero.Value+', ';
       QSerie.next;
     end;
-    IF QDetallepro_serializado.Value = 'S' then 
+    IF QDetallepro_serializado.Value = 'S' then
     writeln(arch,'SN#:'+ copy(t,1,length(t)-2));
     end;
-    
-
-{        //datos del Envio
-    if (not RFactura.QDetallepro_UtilizaEnvio.IsNull) and (RFactura.QDetallepro_UtilizaEnvio.AsString = 'True') then
-    begin
-      writeln(arch, ' ');
-      dm.Query1.Close;
-      dm.Query1.SQL.Clear;
-      dm.Query1.SQL.Add('Select * From Envio Where emp_codigo = :emp_codigo');
-  		dm.Query1.SQL.Add(' and suc_codigo = :suc_codigo and fac_numero = :fac_numero ');
-			dm.Query1.SQL.Add('and pro_codigo = :pro_codigo');
-      dm.Query1.Parameters.ParamByName('emp_codigo').Value := RFactura.QDetalleEMP_CODIGO.value;
-      dm.Query1.Parameters.ParamByName('suc_codigo').Value := RFactura.QDetallesuc_codigo.value;
-      dm.Query1.Parameters.ParamByName('fac_numero').Value := RFactura.QDetalleFAC_NUMERO.value;
-      dm.Query1.Parameters.ParamByName('pro_codigo').Value := RFactura.QDetallePRO_CODIGO.value;
-      dm.Query1.Open;
-
-      if dm.Query1.RecordCount > 0 then begin
-        writeln(arch, 'DATOS DEL ENVIO:');
-        writeln(arch, 'Ciudad Origen : '+dm.Query1.FieldByName('Ciudad_Origen').AsString);
-        writeln(arch, 'Envia : '+dm.Query1.FieldByName('Nombre_envia').AsString);
-        writeln(arch, 'Telefon: '+dm.Query1.FieldByName('Telefono_Envia').AsString);
-
-        writeln(arch, 'Ciudad Recibe: '+dm.Query1.FieldByName('Ciudad_Destino').AsString);
-        writeln(arch, 'Recibe : '+dm.Query1.FieldByName('Nombre_Recibe').AsString);
-        writeln(arch, 'Telefono: '+dm.Query1.FieldByName('Telefono_Recibe').AsString);
-        writeln(arch, 'Descripcion : '+dm.Query1.FieldByName('Descripcion').AsString);
-        writeln(arch, ' ');
-      end;
-    end;   //fernando 2017 05 24}
 
 
     //datos del medidor
@@ -9628,7 +10588,8 @@ end;
      writeln(arch, '                             -----------');
      writeln(arch, '              Total Neto US$:'+s3+format('%n',[RFactura.QFacturaFAC_TOTAL_DOLAR.value]));
 
- { IF (QEnviofacpagodestino.Value= True) then
+
+ { IF (QEnviofacpagodestino.Value= True) then
   begin
      writeln(arch, '');
      writeln(arch, #27'E' + 'PAGAR DESTINO:' + format('%n',[RFactura.QFacturaFAC_TOTAL.value]) + #27'F');
@@ -9738,7 +10699,26 @@ end;
     writeln(arch, 'Recibido : '+s+Recibido);
     writeln(arch, 'Devuelta : '+s1+Devuelta);
   end;
-  writeln(arch, ' ');
+
+    msg := Trim(RFactura.QFacturaFAC_MENSAJE1.Value);
+  if msg <> '' then
+  begin
+    writeln(arch, ' '); // una l?nea en blanco antes del mensaje
+
+    if Length(copy(msg,1,39)) > 0 then
+      writeln(arch, copy(msg,1,39));
+    if Length(copy(msg,40,40)) > 0 then
+      writeln(arch, copy(msg,40,40));
+    if Length(copy(msg,81,40)) > 0 then
+      writeln(arch, copy(msg,81,40));
+    if Length(copy(msg,121,40)) > 0 then
+      writeln(arch, copy(msg,121,40));
+    if Length(copy(msg,161,40)) > 0 then
+      writeln(arch, copy(msg,161,40));
+  end;
+         
+
+  {writeln(arch, ' ');
   IF Length(Trim(copy(RFactura.QFacturaFAC_MENSAJE1.Value,1,39))) <=40  THEN
   writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE1.Value,1,39));
   IF Length(Trim(copy(RFactura.QFacturaFAC_MENSAJE1.Value,40,80)))<=40 THEN
@@ -9748,38 +10728,152 @@ end;
   IF Length(Trim(copy(RFactura.QFacturaFAC_MENSAJE1.Value,121,160)))<=40  THEN
   writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE1.Value,121,160));
   IF Length(Trim(copy(RFactura.QFacturaFAC_MENSAJE1.Value,161,200)))<=40  THEN
-  writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE1.Value,161,200));
-  writeln(arch, ' ');
-  writeln(arch, ' ');
-  writeln(arch, ' ');
+  writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE1.Value,161,200));}
+  //writeln(arch, ' ');
+  //writeln(arch, ' ');
+  //writeln(arch, ' ');
+  
   if Query1.FieldByName('fir').AsString = 'Si' then
   begin
     writeln(arch, dm.Centro('_________________________'));
     writeln(arch, dm.Centro('Realizado por '));
     writeln(arch, ' ');
-    writeln(arch, ' ');
+    //writeln(arch, ' ');
     writeln(arch, ' ');
     writeln(arch, dm.Centro('_________________________'));
     writeln(arch, dm.Centro('Firma del Cliente '));
   end;
-  writeln(arch, ' ');
-  writeln(arch, ' ');
-  writeln(arch, ' ');
-  writeln(arch, ' ');
-  writeln(arch, ' ');
-  writeln(arch, ' ');
+  
+  //writeln(arch, ' ');
+  {writeln(arch, ' ');
+  writeln(arch, ' ');   }
 
-//  dm.Query1.Close;
-//  dm.Query1.SQL.Clear;
-//  dm.Query1.SQL.Add('select Puerto, codigo_abre_caja from cajas_IP');
-//  dm.Query1.SQL.Add('where caja = :caj');
-//  dm.Query1.Parameters.ParamByName('caj').Value := caja;
-//  dm.Query1.Open;
-//  codigoabre := dm.Query1.FieldByName('codigo_abre_caja').AsString;
 
- if codigoabre = 'Termica' then
-  writeln(arch,chr(27)+chr(109));
+ {if codigoabre = 'Termica' then
+  writeln(arch,chr(27)+chr(109));  }
 
+   //Informacion necesaria para el codigo QR
+    {dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('select ');
+    dm.Query1.SQL.Add('(select top 1 UrlCodigoQR from vwFacturasXMLRptCodigoBarra cb ');
+    dm.Query1.SQL.Add(' where cb.emp_codigo=f.emp_codigo and cb.fac_numero=f.fac_numero ');
+    dm.Query1.SQL.Add(' and cb.tfa_codigo=f.tfa_codigo and cb.fac_forma=f.fac_forma) as UrlCodigoQR,');
+    dm.Query1.SQL.Add('f.codigoseguridad, ');
+    dm.Query1.SQL.Add('CONVERT(varchar(23), f.fechafirma, 121) AS fechafirma,');
+    dm.Query1.SQL.Add('(select top 1 tf.cod_dgii from TipoNCF tf where tf.tip_codigo=f.tip_codigo) as cod_dgii,');
+    dm.Query1.SQL.Add('ISNULL(f.AceptadoDGII,0) AS AceptadoDGII ');
+    dm.Query1.SQL.Add('from FACTURAS f ');
+    dm.Query1.SQL.Add('where f.emp_codigo=:emp and f.tfa_codigo=:tipo ');
+    dm.Query1.SQL.Add('and f.fac_numero=:numero and f.fac_forma=:forma ');
+    dm.Query1.SQL.Add('and f.suc_codigo=:suc');
+    dm.Query1.Parameters.ParamByName('emp').Value    := DM.vp_cia;
+    dm.Query1.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+    dm.Query1.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+    dm.Query1.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+    dm.Query1.Parameters.ParamByName('suc').Value    := QFacturaSUC_CODIGO.Value;
+    dm.Query1.Open;
+
+    qrURL      := dm.Query1.FieldByName('UrlCodigoQR').AsString;
+    codSeg     := dm.Query1.FieldByName('codigoseguridad').AsString;
+    fechaFirma := dm.Query1.FieldByName('fechafirma').AsString;
+        codDGII    := dm.Query1.FieldByName('cod_dgii').AsString;      }
+
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+
+    dm.Query1.SQL.Add('SELECT');
+    dm.Query1.SQL.Add('  dbo.fnGenerarUrlTimbre(');
+    dm.Query1.SQL.Add('      f.emp_codigo,');
+    dm.Query1.SQL.Add('      e.emp_rnc,');
+    dm.Query1.SQL.Add('      cl.cli_rnc,');
+    dm.Query1.SQL.Add('      ENC.eNCF_calculado,');
+    dm.Query1.SQL.Add('      f.fac_fecha,');
+    dm.Query1.SQL.Add('      (dbo.fn_obtenerTotalGravadoDGINew_ForQR(');
+    dm.Query1.SQL.Add('           f.emp_codigo,f.suc_codigo, f.fac_numero, 1, f.tfa_codigo, f.fac_forma');
+    dm.Query1.SQL.Add('       ) + ISNULL(f.fac_itbis,0) + ISNULL(Det.monto_exento,0)');
+    dm.Query1.SQL.Add('      ),');
+    dm.Query1.SQL.Add('      f.fechafirma,');
+    dm.Query1.SQL.Add('      f.codigoseguridad');
+    dm.Query1.SQL.Add('  ) AS UrlCodigoQR,');
+    dm.Query1.SQL.Add('  f.codigoseguridad,');
+    dm.Query1.SQL.Add('  CONVERT(varchar(23), f.fechafirma, 121) AS fechafirma,');
+    dm.Query1.SQL.Add('  (SELECT TOP 1 tf.cod_dgii FROM TipoNCF tf WHERE tf.tip_codigo = f.tip_codigo) AS cod_dgii,');
+    dm.Query1.SQL.Add('  ISNULL(f.AceptadoDGII,0) AS AceptadoDGII'); // <-- solo esta vez
+
+    dm.Query1.SQL.Add('FROM FACTURAS f');
+    dm.Query1.SQL.Add('INNER JOIN EMPRESAS e ON e.emp_codigo = f.emp_codigo');
+    dm.Query1.SQL.Add('LEFT  JOIN CLIENTES cl ON cl.emp_codigo = f.emp_codigo AND cl.cli_codigo = f.cli_codigo');
+
+    dm.Query1.SQL.Add('CROSS APPLY (');
+    dm.Query1.SQL.Add('  SELECT eNCF_calculado = COALESCE(');
+    dm.Query1.SQL.Add('      NULLIF(LTRIM(RTRIM(f.eNCF)),''''),');
+    dm.Query1.SQL.Add('      CASE WHEN LTRIM(RTRIM(ISNULL(f.NCF_Fijo,''''))) <> ''''');
+    dm.Query1.SQL.Add('           THEN LTRIM(RTRIM(f.NCF_Fijo)) + RIGHT(REPLICATE(''0'',8) + CAST(ISNULL(f.NCF_Secuencia,0) AS varchar(20)), 8)');
+    dm.Query1.SQL.Add('           ELSE '''' END)');
+    dm.Query1.SQL.Add(') ENC');
+
+    dm.Query1.SQL.Add('OUTER APPLY (');
+    dm.Query1.SQL.Add('  SELECT SUM(CASE');
+    dm.Query1.SQL.Add('       WHEN ISNULL(pro.pro_montoitbis,0)=0 THEN ISNULL(df.det_cantidad,0)*ISNULL(df.det_precio,0)');
+    dm.Query1.SQL.Add('       WHEN ISNULL(df.det_itbis,0)=0       THEN ISNULL(df.det_cantidad,0)*ISNULL(df.det_precio,0)');
+    dm.Query1.SQL.Add('       ELSE 0 END) AS monto_exento');
+    dm.Query1.SQL.Add('  FROM det_factura df');
+    dm.Query1.SQL.Add('  LEFT JOIN Productos pro ON pro.emp_codigo=df.emp_codigo AND pro.pro_codigo=df.pro_codigo');
+    dm.Query1.SQL.Add('  WHERE df.emp_codigo=f.emp_codigo AND df.suc_codigo=f.suc_codigo');
+    dm.Query1.SQL.Add('    AND df.fac_forma=f.fac_forma AND df.tfa_codigo=f.tfa_codigo AND df.fac_numero=f.fac_numero');
+    dm.Query1.SQL.Add(') Det');
+
+    dm.Query1.SQL.Add('WHERE f.emp_codigo = :emp');
+    dm.Query1.SQL.Add('  AND f.tfa_codigo = :tipo');
+    dm.Query1.SQL.Add('  AND f.fac_numero = :numero');
+    dm.Query1.SQL.Add('  AND f.fac_forma  = :forma');
+    dm.Query1.SQL.Add('  AND f.suc_codigo = :suc');
+
+    dm.Query1.Parameters.ParamByName('emp').Value    := DM.vp_cia;
+    dm.Query1.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+    dm.Query1.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+    dm.Query1.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+    dm.Query1.Parameters.ParamByName('suc').Value    := QFacturaSUC_CODIGO.Value;
+
+    dm.Query1.Open; // <-- IMPORTANTE
+      qrURL      := dm.Query1.FieldByName('UrlCodigoQR').AsString;
+    codSeg     := dm.Query1.FieldByName('codigoseguridad').AsString;
+    fechaFirma := dm.Query1.FieldByName('fechafirma').AsString;
+        codDGII    := dm.Query1.FieldByName('cod_dgii').AsString;
+    if dm.Query1.FieldByName('AceptadoDGII').AsBoolean
+       and (Trim(qrURL) <> '') then
+    begin
+
+     qrData := AnsiString(Trim(qrURL));
+    WriteQR(arch, qrData, 6, 48);   // m?dulo 6, nivel L (r?pido y legible)
+     Writeln(arch, 'Fecha firma: ' + fechaFirma);
+    Writeln(arch, 'Cod. seguridad: ' + codSeg);
+
+     {
+    qrData := AnsiString(qrURL);
+    WriteQR(arch, qrData, 6, 48);  // m?dulo 6, nivel L
+    Writeln(arch, 'Fecha firma: ' + fechaFirma);
+    Writeln(arch, 'Cod. seguridad: ' + codSeg);   
+    Writeln(arch); // l?nea en blanco antes del corte
+    }
+  end
+  else
+  begin
+    // No imprime QR ni datos;
+    // Writeln(arch, 'Documento pendiente de aceptaci?n DGII');
+  end;
+  writeln(arch, ' ');
+  // Mensaje final opcional
+  Writeln(arch, dm.Centro('?Gracias por su compra!'));
+  writeln(arch, ' ');
+  writeln(arch, ' ');
+  writeln(arch, ' ');
+  Writeln(arch);
+
+  // ---- Corte de papel ----
+  Write(arch, GS($56) + AnsiChar(#66) + AnsiChar(#0));  // GS V B 0  (corte parcial)
+  Writeln(arch);   
 
   CloseFile(arch);
   dm.AbreCaja;
@@ -9872,9 +10966,6 @@ QFacturaFAC_CONITBIS.Value:= 'False';
   if QPedidosped_numero.Value > 0 then
   QFacturaPED_NUMERO.value := QPedidosped_numero.Value;
 
-
-  if (not QFacturaCPA_CODIGO.isnull) and (QFacturaCPA_CODIGO.Value > 0) then
-    QFacturaFAC_VENCE.Value := QFacturaFAC_FECHA.value + Dias;
   if QFacturaFAC_COMISION.IsNull then
     QFacturaFAC_COMISION.Value := 0;
 
@@ -10162,7 +11253,7 @@ begin
         QDetallepro_serializado.Value := Query1.FieldByName('pro_serializado').Value;
 
        if VarIsNull(Query1.FieldByName('pro_preciomenor').Value) or VarIsEmpty(Query1.FieldByName('pro_preciomenor').Value) then
-          QDetalleDET_PRECIOMINIMO.Value := 0  // Ajusta esto según el tipo de campo si no es numérico
+          QDetalleDET_PRECIOMINIMO.Value := 0  // Ajusta esto seg?n el tipo de campo si no es num?rico
        else
           QDetalleDET_PRECIOMINIMO.Value := Query1.FieldByName('pro_preciomenor').Value;
 
@@ -10885,7 +11976,7 @@ begin
   begin
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
-    dm.Query1.SQL.Add('select tip_nombre, tdo_codigo from TipoNCF');
+    dm.Query1.SQL.Add('select tip_nombre, tdo_codigo, nombre_dgii from TipoNCF');
     dm.Query1.SQL.Add('where emp_codigo = :emp');
     dm.Query1.SQL.Add('and tip_codigo = :tip');
     dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
@@ -10893,7 +11984,7 @@ begin
     dm.Query1.Open;
     TIPO := DM.Query1.FieldByName('tdo_codigo').AsString;
     if dm.Query1.RecordCount > 0 then
-      ttiponcf.Text := dm.Query1.FieldByName('tip_nombre').AsString
+      ttiponcf.Text := dm.Query1.FieldByName('nombre_dgii').AsString
     else
       ttiponcf.Text := '';
   end
@@ -11171,6 +12262,10 @@ begin
   begin
     Totaliza := false;
     Buscando := True;
+
+    if not (QFactura.State in [dsEdit, dsInsert]) then
+    QFactura.Edit;
+
     QDetalle.close;
     QDetalle.open;
     QDetalle.disablecontrols;
@@ -11500,6 +12595,9 @@ begin
     Totaliza := true;
     totalizar;
 
+    if not (QFactura.State in [dsEdit, dsInsert]) then
+    QFactura.Edit;
+    
     if not QFacturaCLI_CODIGO.IsNull then
     begin
       Query1.close;
@@ -11625,7 +12723,23 @@ begin
   DatosdelMedidor1.Enabled := QDetallepro_utilizamedidor.Value = 'True';
   DatosdelEnvio1.Enabled := QDetallepro_UtilizaEnvio.Value = 'True';
 
-  
+  if QDetallePRO_CODIGO.Text <> '' then begin
+  if btBuscaVendPorc.Visible =  true then begin
+  With qBuscVend do begin
+  Close;
+  SQL.Clear;
+  SQL.Add('SELECT RTRIM(ven_nombre) Vendedor');
+  SQL.Add('FROM Vendedores');
+  SQL.Add('where ven_codigo = '+IntToStr(QDetalleven_codigo.Value));
+  Open;
+  if IsEmpty then lbVendedor.Visible := False else begin
+  lbVendedor.Visible := True;
+  lbVendedor.Caption := 'Vendedor: '+fieldbyname('Vendedor').Text;
+  end;
+  end;
+  end;
+  end;
+
 
 end;
 
@@ -11693,7 +12807,7 @@ procedure TfrmFactura.btmonedaClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('C?digo');
   Search.Query.clear;
   Search.Query.add('select mon_nombre, mon_codigo');
   Search.Query.add('from moneda');
@@ -11861,7 +12975,7 @@ procedure TfrmFactura.btcajaClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('C?digo');
   Search.Query.clear;
   Search.Query.add('select caj_nombre, caj_codigo');
   Search.Query.add('from cajas');
@@ -12088,7 +13202,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and cat_movimiento = '+#39+'S'+#39);
-  Search.AliasFields.Add('Descripción');
+  Search.AliasFields.Add('Descripci?n');
   Search.AliasFields.Add('Cuenta');
   Search.ResultField := 'cat_cuenta';
   Search.Title := 'Catalogo de Cuentas';
@@ -12400,7 +13514,7 @@ procedure TfrmFactura.Preventasdelproducto1Click(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('C?digo');
   Search.Query.clear;
   Search.Query.add('select pre_nombre, pre_codigo');
   Search.Query.add('from Preventas');
@@ -12504,10 +13618,10 @@ begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Placa');
   Search.AliasFields.Add('Chofer');
-  Search.AliasFields.Add('Compañía');
+  Search.AliasFields.Add('Compa??a');
   Search.AliasFields.Add('Marca');
   Search.AliasFields.Add('Modelo');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.add('select Placa, Chofer, Compania, Marca, Modelo, CamionID');
   Search.Query.add('from Camiones');
   Search.Title := 'Camiones';
@@ -12584,7 +13698,7 @@ begin
       dm.Query1.sql.add('p.PRO_COSTOEMPAQUE, p.pro_combo, p.pro_preciomenoremp, p.pro_cantempaque,');
       dm.Query1.SQL.Add('p.pro_selectivo_ad, p.pro_selectivo_con, p.pro_minimo_venta,');
       dm.Query1.sql.add('p.mar_codigo, p.pro_ctainvent, p.pro_ctacosto, p.fam_codigo');
-      dm.Query1.sql.add(',um.nombre NombreUM');
+      dm.Query1.sql.add(',um.nombre NombreUM, with_servicio_construccion');
       dm.Query1.sql.add('from productos p');
       dm.Query1.sql.add('inner join unidadmedida um on p.emp_codigo=um.emp_codigo and p.unidadid=um.unidadid');
       dm.Query1.sql.add('where p.emp_codigo = :emp');
@@ -12645,6 +13759,11 @@ begin
         QDetallePRO_SERVICIO.Value     := dm.Query1.fieldbyname('pro_servicio').asstring;
         QDetallealm_codigo.Value          := QFacturaALM_CODIGO.Value;
 
+        if dm.Query1.FieldByName('with_servicio_construccion').IsNull then
+          QDetalleDet_servicio_construccion.Value := False
+        else
+          QDetalleDet_servicio_construccion.Value := dm.Query1.FieldByName('with_servicio_construccion').AsBoolean;
+
         {if not dm.Query1.fieldbyname('dep_codigo').IsNull then
         begin
           Query1.Close;
@@ -12682,7 +13801,6 @@ begin
 
         QDetallePRO_RFABRIC.value      := dm.Query1.fieldbyname('pro_rfabric').asstring;
         QDetallePRO_NOMBRE.value       := dm.Query1.fieldbyname('pro_nombre').asstring;
-        QDetalleVEN_CODIGO.Value       := QFacturaVEN_CODIGO.Value;
         QDetalleDET_CONITBIS.value     := dm.Query1.fieldbyname('pro_itbis').asstring;
         QDetalleDET_COSTO.value        := dm.Query1.fieldbyname('pro_costo').asfloat;
         QDetalleDET_COSTOEMP.Value     := dm.Query1.fieldbyname('pro_costoempaque').asfloat;
@@ -13357,11 +14475,13 @@ end;
 procedure TfrmFactura.bttiponcfClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
+  Search.AliasFields.add('C?digo');
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('C?digo DGII');
   Search.Query.Clear;
-  Search.Query.Add('select tip_nombre, tip_codigo');
-  Search.Query.Add('from TipoNCF');
+  Search.Query.Add('select tip_codigo, (nombre_dgii) as tip_nombre, cod_dgii');
+ // Search.Query.Add('select tip_codigo, trim(tip_nombre) as tip_nombre');
+  Search.Query.Add('from vwTipoNCF');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'tip_codigo';
   Search.Title := 'Tipos de Comprobantes';
@@ -13387,7 +14507,7 @@ begin
     Text := IntToStr(QFacturatip_codigo.Value);
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
-    dm.Query1.SQL.Add('select tip_nombre, tdo_codigo from TipoNCF');
+    dm.Query1.SQL.Add('select tip_nombre, tdo_codigo, nombre_dgii from TipoNCF');
     dm.Query1.SQL.Add('where emp_codigo = :emp');
     dm.Query1.SQL.Add('and tip_codigo = :tip');
     dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
@@ -13395,7 +14515,7 @@ begin
     dm.Query1.Open;
     TIPO := DM.Query1.FieldByName('tdo_codigo').AsString;
     if dm.Query1.RecordCount > 0 then
-      ttiponcf.Text := dm.Query1.FieldByName('tip_nombre').AsString
+      ttiponcf.Text := dm.Query1.FieldByName('nombre_dgii').AsString
     else begin
       ttiponcf.Text := '';
       QFacturatip_codigo.IsNull;
@@ -13929,6 +15049,11 @@ if QFacturatip_codigo.Value > 1 then
 if not (key in ['0'..'9',#8]) then key:=#0;
 end;
 
+procedure TfrmFactura.DBEdit14Exit(Sender: TObject);
+begin
+  QFacturafac_rncChange(QFacturafac_rnc);
+end;
+
 procedure TfrmFactura.QSeriesBeforeOpen(DataSet: TDataSet);
 begin
 {with QSeries do begin
@@ -14011,6 +15136,7 @@ begin
           PermiteAbonar := dm.Query1.fieldbyname('tfa_permite_abonar').AsString;
           ImprimeEncaqbezado := dm.Query1.fieldbyname('tfa_imprimie_encabezado').AsString;
           copias     := dm.Query1.fieldbyname('tfa_copias').asinteger;
+  CopiasExtraImp := copias;
           FPagoIni   := dm.Query1.fieldbyname('fpa_codigo').asinteger;
           Precio     := dm.Query1.fieldbyname('tfa_precio').asstring;
           vEnvioEstadoCta := DM.Query1.FieldByName('Envio_Estadocta').Value;
@@ -14103,7 +15229,7 @@ begin
     if QEnvio.Active and (not QEnvio.IsEmpty) then
     begin
       
-      // Activamos el modo de edición del dataset
+      // Activamos el modo de edici?n del dataset
       QEnvio.Edit;
 
       // Actualizamos el valor del campo Cantidad en base a otro dataset
@@ -14159,7 +15285,7 @@ procedure TfrmFactura.btnReservaClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.clear;
   Search.Query.add('select Numero_Reserva, Reserva_nombre');
   Search.Query.add('from Hotel_Reservas');
@@ -15120,7 +16246,9 @@ Label23.Visible                   := False;
 Exit;
 end
 else
- if ((dm.QParametrospar_formato_preimpreso.Text = 'SteelTec') AND
+ //if ((dm.QParametrospar_formato_preimpreso.Text = 'SteelTec')
+ if ((dm.QParametrosservicio_construccion.AsBoolean = True)
+ AND
           (DM.QParametrospar_fac_preimpresa.Value = 'True')) then begin
   DBEdit7.Visible            := False;
   Label16.Visible            := False;
@@ -15719,13 +16847,13 @@ begin
   vTotalgral:=0;
   SetLength(arrayMultiUso, 17);
 
-    //Obtiene los datos de fiscalización
+    //Obtiene los datos de fiscalizaci?n
     err := DriverFiscal1.IF_WRITE('@GetInitData');
     arrayMultiUso[0] := DriverFiscal1.IF_READ(1);
     arrayMultiUso[1] := DriverFiscal1.IF_READ(2);
     arrayMultiUso[2] := DriverFiscal1.IF_READ(3);
     arrayMultiUso[3] := DriverFiscal1.IF_READ(4);
-    //Obtiene las características fiscales
+    //Obtiene las caracter?sticas fiscales
     err := DriverFiscal1.IF_WRITE('@GetFiscalFeatures');
     arrayMultiUso[4] := DriverFiscal1.IF_READ(1); //--Tauru
     arrayMultiUso[5] := DriverFiscal1.IF_READ(2); //
@@ -15736,12 +16864,12 @@ begin
     arrayMultiUso[10] := DriverFiscal1.IF_READ(7);
     arrayMultiUso[11] := DriverFiscal1.IF_READ(8);
     arrayMultiUso[12] := DriverFiscal1.IF_READ(9);
-    //Obtiene los datos de serialización
+    //Obtiene los datos de serializaci?n
     err := DriverFiscal1.IF_WRITE('@GetPrinterVersion');
     arrayMultiUso[13] := DriverFiscal1.IF_READ(1);  //Serie
     arrayMultiUso[14] := DriverFiscal1.IF_READ(2);  //id
 
-   //Retorna los valores de respuesta del último comprobante cerrado
+   //Retorna los valores de respuesta del ?ltimo comprobante cerrado
     err := DriverFiscal1.IF_WRITE('@GetLastTicketStatus');
     arrayMultiUso[15] := DriverFiscal1.IF_READ(1);  //NIF
     //arrayMultiUso[17]
@@ -15830,7 +16958,7 @@ begin
             informacion, entonces lo que hacesmo es dividir la descripcion en
             3 grupos para poder imprimir la descripcion completa de manera parcial
             en la definicion de la ayuda podra notar que las descripciones van desde
-            Descripcion hasta Descripción extra #9, pero el titulo de descripcion
+            Descripcion hasta Descripci?n extra #9, pero el titulo de descripcion
             se imprime ultimo a las descripciones extra . Aqui capturamo el valor
             de la descripcion del producto en base de datos, y lo asignamos a una
             variable y a esta la dividimos.  Manuel Titin Abril/2018}
@@ -16168,7 +17296,7 @@ begin
 
     //  DriverFiscal1.IF_TRACE(1) ; //esta linea es para ver un log con lo que hace el printer
   {
-  'Habilitar la depuración y captura de comandos enviados al archivo debug.log
+  'Habilitar la depuraci?n y captura de comandos enviados al archivo debug.log
   IF_TRACE(1)
   'Deshabilitar el debugging
   IF_TRACE(0)
@@ -16229,7 +17357,7 @@ begin
       informacion, entonces lo que hacesmo es dividir la descripcion en
       3 grupos para poder imprimir la descripcion completa de manera parcial
       en la definicion de la ayuda podra notar que las descripciones van desde
-      Descripcion hasta Descripción extra #9, pero el titulo de descripcion
+      Descripcion hasta Descripci?n extra #9, pero el titulo de descripcion
       se imprime ultimo a las descripciones extra . Aqui capturamo el valor
       de la descripcion del producto en base de datos, y lo asignamos a una
       variable y a esta la dividimos.  Manuel Titin Abril/2018}
@@ -16697,7 +17825,7 @@ begin
 
   {if (length(RFactura.QFacturaNumeroCF.AsString) < 19) then
   begin
-    Application.MessageBox('El número de comprabante fiscal debe de tener 19 digitos','Error',MB_OK);
+    Application.MessageBox('El n?mero de comprobante fiscal debe de tener 19 digitos','Error',MB_OK);
 
     exit;
   end;}
@@ -16742,34 +17870,34 @@ begin
       (*
       A = Factura a consumidor final (predeterminado).
 
-      B = Factura con derecho a crédito fiscal.
+      B = Factura con derecho a cr?dito fiscal.
 
-      C = Nota de crédito a consumidor final
+      C = Nota de cr?dito a consumidor final
 
-      D = Nota de crédito con derecho a crédito fiscal.
+      D = Nota de cr?dito con derecho a cr?dito fiscal.
 
-      E = Factura a consumidor final con exoneración de ITBIS.
+      E = Factura a consumidor final con exoneraci?n de ITBIS.
 
-      F = Factura con derecho a crédito fiscal con exoneración de ITBIS
+      F = Factura con derecho a cr?dito fiscal con exoneraci?n de ITBIS
 
-      ‘000’ – Factura a consumidor final.
-      ‘001’ – Factura con derecho a crédito fiscal.
-      ‘010’ – Nota de crédito a consumidor final.
-      ‘011’ – Nota de crédito con derecho a crédito fiscal.
-      ‘100’ – Factura a consumidor final con exoneración de ITBIS.
-      ‘101’ – Factura con derecho a crédito fiscal con exoneración de ITBIS.
-      ‘110’ – Nota de Crédito consumidor final con exoneración ITBIS
-      ‘111’ – Nota de Crédito para crédito fiscal con exoneración ITBIS.
+      "000" ? Factura a consumidor final.
+      "001" ? Factura con derecho a cr?dito fiscal.
+      "010" ? Nota de cr?dito a consumidor final.
+      "011" ? Nota de cr?dito con derecho a cr?dito fiscal.
+      "100" ? Factura a consumidor final con exoneraci?n de ITBIS.
+      "101" ? Factura con derecho a cr?dito fiscal con exoneraci?n de ITBIS.
+      "110" ? Nota de Cr?dito consumidor final con exoneraci?n ITBIS
+      "111" ? Nota de Cr?dito para cr?dito fiscal con exoneraci?n ITBIS.
 
-      01 Facturas que Generan Crédito y Sustentan
+      01 Facturas que Generan Cr?dito y Sustentan
 Costos y/o Gastos
 02 Facturas para Consumidores Finales
-03 Nota de Débito
-04 Nota de Crédito
+03 Nota de D?bito
+04 Nota de Cr?dito
 11 Proveedores Informales
-12 Registro Único de Ingresos
+12 Registro ?nico de Ingresos
 13 Gastos Menores
-14 Regímenes Especiales de Tributación
+14 Reg?menes Especiales de Tributaci?n
 15 Comprobantes Gubernamentales
 
       *)
@@ -17183,9 +18311,9 @@ begin
     //apertura de la factura
     case QFacturatip_codigo.Value of
       1:SendCmd(Stat, Err, PChar('/0'));    //Factura Para Consumidor Final
-      2:SendCmd(Stat, Err, PChar('/1'));     //Factura Para Crédito Fiscal
+      2:SendCmd(Stat, Err, PChar('/1'));     //Factura Para Cr?dito Fiscal
       3:SendCmd(Stat, Err, PChar('/1'));     ////Gubernamental
-      4:SendCmd(Stat, Err, PChar('/4'));    ////Regimen Especial (Factura Para Crédito Fiscal con Exoneración ITBIS)
+      4:SendCmd(Stat, Err, PChar('/4'));    ////Regimen Especial (Factura Para Cr?dito Fiscal con Exoneraci?n ITBIS)
     end;
 
 
@@ -17460,7 +18588,7 @@ end;
 
     procedure TfrmFactura.QFacturaAfterInsert(DataSet: TDataSet);
 begin
-frmFactura.Caption := 'Facturación';
+frmFactura.Caption := 'Facturaci?n';
 end;
 
 procedure TfrmFactura.QFacturaTFA_CODIGOGetText(Sender: TField;
@@ -17688,7 +18816,7 @@ begin
     closefile(puertopeq);
   end;
 
-  if not (dm.QParametrospar_formato_preimpreso.Value = 'Emtraba') then
+  if not (dm.QParametrospar_formato_preimpreso.Value = 'Emtraba') AND not (dm.QParametrospar_formato_preimpreso.Value = 'QRAgregados')  then
   begin
     AssignFile(ar, '.\impEnv.bat');
     rewrite(ar);
@@ -17723,7 +18851,7 @@ begin
     for i := 1 to vcantidad do
     begin
       try
-        // Generar un nombre de archivo único por ticket
+        // Generar un nombre de archivo ?nico por ticket
         FileName := '.\Envio_' + IntToStr(i) + '_' + IntToStr(vnumero) + '.txt';
          desTicket := '';
         // Abrir y escribir en el archivo
@@ -17743,11 +18871,11 @@ begin
         writeln(ar, 'B05,500,0,1,6,2,140,B,"' + vCodigoBarra + '"');
         writeln(ar, 'A100,730,0,5,0,1,N,"NUMERO:' + IntToStr(vnumero) + '"');
 
-        // Validación y modificación de la descripción
+        // Validaci?n y modificaci?n de la descripci?n
         if (vDescripcion = '') or (vDescripcion = null) then
           desTicket := 'TICKET'
         else
-        // Cortar la descripción al primer espacio
+        // Cortar la descripci?n al primer espacio
         desTicket := Copy(vDescripcion, 1, Pos(' ', vDescripcion) - 1);
 
       // Luego lo usamos en la escritura del archivo:
@@ -17760,14 +18888,14 @@ begin
         writeln(ar, 'FK');
         closefile(ar);
 
-        // Crear un archivo .bat temporal para ejecutar la impresión
+        // Crear un archivo .bat temporal para ejecutar la impresi?n
         AssignFile(ar, '.\impEnv_' + IntToStr(i) + '.bat');
         rewrite(ar);
 
         writeln(ar, 'type ' + FileName + ' > ' + IniBarra);
        // writeln(ar, 'type .\Envio.txt > ' + IniBarra);
         closefile(ar);
-         // Ejecutar la impresión
+         // Ejecutar la impresi?n
         WinExec(PAnsiChar('.\impEnv_' + IntToStr(i) + '.bat'), 0);
         
        // WinExec('.\impEnv.bat', 0);
@@ -17907,13 +19035,28 @@ if DM.QParametrospar_puerto_envios.Text <> '' then begin
 end;
        }
 procedure TfrmFactura.QFacturaCalcFields(DataSet: TDataSet);
+var
+  vTotalUS: Double;
 begin
 QFacturaSubTotal.Value := sSubTotal;
 //modificargrid();
 IF  QFacturaMON_CODIGO.value = 2 THEN BEGIN
 lblLbTotalUS.Visible :=  True;
 EDT_FAC_TOTALUS.Visible :=  True;
-end
+
+if (not Assigned(QFacturaFAC_TASA)) or (not Assigned(QFacturaFAC_TOTAL)) then
+  Exit;
+
+if VarIsNull(QFacturaFAC_TASA.Value) or (QFacturaFAC_TASA.Value = 0) then
+  vTotalUS := 0
+else
+  vTotalUS := QFacturaFAC_TOTAL.Value / QFacturaFAC_TASA.Value;
+
+if Assigned(QFacturaFAC_TOTALUS) then
+  QFacturaFAC_TOTALUS.Value := vTotalUS
+else if Assigned(QFacturafac_total_dolar) then
+  QFacturafac_total_dolar.Value := vTotalUS;
+    end
 else
 begin
 lblLbTotalUS.Visible :=  False;
@@ -18403,14 +19546,14 @@ end;
         exit;
       end;
 
-  //Obtiene los datos de fiscalización
+  //Obtiene los datos de fiscalizaci?n
     err := DriverFiscal1.IF_WRITE('@GetInitData');
-    //Obtiene las características fiscales
+    //Obtiene las caracter?sticas fiscales
     err := DriverFiscal1.IF_WRITE('@GetFiscalFeatures');
-    //Obtiene los datos de serialización
+    //Obtiene los datos de serializaci?n
     err := DriverFiscal1.IF_WRITE('@GetPrinterVersion');
 
-   //Retorna los valores de respuesta del último comprobante cerrado
+   //Retorna los valores de respuesta del ?ltimo comprobante cerrado
     err := DriverFiscal1.IF_WRITE('@GetLastTicketStatus');
     //arrayMultiUso[17]
 
@@ -18492,14 +19635,14 @@ end;
         exit;
       end;
 
-  //Obtiene los datos de fiscalización
+  //Obtiene los datos de fiscalizaci?n
     err := DriverFiscal1.IF_WRITE('@GetInitData');
-    //Obtiene las características fiscales
+    //Obtiene las caracter?sticas fiscales
     err := DriverFiscal1.IF_WRITE('@GetFiscalFeatures');
-    //Obtiene los datos de serialización
+    //Obtiene los datos de serializaci?n
     err := DriverFiscal1.IF_WRITE('@GetPrinterVersion');
 
-   //Retorna los valores de respuesta del último comprobante cerrado
+   //Retorna los valores de respuesta del ?ltimo comprobante cerrado
     err := DriverFiscal1.IF_WRITE('@GetLastTicketStatus');
     //arrayMultiUso[17]
 
@@ -18789,13 +19932,13 @@ begin
   vTotalgral:=0;
   SetLength(arrayMultiUso, 17);
 
-    //Obtiene los datos de fiscalización
+    //Obtiene los datos de fiscalizaci?n
     err := DriverFiscal1.IF_WRITE('@GetInitData');
     arrayMultiUso[0] := DriverFiscal1.IF_READ(1);
     arrayMultiUso[1] := DriverFiscal1.IF_READ(2);
     arrayMultiUso[2] := DriverFiscal1.IF_READ(3);
     arrayMultiUso[3] := DriverFiscal1.IF_READ(4);
-    //Obtiene las características fiscales
+    //Obtiene las caracter?sticas fiscales
     err := DriverFiscal1.IF_WRITE('@GetFiscalFeatures');
     arrayMultiUso[4] := DriverFiscal1.IF_READ(1); //--Tauru
     arrayMultiUso[5] := DriverFiscal1.IF_READ(2); //
@@ -18806,12 +19949,12 @@ begin
     arrayMultiUso[10] := DriverFiscal1.IF_READ(7);
     arrayMultiUso[11] := DriverFiscal1.IF_READ(8);
     arrayMultiUso[12] := DriverFiscal1.IF_READ(9);
-    //Obtiene los datos de serialización
+    //Obtiene los datos de serializaci?n
     err := DriverFiscal1.IF_WRITE('@GetPrinterVersion');
     arrayMultiUso[13] := DriverFiscal1.IF_READ(1);  //Serie
     arrayMultiUso[14] := DriverFiscal1.IF_READ(2);  //id
 
-   //Retorna los valores de respuesta del último comprobante cerrado
+   //Retorna los valores de respuesta del ?ltimo comprobante cerrado
     err := DriverFiscal1.IF_WRITE('@GetLastTicketStatus');
     arrayMultiUso[15] := DriverFiscal1.IF_READ(1);  //NIF
     //arrayMultiUso[17]
@@ -18900,7 +20043,7 @@ begin
             informacion, entonces lo que hacesmo es dividir la descripcion en
             3 grupos para poder imprimir la descripcion completa de manera parcial
             en la definicion de la ayuda podra notar que las descripciones van desde
-            Descripcion hasta Descripción extra #9, pero el titulo de descripcion
+            Descripcion hasta Descripci?n extra #9, pero el titulo de descripcion
             se imprime ultimo a las descripciones extra . Aqui capturamo el valor
             de la descripcion del producto en base de datos, y lo asignamos a una
             variable y a esta la dividimos.  Manuel Titin Abril/2018}
@@ -19221,7 +20364,7 @@ begin
 
     //  DriverFiscal1.IF_TRACE(1) ; //esta linea es para ver un log con lo que hace el printer
   {
-  'Habilitar la depuración y captura de comandos enviados al archivo debug.log
+  'Habilitar la depuraci?n y captura de comandos enviados al archivo debug.log
   IF_TRACE(1)
   'Deshabilitar el debugging
   IF_TRACE(0)
@@ -19282,7 +20425,7 @@ begin
       informacion, entonces lo que hacesmo es dividir la descripcion en
       3 grupos para poder imprimir la descripcion completa de manera parcial
       en la definicion de la ayuda podra notar que las descripciones van desde
-      Descripcion hasta Descripción extra #9, pero el titulo de descripcion
+      Descripcion hasta Descripci?n extra #9, pero el titulo de descripcion
       se imprime ultimo a las descripciones extra . Aqui capturamo el valor
       de la descripcion del producto en base de datos, y lo asignamos a una
       variable y a esta la dividimos.  Manuel Titin Abril/2018}
@@ -19798,6 +20941,67 @@ qSucDestino.Parameters[0].Value := QFacturaEMP_CODIGO.Value;
 qSucDestino.Parameters[1].Value := QFacturaUSU_CODIGO.Value;
 qSucDestino.Open;
 
+end;
+
+procedure TfrmFactura.QFacturaFechaLimitePagoValidate(Sender: TField);
+begin
+QFacturaFAC_VENCE.Value := QFacturaFechaLimitePago.Value;
+end;
+
+procedure TfrmFactura.btBuscaVendPorcClick(Sender: TObject);
+var
+  vl_producto_comis : Currency;
+begin
+ if (not QDetallePRO_CODIGO.isnull)  then
+  begin
+    application.createform(TfrmSelVendPorc, frmSelVendPorc);
+    begin
+       with qEjecutar do begin
+       Close;
+       SQL.Add('SELECT PRO_COMISION COM FROM PRODUCTOS WHERE PRO_CODIGO = :COD');
+       Parameters.ParamByName('COD').Value := QDetallePRO_CODIGO.Value;
+       Open;
+       if not IsEmpty then begin
+       if FieldByName('COM').AsCurrency > 0 THEN
+       vl_producto_comis := FieldByName('COM').AsCurrency;
+       Close;
+       end;
+       end;
+
+      IF vl_producto_comis > 0 THEN BEGIN
+      frmSelVendPorc.QVendedores.Close;
+      frmSelVendPorc.QVendedores.Parameters.ParamByName('EMP').Value := QFacturaEMP_CODIGO.Value;
+      frmSelVendPorc.QVendedores.Open;
+
+
+      if not frmSelVendPorc.QVendedores.IsEmpty then begin
+      frmSelVendPorc.showmodal;
+
+      if (frmSelVendPorc.vl_porciento <> 0) and (frmSelVendPorc.vl_vendedor <> 0) then
+      begin
+        QDetalle.edit;
+        QDetalleVEN_CODIGO.value := frmSelVendPorc.vl_vendedor;
+        if vl_producto_comis < frmSelVendPorc.vl_porciento then
+        QDetalleporc_vendedor.value := vl_producto_comis else
+        QDetalleporc_vendedor.value := frmSelVendPorc.vl_porciento;
+        QDetalle.post;
+      end;
+    end
+    else
+    begin
+    ShowMessage('Debes indicar los vendedores en el maestro de vendedores, para aplicar la comision');
+    end;
+    end;
+    frmSelVendPorc.Release;
+    end;
+end;
+end;
+
+procedure TfrmFactura.QParametrosAfterOpen(DataSet: TDataSet);
+begin
+if QParametrospar_comision_vend.Value =  False then
+btBuscaVendPorc.Visible := False else
+btBuscaVendPorc.Visible := True;
 end;
 
 end.

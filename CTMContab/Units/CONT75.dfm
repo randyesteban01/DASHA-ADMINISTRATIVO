@@ -1,6 +1,6 @@
 object frmConsComprobantes: TfrmConsComprobantes
-  Left = 308
-  Top = 228
+  Left = 282
+  Top = 232
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Comprobantes fiscales'
@@ -19,6 +19,7 @@ object frmConsComprobantes: TfrmConsComprobantes
   OnClose = FormClose
   OnCreate = FormCreate
   OnPaint = FormPaint
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
@@ -114,13 +115,11 @@ object frmConsComprobantes: TfrmConsComprobantes
     object cbtipo: TComboBox
       Left = 216
       Top = 8
-      Width = 241
+      Width = 369
       Height = 21
       Style = csDropDownList
       ItemHeight = 13
-      ItemIndex = 0
       TabOrder = 5
-      Text = 'Todos'
       Items.Strings = (
         'Todos'
         'Factura de Cr'#233'dito Fiscal (Tipo 01)'
@@ -131,7 +130,17 @@ object frmConsComprobantes: TfrmConsComprobantes
         'Registro '#218'nico de Ingresos (Tipo 12)'
         'Registro de Gastos Menores (Tipo 13)'
         'Reg'#237'menes Especiales de Tributaci'#243'n (Tipo 14)'
-        'Comprobantes Gubernamentales (Tipo 15)')
+        'Comprobantes Gubernamentales (Tipo 15)'
+        'Factura de Cr'#233'dito Fiscal Electr'#243'nica (Tipo 31)'
+        'Factura de Consumo Electr'#243'nica (Tipo 32)'
+        'Nota de D'#233'bito Electr'#243'nica (Tipo 33)'
+        'Nota de Cr'#233'dito Electr'#243'nica (Tipo 34)'
+        'Comprobante Electr'#243'nico de Compras (Tipo 41)'
+        'Comprobante Electr'#243'nico para Gastos Menores (Tipo 43)'
+        'Comprobante Electr'#243'nico para Reg'#237'menes Especiales (Tipo 44)'
+        'Comprobante Electr'#243'nico Gubernamental (Tipo 45)'
+        'Comprobante Electr'#243'nico para Exportaciones (Tipo 46)'
+        'Comprobante Electr'#243'nico para Pagos al Exterior (Tipo 47)')
     end
   end
   object PageControl1: TPageControl
@@ -358,34 +367,100 @@ object frmConsComprobantes: TfrmConsComprobantes
         Value = Null
       end>
     SQL.Strings = (
+      
+        'DECLARE @EMP INT, @TIPO INT, @FEC1 DATETIME, @FEC2 DATETIME, @TI' +
+        'POREPORTE CHAR(1)'
+      ''
       'SET DATEFORMAT YMD'
+      ''
+      'SET @EMP = :emp'
+      'SET @TIPO = :tipo'
+      'SET @FEC1= :fec1'
+      'SET @FEC2= :fec2'
+      'SET @TIPOREPORTE = :tiporeporte'
+      ''
+      ';WITH CTE AS'
+      '('
+      '    SELECT'
+      '        Fecha,'
+      '        ncf_fijo1,'
+      '        ncf_fijo2,'
+      '        sec1,'
+      '        sec2,'
+      '        Total,'
+      '        Itbis,'
+      '        ItbisNC,'
+      '        Grabado,'
+      '        Exento,'
+      '        Descuento,'
+      '        Propina,'
+      '        monto_8,'
+      '        monto_11,'
+      '        monto_13,'
+      '        monto_16,'
+      '        monto_18,'
+      '        efectivo,'
+      '        cheqtransfdep,'
+      '        ventacredito,'
+      '        tarjetadebcred,'
+      '        otrasformpag,'
+      '        ROW_NUMBER() OVER ('
+      '            PARTITION BY Fecha, ncf_fijo1'
+      '            ORDER BY sec1'
+      '        ) AS rn'
       
-        'select '#9'Fecha, replace(ncf_fijo1,'#39'00000000'#39','#39#39')TIPO, (MAX(SEC1)-' +
-        'MIN(SEC2)) CANT,'
+        '    FROM pr_comprobantes (@emp, @tipo, @fec1, @fec2, @tiporeport' +
+        'e)'
+      '),'
+      'Islas AS'
+      '('
+      '    -- '#8220'Isla'#8221' = grupo de secuencias consecutivas por d'#237'a y tipo'
+      '    SELECT'
+      '        *,'
+      '        sec1 - rn AS grp'
+      '    FROM CTE'
+      ')'
+      'SELECT  '
+      '    Fecha,'
+      '    REPLACE(ncf_fijo1,'#39'00000000'#39','#39#39') AS TIPO,'
+      '    COUNT(*) AS CANT,'
+      ''
       
-        'min(ncf_fijo1+replicate('#39'0'#39',8-len(cast(sec1 as varchar(8))))+cas' +
-        't(sec1 as varchar(8))) as Desde,'
+        '    MIN(ncf_fijo1 + RIGHT('#39'00000000'#39' + CAST(sec1 AS VARCHAR(8)),' +
+        ' 8)) AS Desde,'
       
-        'max(ncf_fijo2+replicate('#39'0'#39',8-len(cast(sec2 as varchar(8))))+cas' +
-        't(sec2 as varchar(8))) as Hasta,'
-      
-        'sum(Total) as Total, sum(Itbis) as Itbis, sum(Grabado) as Grabad' +
-        'o, sum(Exento) as Exento, sum(Descuento) Descuento, sum(Propina)' +
-        ' Propina,'
-      
-        '0.00 Itbis0, sum(monto_8) Itbis8, sum(monto_11) Itbis11, sum(mon' +
-        'to_13) Itbis13, sum(monto_16) Itbis16, sum(monto_18) Itbis18,'
-      
-        'CASE WHEN replace(ncf_fijo1,'#39'00000000'#39','#39#39')= '#39'B04'#39' THEN SUM(ITBIS' +
-        ') ELSE 0 END ItbisNC, '
-      
-        'sum(efectivo) efectivo, sum(cheqtransfdep) ckdep, sum(ventacredi' +
-        'to)credito, sum(tarjetadebcred) tarjetas, sum(otrasformpag) otra' +
-        's'
-      'from'#9'pr_comprobantes (:emp, :tipo, :fec1, :fec2, :tiporeporte)'
-      'group'#9'by sec1,  Fecha, ncf_fijo1'
-      'order'#9'by 1'
-      '')
+        '    MAX(ncf_fijo2 + RIGHT('#39'00000000'#39' + CAST(sec2 AS VARCHAR(8)),' +
+        ' 8)) AS Hasta,'
+      ''
+      '    SUM(Total)      AS Total,'
+      '    SUM(Itbis)      AS Itbis,'
+      '    SUM(ItbisNC)      AS ItbisNC,'
+      '    SUM(Grabado)    AS Grabado,'
+      '    SUM(Exento)     AS Exento,'
+      '    SUM(Descuento)  AS Descuento,'
+      '    SUM(Propina)    AS Propina,'
+      ''
+      '    0.00            AS Itbis0,'
+      '    SUM(monto_8)    AS Itbis8,'
+      '    SUM(monto_11)   AS Itbis11,'
+      '    SUM(monto_13)   AS Itbis13,'
+      '    SUM(monto_16)   AS Itbis16,'
+      '    SUM(monto_18)   AS Itbis18,'
+      ''
+      '    SUM(efectivo)       AS efectivo,'
+      '    SUM(cheqtransfdep)  AS ckdep,'
+      '    SUM(ventacredito)   AS credito,'
+      '    SUM(tarjetadebcred) AS tarjetas,'
+      '    SUM(otrasformpag)   AS otras'
+      'FROM Islas'
+      'GROUP BY '
+      '    Fecha,'
+      '    ncf_fijo1,'
+      '    grp'
+      'ORDER BY '
+      '    Fecha,'
+      '    ncf_fijo1,'
+      '    MIN(sec1);')
     Left = 224
     Top = 216
     object QComprobantesFecha: TDateTimeField
@@ -514,20 +589,19 @@ object frmConsComprobantes: TfrmConsComprobantes
         'select '#9'Fecha, ncf_fijo1+replicate('#39'0'#39',8-len(cast(sec1 as varcha' +
         'r(8))))+cast(sec1 as varchar(8)) as Desde,'
       #39'A'#39' as Hasta,'
-      'Total, Itbis, Grabado, Exento,Propina, rnc, Descuento, 1 CANT,'
+      
+        'Total, Itbis, ItbisNC, Grabado, Exento,Propina, rnc, Descuento, ' +
+        '1 CANT,'
       
         '0.00 Itbis0, monto_8 Itbis8, monto_11 Itbis11, monto_13 Itbis13,' +
         ' monto_16 Itbis16, monto_18 Itbis18, otrasformpag otras,'
       
         'efectivo, cheqtransfdep ckdep, ventacredito credito, tarjetadebc' +
-        'red  tarjetas, replace(ncf_fijo1,'#39'00000000'#39','#39#39')TIPO,'
-      
-        'CASE WHEN replace(ncf_fijo1,'#39'00000000'#39','#39#39')= '#39'B04'#39' THEN ITBIS ELS' +
-        'E 0 END ItbisNC'
+        'red  tarjetas, replace(ncf_fijo1,'#39'00000000'#39','#39#39')TIPO'
       'from'#9'pr_comprobantes (:emp, :tipo, :fec1, :fec2, :tiporeporte)'
       
-        'group'#9'by Fecha, ncf_fijo1, sec1, total, itbis, grabado, exento, ' +
-        'rnc, descuento, monto_8, monto_11, monto_13,  PROPINA,'
+        'group'#9'by Fecha, ncf_fijo1, sec1, total, itbis, ItbisNC, grabado,' +
+        ' exento, rnc, descuento, monto_8, monto_11, monto_13,  PROPINA,'
       
         'monto_16, monto_18, efectivo, cheqtransfdep, ventacredito, tarje' +
         'tadebcred, otrasformpag'
@@ -550,15 +624,19 @@ object frmConsComprobantes: TfrmConsComprobantes
     end
     object QListadoTotal: TFloatField
       FieldName = 'Total'
+      currency = True
     end
     object QListadoItbis: TFloatField
       FieldName = 'Itbis'
+      currency = True
     end
     object QListadoGrabado: TFloatField
       FieldName = 'Grabado'
+      currency = True
     end
     object QListadoExento: TFloatField
       FieldName = 'Exento'
+      currency = True
     end
     object QListadoDescuento: TCurrencyField
       FieldName = 'Descuento'

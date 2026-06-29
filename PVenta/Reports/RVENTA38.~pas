@@ -3,7 +3,7 @@ unit RVENTA38;
 interface
 
 uses Windows, SysUtils, Messages, Classes, Graphics, Controls,
-  StdCtrls, ExtCtrls, Forms, Quickrpt, QRCtrls, Db, IBCustomDataSet,
+  StdCtrls, ExtCtrls, Forms, QuickRpt, QRPDFFilt, QRExport, QRCtrls, Db, IBCustomDataSet,
   IBQuery, ADODB, Math;
 
 type
@@ -91,7 +91,6 @@ type
     QRDBText16: TQRDBText;
     QRDBText17: TQRDBText;
     QRDBText18: TQRDBText;
-    QRExpr1: TQRExpr;
     QConduceCON_DESCUENTO: TBCDField;
     QConduceCON_ITBIS: TBCDField;
     QDetalleDET_DESCUENTO: TBCDField;
@@ -154,6 +153,32 @@ type
     QRLabel43: TQRLabel;
     QRShape1: TQRShape;
     QRLabel46: TQRLabel;
+    QRDBText26: TQRDBText;
+    QConduceSUB_TOTAL: TCurrencyField;
+    dsSucursal: TDataSource;
+    qSucursal: TADOQuery;
+    IntegerField1: TIntegerField;
+    StringField1: TStringField;
+    StringField2: TStringField;
+    StringField3: TStringField;
+    StringField4: TStringField;
+    StringField5: TStringField;
+    StringField6: TStringField;
+    StringField7: TStringField;
+    StringField8: TStringField;
+    StringField9: TStringField;
+    StringField10: TStringField;
+    StringField11: TStringField;
+    StringField12: TStringField;
+    BlobField1: TBlobField;
+    QRLabel47: TQRLabel;
+    QRDBText27: TQRDBText;
+    QRLabel48: TQRLabel;
+    QConduceCONECEPTO: TStringField;
+    QRLocalidad: TQRLabel;
+    QRLocalidad2: TQRLabel;
+    QRDBLocalidad: TQRDBText;
+    QConducesuc_nombre: TStringField;
     procedure QDetalleCalcFields(DataSet: TDataSet);
     procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
       var PrintReport: Boolean);
@@ -168,6 +193,7 @@ type
     procedure QConduceAfterOpen(DataSet: TDataSet);
     procedure QRBand4BeforePrint(Sender: TQRCustomBand;
       var PrintBand: Boolean);
+    procedure QDetalleBeforeOpen(DataSet: TDataSet);
   private
 
   public
@@ -304,6 +330,19 @@ begin
     end;
   end;
 
+  if dm.QParametrospar_banca_apuestas.Value = True then begin
+QRLocalidad.Visible := True;
+QRLocalidad2.Visible := True;
+QRDBLocalidad.Visible := True;
+QRBand1.Height := 200;
+end;
+if not dm.QParametrospar_banca_apuestas.Value = True then begin
+QRLocalidad.Visible := False;
+QRLocalidad2.Visible := False;
+QRDBLocalidad.Visible := False;
+QRBand1.Height := 180;
+end;
+
   if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'I' then
      lbProd.DataField := 'PRO_CODIGO'
   else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'F' then
@@ -410,6 +449,7 @@ end;
 procedure TRConduce.QConduceAfterOpen(DataSet: TDataSet);
 begin
   QSerie.Open;
+  qSucursal.Open;
 end;
 
 procedure TRConduce.QRBand4BeforePrint(Sender: TQRCustomBand;
@@ -422,7 +462,7 @@ begin
     QRLabel19.Enabled  := dm.QParametrospar_invprecioconduce.Value = 'True';
     QRLabel20.Enabled  := dm.QParametrospar_invprecioconduce.Value = 'True';
     QRLabel21.Enabled  := dm.QParametrospar_invprecioconduce.Value = 'True';
-    QRExpr1.Enabled    := dm.QParametrospar_invprecioconduce.Value = 'True';
+    QRDBText26.Enabled    := dm.QParametrospar_invprecioconduce.Value = 'True';
     QRDBText16.Enabled := dm.QParametrospar_invprecioconduce.Value = 'True';
     QRDBText17.Enabled := dm.QParametrospar_invprecioconduce.Value = 'True';
     QRDBText18.Enabled := dm.QParametrospar_invprecioconduce.Value = 'True';
@@ -440,6 +480,14 @@ begin
       QRLabel23.Left := 546;
     end;
   end;
+end;
+
+procedure TRConduce.QDetalleBeforeOpen(DataSet: TDataSet);
+begin
+QDetalle.Parameters.ParamByName('emp_codigo').Value := QConduceEMP_CODIGO.Value;
+QDetalle.Parameters.ParamByName('EMP').Value        := dm.vp_cia;
+QDetalle.Parameters.ParamByName('con_numero').Value := QConduceCON_NUMERO.Value;
+QDetalle.Parameters.ParamByName('suc_codigo').Value := QConduceSUC_CODIGO.Value;
 end;
 
 end.

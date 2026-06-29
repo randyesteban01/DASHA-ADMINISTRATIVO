@@ -1,6 +1,6 @@
 object frmDesembolsos: TfrmDesembolsos
-  Left = 205
-  Top = 224
+  Left = 265
+  Top = 225
   ActiveControl = DBEdit1
   BorderIcons = [biSystemMenu, biMinimize, biHelp]
   BorderStyle = bsSingle
@@ -1148,15 +1148,20 @@ object frmDesembolsos: TfrmDesembolsos
       end>
     SQL.Strings = (
       'select '
-      'CLI_CODIGO, DES_BENEFICIARIO, DES_CONCEPTO, '
+      'd.CLI_CODIGO, DES_BENEFICIARIO, DES_CONCEPTO, '
       'DES_FECHA, DES_MONTO, DES_NUMERO, DES_STATUS, '
-      'DEV_NUMERO, EMP_CODIGO, USU_CODIGO, CAJ_CODIGO, '
-      'DES_CONCEPTO2, DES_CAJA, SUC_CODIGO, SUP_CODIGO,'
+      'DEV_NUMERO, d.EMP_CODIGO, d.USU_CODIGO, CAJ_CODIGO, '
+      'DES_CONCEPTO2, DES_CAJA, d.SUC_CODIGO, SUP_CODIGO,'
       'DES_DESCUENTO, des_tipo, des_ncf, rnc_empresa, tip_codigo,'
-      'emp_numero, des_gasto_menor, des_itbis'
+      
+        'd.emp_numero, des_gasto_menor, des_itbis, e.emp_rnc, c.cli_rnc,e' +
+        'NCF'
       'from '
-      'DESEMBOLSOS'
-      'where '
+      
+        'DESEMBOLSOS d inner join Empresas e on d.emp_codigo= e.emp_codig' +
+        'o'
+      'left join clientes c on c.cli_codigo=d.cli_codigo'
+      'where'
       'emp_codigo = :emp'
       'and des_numero = :numero'
       'and suc_codigo = :suc')
@@ -1267,6 +1272,15 @@ object frmDesembolsos: TfrmDesembolsos
       currency = True
       Precision = 18
       Size = 2
+    end
+    object QDesememp_rnc: TStringField
+      FieldName = 'emp_rnc'
+    end
+    object QDesemcli_rnc: TStringField
+      FieldName = 'cli_rnc'
+    end
+    object QDesemeNCF: TStringField
+      FieldName = 'eNCF'
     end
   end
   object dsDesem: TDataSource
@@ -1822,5 +1836,88 @@ object frmDesembolsos: TfrmDesembolsos
     object QCentrosuc_codigo: TIntegerField
       FieldName = 'suc_codigo'
     end
+  end
+  object QVerificarFP: TADOQuery
+    Connection = DM.ADOSigma
+    LockType = ltBatchOptimistic
+    AfterInsert = QFormasPagoAfterInsert
+    AfterPost = QFormasPagoAfterPost
+    BeforeDelete = QFormasPagoBeforeDelete
+    Parameters = <
+      item
+        Name = 'emp'
+        Attributes = [paSigned]
+        DataType = ftInteger
+        Precision = 10
+        Size = 4
+        Value = Null
+      end
+      item
+        Name = 'numero'
+        Attributes = [paSigned]
+        DataType = ftInteger
+        Precision = 10
+        Size = 4
+        Value = Null
+      end
+      item
+        Name = 'suc'
+        Attributes = [paSigned, paNullable]
+        DataType = ftInteger
+        Precision = 10
+        Size = 4
+        Value = Null
+      end>
+    SQL.Strings = (
+      'select EMP_CODIGO, FOR_DESCRIPCION, FOR_MONTO, '
+      'FPA_CODIGO, DES_NUMERO, SUC_CODIGO'
+      'from DESEMFORMAPAGO'
+      'where emp_codigo = :emp'
+      'and des_numero = :numero'
+      'and suc_codigo = :suc'
+      'ORDER BY FPA_CODIGO')
+    Left = 168
+    Top = 256
+    object StringField1: TStringField
+      FieldKind = fkLookup
+      FieldName = 'Forma'
+      LookupDataSet = QForma
+      LookupKeyFields = 'FPA_CODIGO'
+      LookupResultField = 'FPA_NOMBRE'
+      KeyFields = 'FPA_CODIGO'
+      Size = 35
+      Lookup = True
+    end
+    object IntegerField1: TIntegerField
+      FieldName = 'EMP_CODIGO'
+      Origin = 'DESEMFORMAPAGO.EMP_CODIGO'
+    end
+    object IBStringField1: TIBStringField
+      FieldName = 'FOR_DESCRIPCION'
+      Origin = 'DESEMFORMAPAGO.FOR_DESCRIPCION'
+      Size = 40
+    end
+    object FloatField1: TFloatField
+      FieldName = 'FOR_MONTO'
+      Origin = 'DESEMFORMAPAGO.FOR_MONTO'
+      currency = True
+    end
+    object IntegerField2: TIntegerField
+      FieldName = 'FPA_CODIGO'
+      Origin = 'DESEMFORMAPAGO.FPA_CODIGO'
+      Required = True
+    end
+    object IntegerField3: TIntegerField
+      FieldName = 'DES_NUMERO'
+      Origin = 'DESEMFORMAPAGO.DES_NUMERO'
+    end
+    object IntegerField4: TIntegerField
+      FieldName = 'SUC_CODIGO'
+    end
+  end
+  object dsVerificarFP: TDataSource
+    DataSet = QVerificarFP
+    Left = 200
+    Top = 256
   end
 end

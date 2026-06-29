@@ -1,12 +1,12 @@
 object frmConsFacturasRestBar: TfrmConsFacturasRestBar
-  Left = 265
-  Top = 78
+  Left = 341
+  Top = 141
   ActiveControl = edTipo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Listado de Facturas Restbar'
-  ClientHeight = 561
-  ClientWidth = 934
+  ClientHeight = 498
+  ClientWidth = 944
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,6 +17,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
   OldCreateOrder = False
   Position = poMainFormCenter
   Visible = True
+  WindowState = wsMaximized
   OnActivate = FormActivate
   OnClose = FormClose
   OnCreate = FormCreate
@@ -26,14 +27,14 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 934
+    Width = 944
     Height = 209
     Align = alTop
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 0
     DesignSize = (
-      934
+      944
       209)
     object Label1: TLabel
       Left = 8
@@ -206,7 +207,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       OnClick = SpeedButton2Click
     end
     object Label7: TLabel
-      Left = 660
+      Left = 670
       Top = 100
       Width = 46
       Height = 13
@@ -220,7 +221,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       ParentFont = False
     end
     object Label10: TLabel
-      Left = 660
+      Left = 670
       Top = 118
       Width = 25
       Height = 13
@@ -234,7 +235,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       ParentFont = False
     end
     object Label12: TLabel
-      Left = 660
+      Left = 670
       Top = 137
       Width = 40
       Height = 13
@@ -248,7 +249,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       ParentFont = False
     end
     object Label13: TLabel
-      Left = 660
+      Left = 670
       Top = 156
       Width = 55
       Height = 13
@@ -262,7 +263,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       ParentFont = False
     end
     object Label18: TLabel
-      Left = 660
+      Left = 670
       Top = 176
       Width = 28
       Height = 13
@@ -594,7 +595,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       TabOrder = 19
     end
     object lblSubTotal: TStaticText
-      Left = 717
+      Left = 727
       Top = 100
       Width = 103
       Height = 17
@@ -612,7 +613,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       TabOrder = 20
     end
     object lblItbis: TStaticText
-      Left = 717
+      Left = 727
       Top = 118
       Width = 103
       Height = 17
@@ -630,7 +631,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       TabOrder = 21
     end
     object lblPropina: TStaticText
-      Left = 717
+      Left = 727
       Top = 137
       Width = 103
       Height = 17
@@ -648,7 +649,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       TabOrder = 22
     end
     object lblDescuento: TStaticText
-      Left = 717
+      Left = 727
       Top = 156
       Width = 103
       Height = 17
@@ -666,7 +667,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       TabOrder = 23
     end
     object lblTotal: TStaticText
-      Left = 717
+      Left = 727
       Top = 176
       Width = 103
       Height = 17
@@ -683,12 +684,26 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       ParentFont = False
       TabOrder = 24
     end
+    object cbStatusDGII: TRadioGroup
+      Left = 417
+      Top = 11
+      Width = 232
+      Height = 75
+      ItemIndex = 0
+      Items.Strings = (
+        'Todas'
+        'Aceptada por DGII'
+        'Rechazada por DGII'
+        'Enviada (no procesada por DGII)')
+      TabOrder = 25
+      OnClick = cbStatusDGIIClick
+    end
   end
   object DBGrid1: TDBGrid
     Left = 0
     Top = 209
-    Width = 934
-    Height = 150
+    Width = 944
+    Height = 87
     Align = alTop
     Anchors = [akLeft, akTop, akRight, akBottom]
     Color = clInfoBk
@@ -702,6 +717,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
     Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
     ParentCtl3D = False
     ParentFont = False
+    PopupMenu = PopupMenu1
     ReadOnly = True
     TabOrder = 1
     TitleFont.Charset = ANSI_CHARSET
@@ -709,6 +725,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
     TitleFont.Height = -11
     TitleFont.Name = 'Tahoma'
     TitleFont.Style = []
+    OnDrawColumnCell = DBGrid1DrawColumnCell
     Columns = <
       item
         Alignment = taCenter
@@ -819,15 +836,15 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
   end
   object Panel2: TPanel
     Left = 0
-    Top = 521
-    Width = 934
+    Top = 458
+    Width = 944
     Height = 40
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 2
     DesignSize = (
-      934
+      944
       40)
     object lbCantidad: TLabel
       Left = 8
@@ -843,7 +860,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       ParentFont = False
     end
     object BitBtn2: TBitBtn
-      Left = 658
+      Left = 668
       Top = 8
       Width = 75
       Height = 25
@@ -862,7 +879,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
         03333333333333333333}
     end
     object btRefresh: TBitBtn
-      Left = 578
+      Left = 588
       Top = 8
       Width = 75
       Height = 25
@@ -872,7 +889,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       OnClick = btRefreshClick
     end
     object btClose: TBitBtn
-      Left = 738
+      Left = 748
       Top = 8
       Width = 75
       Height = 25
@@ -903,6 +920,26 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       TabOrder = 3
       Visible = False
     end
+    object btnEnviarDGIIMasivo: TBitBtn
+      Left = 363
+      Top = 9
+      Width = 118
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Enviar todas DGII >>'
+      TabOrder = 4
+      OnClick = btnEnviarDGIIMasivoClick
+    end
+    object btnEnviarDGII: TBitBtn
+      Left = 489
+      Top = 8
+      Width = 95
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Enviar DGII >>'
+      TabOrder = 5
+      OnClick = btnEnviarDGIIClick
+    end
   end
   object Memo1: TMemo
     Left = 24
@@ -916,10 +953,10 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
   end
   object PageControl1: TPageControl
     Left = 0
-    Top = 359
-    Width = 934
+    Top = 296
+    Width = 944
     Height = 162
-    ActivePage = TabSheet7
+    ActivePage = TabSheet1
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -935,7 +972,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       object Grid: TDBGrid
         Left = 0
         Top = 0
-        Width = 926
+        Width = 936
         Height = 136
         Align = alClient
         Ctl3D = False
@@ -1067,10 +1104,10 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       Caption = 'Cuentas contables'
       ImageIndex = 6
       DesignSize = (
-        926
+        936
         136)
       object Label14: TLabel
-        Left = 745
+        Left = 755
         Top = 1
         Width = 40
         Height = 13
@@ -1084,7 +1121,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
         ParentFont = False
       end
       object Label15: TLabel
-        Left = 745
+        Left = 755
         Top = 17
         Width = 36
         Height = 13
@@ -1098,7 +1135,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
         ParentFont = False
       end
       object Label16: TLabel
-        Left = 745
+        Left = 755
         Top = 33
         Width = 37
         Height = 13
@@ -1114,7 +1151,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
       object GridCuentas: TDBGrid
         Left = 30
         Top = 0
-        Width = 704
+        Width = 714
         Height = 136
         Align = alLeft
         Anchors = [akLeft, akTop, akRight, akBottom]
@@ -1171,7 +1208,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
           end>
       end
       object lbCR: TStaticText
-        Left = 799
+        Left = 809
         Top = 1
         Width = 103
         Height = 17
@@ -1189,7 +1226,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
         TabOrder = 1
       end
       object lbDB: TStaticText
-        Left = 799
+        Left = 809
         Top = 17
         Width = 103
         Height = 17
@@ -1207,7 +1244,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
         TabOrder = 2
       end
       object lbBAL: TStaticText
-        Left = 799
+        Left = 809
         Top = 33
         Width = 103
         Height = 17
@@ -1279,7 +1316,7 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
         end
       end
       object btcodificar: TBitBtn
-        Left = 742
+        Left = 752
         Top = 52
         Width = 159
         Height = 25
@@ -1318,8 +1355,40 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
     AfterScroll = QFacturasAfterScroll
     Parameters = <>
     SQL.Strings = (
-      'select * from vw_FacturasRestBar'
-      'WHERE Estatus not in ('#39'SER'#39', '#39'ANU'#39')')
+      ''
+      'select '
+      'F.EMP_CODIGO, '
+      'F.SUC_CODIGO, CajaID, CajeroID, '
+      'NOMBRE, Pagado, Descuento, Fecha, Itbis,'
+      'F.facturaid, Estatus, TOTAL, ConItbis, '
+      
+        'Caja, NCF, cajero, Grabado, monto_grabado_incluido, monto_exento' +
+        ','
+      'CAJ_codigo, PROPINA, RNC, '
+      'F.cli_codigo, '
+      
+        'TipoFactura, TipoNCF, Error_DGII, eNCF, Enviado_DGII, AceptadoDG' +
+        'II'
+      ''
+      'Error_DGII,emp_rnc, cli_rnc, '
+      'ISNULL(eNCF,'
+      '  CASE '
+      '    WHEN NCF IS NOT NULL AND LTRIM(RTRIM(NCF)) <> '#39#39
+      '    THEN NCF'
+      '    ELSE '#39#39
+      '  END) as eNCF,'
+      ''
+      ' cod_dgii, Enviado_DGII, AceptadoDGII'
+      ' from vw_FacturasRestBar f'
+      'INNER JOIN Empresas e ON e.emp_codigo=f.emp_codigo'
+      
+        'left join Clientes cl on cl.cli_codigo=f.cli_codigo and f.emp_co' +
+        'digo= cl.emp_codigo'
+      
+        'left join TipoNCF ti on ti.tip_codigo=f.TipoNCF AND ti.emp_codig' +
+        'o=f.emp_codigo'
+      'WHERE Estatus not in ('#39'SER'#39', '#39'ANU'#39') '
+      '')
     Left = 424
     Top = 304
     object QFacturasemp_codigo: TIntegerField
@@ -1403,6 +1472,27 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
     end
     object QFacturasRNC: TStringField
       FieldName = 'RNC'
+    end
+    object QFacturasError_DGII: TBooleanField
+      FieldName = 'Error_DGII'
+    end
+    object QFacturasemp_rnc: TStringField
+      FieldName = 'emp_rnc'
+    end
+    object QFacturascli_rnc: TStringField
+      FieldName = 'cli_rnc'
+    end
+    object QFacturaseNCF: TStringField
+      FieldName = 'eNCF'
+    end
+    object QFacturasEnviado_DGII: TBooleanField
+      FieldName = 'Enviado_DGII'
+    end
+    object QFacturasAceptadoDGII: TBooleanField
+      FieldName = 'AceptadoDGII'
+    end
+    object QFacturascod_dgii: TIntegerField
+      FieldName = 'cod_dgii'
     end
   end
   object QDetalle: TADOQuery
@@ -1644,6 +1734,14 @@ object frmConsFacturasRestBar: TfrmConsFacturasRestBar
     end
     object QCuentasFacturaID: TIntegerField
       FieldName = 'Facturaid'
+    end
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 160
+    Top = 280
+    object InformacionDGII1: TMenuItem
+      Caption = 'Informacion DGII'
+      OnClick = InformacionDGII1Click
     end
   end
 end

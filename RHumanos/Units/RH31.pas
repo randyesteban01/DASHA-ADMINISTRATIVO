@@ -341,6 +341,8 @@ type
     QEmpleadosemp_salario_horasnoct: TCurrencyField;
     QEmpleadosemp_salario_diasfer: TCurrencyField;
     cxComboBox1: TcxComboBox;
+    QEmpleadosemp_fecha_salida: TDateField;
+    Label62: TLabel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btCloseClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -504,6 +506,10 @@ end;
 
 procedure TfrmEmpleados.btPostClick(Sender: TObject);
 begin
+
+if not QEmpleadosemp_fecha_salida.IsNull then
+  QEmpleadosemp_status.Value := 'INA';
+
 QEmpleados.post;
 end;
 

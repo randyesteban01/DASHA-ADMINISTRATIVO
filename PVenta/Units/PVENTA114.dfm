@@ -1,7 +1,7 @@
 object frmGeneraCuotas: TfrmGeneraCuotas
-  Left = 332
-  Top = 198
-  ActiveControl = edCuotas
+  Left = 359
+  Top = 264
+  ActiveControl = CEdtMontoInicial
   BorderIcons = []
   BorderStyle = bsSingle
   Caption = 'Cuotas de Pago'
@@ -37,7 +37,7 @@ object frmGeneraCuotas: TfrmGeneraCuotas
     Left = 408
     Top = 8
     Width = 249
-    Height = 201
+    Height = 217
     Caption = 'T'#233'rminos'
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -90,7 +90,7 @@ object frmGeneraCuotas: TfrmGeneraCuotas
       Top = 139
       Width = 109
       Height = 13
-      Caption = 'Total de la Factura:'
+      Caption = 'Monto Total Cuotas'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -99,7 +99,7 @@ object frmGeneraCuotas: TfrmGeneraCuotas
       ParentFont = False
     end
     object LB_1: TLabel
-      Left = 16
+      Left = 20
       Top = 44
       Width = 72
       Height = 13
@@ -111,13 +111,39 @@ object frmGeneraCuotas: TfrmGeneraCuotas
       Font.Style = []
       ParentFont = False
     end
+    object Label6: TLabel
+      Left = 16
+      Top = 19
+      Width = 104
+      Height = 13
+      Caption = 'Total de la Factura'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Verdana'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label7: TLabel
+      Left = 18
+      Top = 159
+      Width = 50
+      Height = 13
+      Caption = 'Balance:'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Verdana'
+      Font.Style = []
+      ParentFont = False
+    end
     object btCalcular: TBitBtn
       Left = 16
-      Top = 160
+      Top = 192
       Width = 217
-      Height = 33
+      Height = 25
       Caption = 'Calcular Cuotas'
-      TabOrder = 0
+      TabOrder = 2
       OnClick = btCalcularClick
     end
     object lbTotal: TStaticText
@@ -134,7 +160,7 @@ object frmGeneraCuotas: TfrmGeneraCuotas
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
       ParentFont = False
-      TabOrder = 1
+      TabOrder = 3
     end
     object lbIntervalo: TStaticText
       Left = 136
@@ -149,54 +175,68 @@ object frmGeneraCuotas: TfrmGeneraCuotas
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
       ParentFont = False
-      TabOrder = 2
+      TabOrder = 4
     end
-    object lbFechaIni: TStaticText
+    object CEdtMontoInicial: TCurrencyEdit
       Left = 136
-      Top = 95
+      Top = 40
+      Width = 95
+      Height = 21
+      AutoSize = False
+      TabOrder = 0
+      OnKeyPress = CEdtMontoInicialKeyPress
+    end
+    object CEdtCuotas: TCurrencyEdit
+      Left = 136
+      Top = 64
+      Width = 95
+      Height = 21
+      AutoSize = False
+      DecimalPlaces = 0
+      DisplayFormat = '#,0'
+      TabOrder = 1
+      OnKeyPress = CEdtCuotasKeyPress
+    end
+    object lbTotalFact: TStaticText
+      Left = 136
+      Top = 19
       Width = 97
       Height = 17
       AutoSize = False
       BorderStyle = sbsSunken
+      Caption = '0.00'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
       ParentFont = False
-      TabOrder = 3
-    end
-    object edCuotas: TEdit
-      Left = 136
-      Top = 70
-      Width = 97
-      Height = 21
-      BevelKind = bkFlat
-      BorderStyle = bsNone
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 4
-      OnKeyPress = edCuotasKeyPress
-    end
-    object edtMontoInicial: TEdit
-      Left = 136
-      Top = 44
-      Width = 97
-      Height = 21
-      BevelKind = bkFlat
-      BorderStyle = bsNone
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
       TabOrder = 5
-      OnKeyPress = edCuotasKeyPress
+    end
+    object lbBal: TStaticText
+      Left = 138
+      Top = 159
+      Width = 97
+      Height = 17
+      AutoSize = False
+      BorderStyle = sbsSunken
+      Caption = '0.00'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 6
+    end
+    object DEdt_FechaIni: TDateEdit
+      Left = 136
+      Top = 88
+      Width = 96
+      Height = 21
+      NumGlyphs = 2
+      TabOrder = 7
+      OnExit = DEdt_FechaIniExit
     end
   end
   object DBGrid1: TDBGrid
@@ -205,13 +245,14 @@ object frmGeneraCuotas: TfrmGeneraCuotas
     Width = 393
     Height = 233
     Color = clInfoBk
+    Ctl3D = False
     DataSource = dsMov
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
-    Options = [dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+    ParentCtl3D = False
     ParentFont = False
     TabOrder = 1
     TitleFont.Charset = ANSI_CHARSET
@@ -219,11 +260,13 @@ object frmGeneraCuotas: TfrmGeneraCuotas
     TitleFont.Height = -11
     TitleFont.Name = 'Tahoma'
     TitleFont.Style = []
+    OnKeyPress = DBGrid1KeyPress
     Columns = <
       item
         Alignment = taCenter
         Expanded = False
         FieldName = 'MOV_SECUENCIA'
+        ReadOnly = True
         Title.Alignment = taCenter
         Title.Caption = '# de Cuota'
         Title.Font.Charset = ANSI_CHARSET
@@ -237,7 +280,7 @@ object frmGeneraCuotas: TfrmGeneraCuotas
         Expanded = False
         FieldName = 'MOV_MONTO'
         Title.Alignment = taCenter
-        Title.Caption = 'Monto'
+        Title.Caption = 'Balance'
         Title.Font.Charset = ANSI_CHARSET
         Title.Font.Color = clWindowText
         Title.Font.Height = -11
@@ -250,6 +293,7 @@ object frmGeneraCuotas: TfrmGeneraCuotas
         Alignment = taCenter
         Expanded = False
         FieldName = 'MOV_FECHA'
+        ReadOnly = True
         Title.Alignment = taCenter
         Title.Caption = 'Vence en'
         Title.Font.Charset = ANSI_CHARSET
@@ -271,23 +315,58 @@ object frmGeneraCuotas: TfrmGeneraCuotas
     TabStop = False
     OnClick = btCloseClick
     Glyph.Data = {
-      76010000424D7601000000000000760000002800000020000000100000000100
-      04000000000000010000120B0000120B00001000000000000000000000000000
-      800000800000008080008000000080008000808000007F7F7F00BFBFBF000000
-      FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00330000000000
-      03333377777777777F333301BBBBBBBB033333773F3333337F3333011BBBBBBB
-      0333337F73F333337F33330111BBBBBB0333337F373F33337F333301110BBBBB
-      0333337F337F33337F333301110BBBBB0333337F337F33337F333301110BBBBB
-      0333337F337F33337F333301110BBBBB0333337F337F33337F333301110BBBBB
-      0333337F337F33337F333301110BBBBB0333337F337FF3337F33330111B0BBBB
-      0333337F337733337F333301110BBBBB0333337F337F33337F333301110BBBBB
-      0333337F3F7F33337F333301E10BBBBB0333337F7F7F33337F333301EE0BBBBB
-      0333337F777FFFFF7F3333000000000003333377777777777333}
+      DE010000424DDE01000000000000760000002800000024000000120000000100
+      0400000000006801000000000000000000001000000000000000000000000000
+      80000080000000808000800000008000800080800000C0C0C000808080000000
+      FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00388888888877
+      F7F787F8888888888333333F00004444400888FFF444448888888888F333FF8F
+      000033334D5007FFF4333388888888883338888F0000333345D50FFFF4333333
+      338F888F3338F33F000033334D5D0FFFF43333333388788F3338F33F00003333
+      45D50FEFE4333333338F878F3338F33F000033334D5D0FFFF43333333388788F
+      3338F33F0000333345D50FEFE4333333338F878F3338F33F000033334D5D0FFF
+      F43333333388788F3338F33F0000333345D50FEFE4333333338F878F3338F33F
+      000033334D5D0EFEF43333333388788F3338F33F0000333345D50FEFE4333333
+      338F878F3338F33F000033334D5D0EFEF43333333388788F3338F33F00003333
+      4444444444333333338F8F8FFFF8F33F00003333333333333333333333888888
+      8888333F00003333330000003333333333333FFFFFF3333F00003333330AAAA0
+      333333333333888888F3333F00003333330000003333333333338FFFF8F3333F
+      0000}
+    NumGlyphs = 2
+  end
+  object btnAceptar: TBitBtn
+    Left = 488
+    Top = 230
+    Width = 75
+    Height = 25
+    Caption = 'OK'
+    Default = True
+    TabOrder = 3
+    TabStop = False
+    OnClick = btnAceptarClick
+    Glyph.Data = {
+      DE010000424DDE01000000000000760000002800000024000000120000000100
+      0400000000006801000000000000000000001000000000000000000000000000
+      80000080000000808000800000008000800080800000C0C0C000808080000000
+      FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333333
+      3333333333333333333333330000333333333333333333333333F33333333333
+      00003333344333333333333333388F3333333333000033334224333333333333
+      338338F3333333330000333422224333333333333833338F3333333300003342
+      222224333333333383333338F3333333000034222A22224333333338F338F333
+      8F33333300003222A3A2224333333338F3838F338F33333300003A2A333A2224
+      33333338F83338F338F33333000033A33333A222433333338333338F338F3333
+      0000333333333A222433333333333338F338F33300003333333333A222433333
+      333333338F338F33000033333333333A222433333333333338F338F300003333
+      33333333A222433333333333338F338F00003333333333333A22433333333333
+      3338F38F000033333333333333A223333333333333338F830000333333333333
+      333A333333333333333338330000333333333333333333333333333333333333
+      0000}
     NumGlyphs = 2
   end
   object QMov: TADOQuery
     Connection = DM.ADOSigma
     LockType = ltBatchOptimistic
+    BeforeInsert = QMovBeforeInsert
+    AfterPost = QMovAfterPost
     Parameters = <
       item
         Name = 'EMP'
@@ -402,7 +481,7 @@ object frmGeneraCuotas: TfrmGeneraCuotas
   end
   object dsMov: TDataSource
     DataSet = QMov
-    Left = 248
+    Left = 256
     Top = 88
   end
   object QUpdateAbono: TADOQuery

@@ -192,6 +192,8 @@ type
     QRLabel48: TQRLabel;
     QRExpr5: TQRExpr;
     QFacturasRECARGO: TCurrencyField;
+    QFacturasEnviado_DGII: TBooleanField;
+    QFacturaseNCF: TStringField;
     procedure QRSubDetail1BeforePrint(Sender: TQRCustomBand;
       var PrintBand: Boolean);
     procedure QDetalleCalcFields(DataSet: TDataSet);
@@ -269,10 +271,17 @@ end;
 
 procedure TRConsFacturas.QFacturasCalcFields(DataSet: TDataSet);
 begin
+  if QFacturasEnviado_DGII.AsBoolean then
+  begin
+       QfacturasNCF.Value:= QFacturaseNCF.Value;
+  end
+  else begin
+
   if not QFacturasNCF_Fijo.IsNull then
     QfacturasNCF.Value := QFacturasNCF_Fijo.Value + formatfloat('00000000',QFacturasNCF_Secuencia.Value)
   else
     QfacturasNCF.Value := '';
+  end;
 
   if dm.QParametrospar_itbisincluido.AsString = 'True' then
     QFacturasGrabado.Value := QFacturasmonto_grabado_incluido.Value

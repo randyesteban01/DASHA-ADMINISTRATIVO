@@ -126,7 +126,7 @@ type
     procedure QUnidadesCalcFields(DataSet: TDataSet);
     procedure gunidadesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure gunidadesColEnter(Sender: TObject);
+    procedure gunidadesDblClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -141,7 +141,7 @@ var
 
 implementation
 
-uses SIGMA01;
+uses SIGMA01, PVENTA18;
 
 
 {$R *.DFM}
@@ -218,7 +218,7 @@ begin
   end;
 end;
 
-procedure TfrmPrecios.gunidadesColEnter(Sender: TObject);
+procedure TfrmPrecios.gunidadesDblClick(Sender: TObject);
 begin
 if gunidades.SelectedIndex = 2 then
 vl_precio := QUnidadesPrecio.Value;
@@ -227,6 +227,8 @@ vl_precio := QUnidadesCredito.Value;
 if gunidades.SelectedIndex = 4 then
 vl_precio := QUnidadesMinimo.Value;
 
+acepto := 1;
+Close;
 end;
 
 end.

@@ -1,6 +1,6 @@
 object frmMargenBruto: TfrmMargenBruto
-  Left = 810
-  Top = 247
+  Left = 629
+  Top = 269
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Margen de Beneficio Bruto'

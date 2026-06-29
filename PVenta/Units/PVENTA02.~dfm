@@ -1,6 +1,6 @@
 object frmAcceso: TfrmAcceso
-  Left = 518
-  Top = 284
+  Left = 648
+  Top = 355
   ActiveControl = edUsr
   BorderIcons = []
   BorderStyle = bsSingle
@@ -12143,7 +12143,6 @@ object frmAcceso: TfrmAcceso
   end
   object IdSMTP1: TIdSMTP
     MaxLineAction = maSplit
-    ReadTimeout = 0
     Host = 'smtp.bizmail.yahoo.com'
     Port = 25
     AuthenticationType = atLogin
@@ -12156,6 +12155,7 @@ object frmAcceso: TfrmAcceso
     AttachmentEncoding = 'MIME'
     BccList = <>
     CCList = <>
+    DeleteTempFiles = False
     Encoding = meMIME
     Recipients = <>
     ReplyTo = <>

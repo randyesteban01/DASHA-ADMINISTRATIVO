@@ -139,6 +139,14 @@ type
     edtBien: TEdit;
     btnTipoBien: TSpeedButton;
     TTipoBien: TEdit;
+    cbStatusDGII: TRadioGroup;
+    btnEnviarDGII: TBitBtn;
+    QDesemAceptadoDGII: TBooleanField;
+    QDesemEnviado_DGII: TBooleanField;
+    QDesemError_DGII: TBooleanField;
+    QDesememp_rnc: TStringField;
+    QDesemcli_rnc: TStringField;
+    QDesemeNCF: TStringField;
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
     procedure SpeedButton3Click(Sender: TObject);
@@ -199,6 +207,11 @@ type
     procedure QCentroBeforePost(DataSet: TDataSet);
     procedure btnTipoBienClick(Sender: TObject);
     procedure edtBienChange(Sender: TObject);
+    procedure DBGrid1DrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumn; State: TGridDrawState);
+    procedure btnEnviarDGIIClick(Sender: TObject);
+   
+
   private
     { Private declarations }
   public
@@ -214,7 +227,7 @@ var
 
 implementation
 
-uses RVENTA16, SIGMA01, SIGMA00;
+uses RVENTA16, SIGMA01, SIGMA00, FacturacionElectronicaDGII_TLB;
 
 {$R *.dfm}
 
@@ -483,6 +496,14 @@ begin
   if trim(edUsuario.text) <> '' then
     QDesem.sql.add('and d.usu_codigo = '+trim(edUsuario.text));
 
+     if cbStatusDGII.ItemIndex = 1 then
+     QDesem.sql.add(' and AceptadoDGII = 1')
+  else if cbStatusDGII.ItemIndex = 2 then
+     QDesem.sql.add('and Enviado_DGII =1 and  Error_DGII=1 ')
+  else if cbStatusDGII.ItemIndex = 3 then
+     QDesem.sql.add('and Enviado_DGII =1 and  Error_DGII=0 and AceptadoDGII = 0');
+
+     
   if cbStatus.ItemIndex = 1 then
      QDesem.sql.add('and d.des_status = '+#39+'ANU'+#39)
   else if cbStatus.ItemIndex = 2 then
@@ -1093,6 +1114,143 @@ end;
 procedure TfrmConsDesem.edtBienChange(Sender: TObject);
 begin
   if Trim(edtBien.Text) = '' then TTipoBien.Text := '';
+end;
+
+
+
+procedure TfrmConsDesem.DBGrid1DrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumn;
+  State: TGridDrawState);
+
+  function SafeBool(ADataSet: TDataSet; const AField: string): Boolean;
+  var F: TField;
+  begin
+    Result := False;
+    if (ADataSet = nil) then Exit;
+    F := ADataSet.FindField(AField);
+    if (F <> nil) and (not F.IsNull) then
+      Result := F.AsBoolean;
+  end;
+
+var
+  DS: TDataSet;
+  aceptado, enviado, errorDGII: Boolean;
+  COLOR_ERROR_SUAVE, COLOR_AZUL_CLARO: TColor;
+begin
+  COLOR_ERROR_SUAVE := RGB(255, 204, 204); // Rojo claro
+  COLOR_AZUL_CLARO  := RGB(204, 229, 255); // Azul claro
+
+  if not dm.QParametrosUsa_FacturacionElectronica.AsBoolean then
+  begin
+    DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+    Exit;
+  end;
+
+  if (DBGrid1.DataSource = nil) or (DBGrid1.DataSource.DataSet = nil) then
+  begin
+    DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+    Exit;
+  end;
+
+  DS := DBGrid1.DataSource.DataSet;
+  if not DS.Active then
+  begin
+    DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+    Exit;
+  end;
+
+  aceptado  := SafeBool(DS, 'AceptadoDGII');
+  enviado   := SafeBool(DS, 'Enviado_DGII');
+  errorDGII := SafeBool(DS, 'Error_DGII');
+
+  if gdSelected in State then
+  begin
+    DBGrid1.Canvas.Brush.Color := clHighlight;
+    DBGrid1.Canvas.Font.Color  := clHighlightText;
+  end
+  else
+  begin
+    if aceptado then
+    begin
+      DBGrid1.Canvas.Brush.Color := clWhite;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end
+    else if errorDGII then
+    begin
+      DBGrid1.Canvas.Brush.Color := COLOR_ERROR_SUAVE;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end
+    else if enviado then
+    begin
+      DBGrid1.Canvas.Brush.Color := COLOR_AZUL_CLARO;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end
+    else
+    begin
+      DBGrid1.Canvas.Brush.Color := clWhite;
+      DBGrid1.Canvas.Font.Color  := clBlack;
+    end;
+  end;
+
+  DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+
+
+end;
+
+procedure TfrmConsDesem.btnEnviarDGIIClick(Sender: TObject);
+var
+Servicio: FacturaElectronicaService;
+resultado: WideString;
+begin
+
+if not (QDesemgasto_menor.AsString = 'Si') then
+begin
+      ShowMessage('Solo se deben enviar gastos menores.');
+       Exit; // Salimos del procedimiento para no reenviar
+end;
+
+// Validar si ya fue enviada
+if not QDesemAceptadoDGII.IsNull then
+begin
+  if QDesemEnviado_DGII.Value then
+  begin
+    if QDesemAceptadoDGII.Value then
+    begin
+      ShowMessage('Este desembolso ya fue enviado y ACEPTADO por la DGII.');
+       Exit; // Salimos del procedimiento para no reenviar
+    end
+    else if QDesemError_DGII.Value then
+    begin
+      ShowMessage('Este desembolso ya fue enviado y RECHAZADO por la DGII.');
+       Exit; // Salimos del procedimiento para no reenviar
+    end;
+
+  end;
+end;
+
+    Servicio := CoFacturaElectronicaService.Create;
+      resultado := Servicio.EnviarGastosMenores(
+      IntToStr(QDesemEMP_CODIGO.Value),
+      IntToStr(QDesemSUC_CODIGO.Value),
+      '',
+      IntToStr(QDesemDES_NUMERO.Value),
+      QDesememp_rnc.Value,
+      QDesemeNCF.Value,
+      QDesemcli_rnc.Value,
+      '',
+       '' ,'43'
+                    );
+
+    if Pos(UpperCase('ACEPTADO'), UpperCase(resultado)) > 0 then
+    begin
+      ShowMessage('Factura enviada correctamente.');
+    end
+    else
+    begin
+      ShowMessage('Factura enviada, pero el estado no es ACEPTADO.');
+    end;
+
+   btRefreshClick(Self);
 end;
 
 end.

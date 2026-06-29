@@ -1,11 +1,11 @@
 object frmConduce: TfrmConduce
-  Left = 426
-  Top = 26
+  Left = 479
+  Top = 77
   ActiveControl = DBEdit5
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Conduce [Salida de Almacen]'
-  ClientHeight = 624
+  ClientHeight = 620
   ClientWidth = 788
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -901,7 +901,7 @@ object frmConduce: TfrmConduce
   end
   object Panel5: TPanel
     Left = 0
-    Top = 531
+    Top = 527
     Width = 788
     Height = 93
     Align = alBottom
@@ -1246,7 +1246,7 @@ object frmConduce: TfrmConduce
     Left = 0
     Top = 227
     Width = 788
-    Height = 304
+    Height = 300
     ActivePage = TabSheet4
     Align = alClient
     TabOrder = 2
@@ -1256,7 +1256,7 @@ object frmConduce: TfrmConduce
         Left = 0
         Top = 0
         Width = 780
-        Height = 276
+        Height = 272
         Align = alClient
         Ctl3D = False
         DataSource = dsDetalle
@@ -1444,7 +1444,7 @@ object frmConduce: TfrmConduce
         Left = 0
         Top = 0
         Width = 30
-        Height = 244
+        Height = 240
         Align = alLeft
         BevelInner = bvRaised
         BevelOuter = bvLowered
@@ -1498,7 +1498,7 @@ object frmConduce: TfrmConduce
       end
       object Panel1: TPanel
         Left = 0
-        Top = 244
+        Top = 240
         Width = 780
         Height = 32
         Align = alBottom
@@ -1609,7 +1609,7 @@ object frmConduce: TfrmConduce
         Left = 30
         Top = 0
         Width = 750
-        Height = 244
+        Height = 240
         Align = alClient
         Ctl3D = False
         DataSource = dsCuentas

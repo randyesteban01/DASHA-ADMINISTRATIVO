@@ -1,12 +1,12 @@
 object frmFactura: TfrmFactura
-  Left = 279
-  Top = 7
+  Left = 637
+  Top = 213
   ActiveControl = edTipo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Facturacion '
-  ClientHeight = 639
-  ClientWidth = 883
+  Caption = 'Facturacion'
+  ClientHeight = 555
+  ClientWidth = 889
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -37,7 +37,7 @@ object frmFactura: TfrmFactura
   object Panel2: TPanel
     Left = 0
     Top = 57
-    Width = 883
+    Width = 889
     Height = 133
     Align = alTop
     BevelInner = bvRaised
@@ -237,7 +237,7 @@ object frmFactura: TfrmFactura
     end
     object lbPedido: TLabel
       Left = 744
-      Top = 56
+      Top = 32
       Width = 43
       Height = 13
       Caption = 'Pedido #'
@@ -245,7 +245,7 @@ object frmFactura: TfrmFactura
     end
     object lbReferencia: TLabel
       Left = 745
-      Top = 78
+      Top = 54
       Width = 52
       Height = 13
       Caption = 'Referencia'
@@ -376,7 +376,7 @@ object frmFactura: TfrmFactura
       OnEnter = tTipoEnter
     end
     object DBEdit11: TDBEdit
-      Left = 64
+      Left = 72
       Top = 32
       Width = 297
       Height = 21
@@ -541,6 +541,7 @@ object frmFactura: TfrmFactura
       MaxLength = 11
       ParentFont = False
       TabOrder = 1
+      OnExit = DBEdit14Exit
       OnKeyPress = DBEdit14KeyPress
     end
     object DBEdit16: TDBEdit
@@ -575,7 +576,7 @@ object frmFactura: TfrmFactura
     end
     object dbedtPedidoNo: TDBEdit
       Left = 800
-      Top = 54
+      Top = 30
       Width = 114
       Height = 21
       BevelKind = bkFlat
@@ -593,7 +594,7 @@ object frmFactura: TfrmFactura
     end
     object dbedtReferencia: TDBEdit
       Left = 800
-      Top = 76
+      Top = 52
       Width = 114
       Height = 21
       BevelKind = bkFlat
@@ -610,8 +611,8 @@ object frmFactura: TfrmFactura
       Visible = False
     end
     object chkTipoFacHotel: TCheckBox
-      Left = 674
-      Top = 77
+      Left = 746
+      Top = 5
       Width = 64
       Height = 17
       Alignment = taLeftJustify
@@ -667,11 +668,29 @@ object frmFactura: TfrmFactura
       TabOrder = 22
       Width = 121
     end
+    object dtFechaLimite: TDBEdit
+      Left = 651
+      Top = 76
+      Width = 87
+      Height = 21
+      TabStop = False
+      BevelKind = bkFlat
+      BorderStyle = bsNone
+      DataField = 'FechaLimitePago'
+      DataSource = dsFactura
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 23
+    end
   end
   object Panel3: TPanel
     Left = 0
     Top = 0
-    Width = 883
+    Width = 889
     Height = 57
     Align = alTop
     BevelInner = bvRaised
@@ -949,22 +968,22 @@ object frmFactura: TfrmFactura
   end
   object Panel5: TPanel
     Left = 0
-    Top = 470
-    Width = 883
+    Top = 386
+    Width = 889
     Height = 169
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 3
     DesignSize = (
-      883
+      889
       169)
     object Label19: TLabel
-      Left = 407
-      Top = 101
+      Left = 413
+      Top = 110
       Width = 120
       Height = 45
-      Anchors = [akTop, akRight]
+      Anchors = [akTop, akRight, akBottom]
       Caption = 'TOTAL'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
@@ -1002,7 +1021,7 @@ object frmFactura: TfrmFactura
       OnClick = btPrecioClick
     end
     object lblRecargos: TLabel
-      Left = 561
+      Left = 567
       Top = 8
       Width = 45
       Height = 13
@@ -1016,7 +1035,7 @@ object frmFactura: TfrmFactura
       ParentFont = False
     end
     object LbPropinaLegal: TLabel
-      Left = 545
+      Left = 551
       Top = 31
       Width = 64
       Height = 13
@@ -1031,7 +1050,7 @@ object frmFactura: TfrmFactura
       Visible = False
     end
     object Label23: TLabel
-      Left = 557
+      Left = 571
       Top = 54
       Width = 42
       Height = 13
@@ -1045,7 +1064,7 @@ object frmFactura: TfrmFactura
       ParentFont = False
     end
     object Label11: TLabel
-      Left = 707
+      Left = 713
       Top = 52
       Width = 49
       Height = 13
@@ -1059,7 +1078,7 @@ object frmFactura: TfrmFactura
       ParentFont = False
     end
     object Label16: TLabel
-      Left = 801
+      Left = 807
       Top = 52
       Width = 11
       Height = 13
@@ -1073,7 +1092,7 @@ object frmFactura: TfrmFactura
       ParentFont = False
     end
     object Label21: TLabel
-      Left = 701
+      Left = 707
       Top = 30
       Width = 57
       Height = 13
@@ -1087,7 +1106,7 @@ object frmFactura: TfrmFactura
       ParentFont = False
     end
     object Label30: TLabel
-      Left = 716
+      Left = 722
       Top = 8
       Width = 42
       Height = 13
@@ -1101,7 +1120,7 @@ object frmFactura: TfrmFactura
       ParentFont = False
     end
     object lbItbis: TLabel
-      Left = 735
+      Left = 741
       Top = 74
       Width = 21
       Height = 13
@@ -1115,8 +1134,8 @@ object frmFactura: TfrmFactura
       ParentFont = False
     end
     object lblLbTotalUS: TLabel
-      Left = 547
-      Top = 76
+      Left = 553
+      Top = 86
       Width = 60
       Height = 16
       Anchors = [akTop, akRight]
@@ -1127,6 +1146,20 @@ object frmFactura: TfrmFactura
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
+    end
+    object lbVendedor: TLabel
+      Left = 155
+      Top = 91
+      Width = 64
+      Height = 13
+      Caption = 'lbVendedor'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      Visible = False
     end
     object btPedido: TBitBtn
       Left = 4
@@ -1190,12 +1223,12 @@ object frmFactura: TfrmFactura
     end
     object DBEdit10: TDBEdit
       Tag = 1
-      Left = 534
-      Top = 98
+      Left = 540
+      Top = 105
       Width = 345
       Height = 61
       TabStop = False
-      Anchors = [akTop, akRight]
+      Anchors = [akTop, akRight, akBottom]
       AutoSelect = False
       BevelKind = bkFlat
       BorderStyle = bsNone
@@ -1351,7 +1384,7 @@ object frmFactura: TfrmFactura
       OnClick = btconduceClick
     end
     object ckItbis: TDBCheckBox
-      Left = 714
+      Left = 720
       Top = 71
       Width = 17
       Height = 17
@@ -1442,7 +1475,7 @@ object frmFactura: TfrmFactura
     end
     object dbedt_RECARGOS: TDBEdit
       Tag = 1
-      Left = 612
+      Left = 618
       Top = 5
       Width = 85
       Height = 21
@@ -1468,7 +1501,7 @@ object frmFactura: TfrmFactura
     end
     object dbedtFAC_PROPINA: TDBEdit
       Tag = 1
-      Left = 612
+      Left = 618
       Top = 28
       Width = 85
       Height = 21
@@ -1493,7 +1526,7 @@ object frmFactura: TfrmFactura
     end
     object dbedtFAC_SERVICIOS: TDBEdit
       Tag = 1
-      Left = 612
+      Left = 618
       Top = 51
       Width = 85
       Height = 21
@@ -1517,7 +1550,7 @@ object frmFactura: TfrmFactura
     end
     object DBEdit6: TDBEdit
       Tag = 1
-      Left = 762
+      Left = 768
       Top = 48
       Width = 39
       Height = 21
@@ -1542,7 +1575,7 @@ object frmFactura: TfrmFactura
     end
     object DBEdit7: TDBEdit
       Tag = 1
-      Left = 817
+      Left = 823
       Top = 48
       Width = 59
       Height = 21
@@ -1568,7 +1601,7 @@ object frmFactura: TfrmFactura
     end
     object DBEdit8: TDBEdit
       Tag = 1
-      Left = 762
+      Left = 768
       Top = 25
       Width = 115
       Height = 21
@@ -1594,7 +1627,7 @@ object frmFactura: TfrmFactura
     end
     object DBEdit18: TDBEdit
       Tag = 1
-      Left = 762
+      Left = 768
       Top = 3
       Width = 115
       Height = 21
@@ -1619,7 +1652,7 @@ object frmFactura: TfrmFactura
     end
     object DBEdit19: TDBEdit
       Tag = 1
-      Left = 762
+      Left = 768
       Top = 70
       Width = 115
       Height = 21
@@ -1645,8 +1678,8 @@ object frmFactura: TfrmFactura
     end
     object EDT_FAC_TOTALUS: TDBEdit
       Tag = 1
-      Left = 612
-      Top = 72
+      Left = 618
+      Top = 85
       Width = 97
       Height = 21
       TabStop = False
@@ -1668,6 +1701,22 @@ object frmFactura: TfrmFactura
       TabOrder = 25
       OnEnter = DBEdit6Enter
     end
+    object btBuscaVendPorc: TBitBtn
+      Left = 4
+      Top = 84
+      Width = 143
+      Height = 25
+      Caption = '[ F11 ] - Vendedor / Porc'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 26
+      TabStop = False
+      OnClick = btBuscaVendPorcClick
+    end
   end
   object btBalance: TBitBtn
     Left = 288
@@ -1688,9 +1737,9 @@ object frmFactura: TfrmFactura
   object PageControl1: TPageControl
     Left = 0
     Top = 190
-    Width = 883
-    Height = 280
-    ActivePage = TabSheet1
+    Width = 889
+    Height = 196
+    ActivePage = TabSheet3
     Align = alClient
     Style = tsFlatButtons
     TabOrder = 2
@@ -1701,8 +1750,8 @@ object frmFactura: TfrmFactura
       object Grid: TDBGrid
         Left = 0
         Top = 35
-        Width = 875
-        Height = 214
+        Width = 881
+        Height = 130
         Align = alClient
         Ctl3D = False
         DataSource = dsDetalle
@@ -1852,7 +1901,7 @@ object frmFactura: TfrmFactura
       object RG_BuscaDet: TRadioGroup
         Left = 0
         Top = 0
-        Width = 875
+        Width = 881
         Height = 35
         Align = alTop
         Caption = 'Busqueda Producto por'
@@ -1939,11 +1988,11 @@ object frmFactura: TfrmFactura
       Caption = 'Cuentas contables'
       ImageIndex = 1
       DesignSize = (
-        875
-        249)
+        881
+        165)
       object Label24: TLabel
         Left = 39
-        Top = 232
+        Top = 148
         Width = 54
         Height = 13
         Anchors = [akLeft, akBottom]
@@ -1957,7 +2006,7 @@ object frmFactura: TfrmFactura
       end
       object Label25: TLabel
         Left = 207
-        Top = 232
+        Top = 148
         Width = 49
         Height = 13
         Anchors = [akLeft, akBottom]
@@ -1971,7 +2020,7 @@ object frmFactura: TfrmFactura
       end
       object Label26: TLabel
         Left = 375
-        Top = 232
+        Top = 148
         Width = 51
         Height = 13
         Anchors = [akLeft, akBottom]
@@ -1986,8 +2035,8 @@ object frmFactura: TfrmFactura
       object GridCuentas: TDBGrid
         Left = 40
         Top = 0
-        Width = 843
-        Height = 226
+        Width = 849
+        Height = 142
         Anchors = [akLeft, akTop, akRight, akBottom]
         Ctl3D = False
         DataSource = dsCuentas
@@ -2047,7 +2096,7 @@ object frmFactura: TfrmFactura
         Left = 0
         Top = 0
         Width = 30
-        Height = 249
+        Height = 165
         Align = alLeft
         BevelInner = bvRaised
         BevelOuter = bvLowered
@@ -2101,7 +2150,7 @@ object frmFactura: TfrmFactura
       end
       object lbBAL: TStaticText
         Left = 431
-        Top = 232
+        Top = 148
         Width = 103
         Height = 17
         Alignment = taRightJustify
@@ -2119,7 +2168,7 @@ object frmFactura: TfrmFactura
       end
       object lbDB: TStaticText
         Left = 263
-        Top = 232
+        Top = 148
         Width = 103
         Height = 17
         Alignment = taRightJustify
@@ -2137,7 +2186,7 @@ object frmFactura: TfrmFactura
       end
       object lbCR: TStaticText
         Left = 95
-        Top = 232
+        Top = 148
         Width = 103
         Height = 17
         Alignment = taRightJustify
@@ -2215,7 +2264,7 @@ object frmFactura: TfrmFactura
         Left = 0
         Top = 0
         Width = 30
-        Height = 218
+        Height = 85
         Align = alLeft
         BevelInner = bvRaised
         BevelOuter = bvLowered
@@ -2270,8 +2319,8 @@ object frmFactura: TfrmFactura
       object gridclinico: TDBGrid
         Left = 30
         Top = 0
-        Width = 710
-        Height = 218
+        Width = 845
+        Height = 85
         Align = alClient
         Ctl3D = False
         DataSource = dsClinico
@@ -2359,8 +2408,8 @@ object frmFactura: TfrmFactura
       end
       object Panel6: TPanel
         Left = 0
-        Top = 218
-        Width = 740
+        Top = 85
+        Width = 875
         Height = 25
         Align = alBottom
         TabOrder = 2
@@ -2480,7 +2529,7 @@ object frmFactura: TfrmFactura
     end
     object chkMail: TCheckBox
       Left = 90
-      Top = 2
+      Top = -17
       Width = 49
       Height = 14
       Alignment = taLeftJustify
@@ -2489,8 +2538,8 @@ object frmFactura: TfrmFactura
     end
   end
   object pnCorreo: TPanel
-    Left = 290
-    Top = 102
+    Left = 210
+    Top = 126
     Width = 185
     Height = 41
     Caption = 'Enviando correo, favor espere......'
@@ -2556,20 +2605,21 @@ object frmFactura: TfrmFactura
     SQL.Strings = (
       'select '
       
-        'emp_codigo, suc_codigo, fac_forma, tfa_codigo, fac_numero, fac_f' +
-        'echa, fac_nombre, fac_direccion, fac_localidad,'
+        'F.emp_codigo, F.suc_codigo, fac_forma, F.tfa_codigo, fac_numero,' +
+        ' fac_fecha, fac_nombre, fac_direccion, fac_localidad,'
       
         'fac_telefono, fac_fax, fac_status, fac_nota, fac_descuento, fac_' +
-        'itbis, fac_otros, fac_total, fac_abono, cli_referencia, '
+        'itbis, fac_otros, fac_total, fac_abono, F.cli_referencia, '
       
         'fac_vence, fac_comision, fac_mensaje1, fac_mensaje2, fac_mensaje' +
         '3, fac_porccomision, fac_cuotas, fac_hora, fac_ano, fac_mes,'
       
-        'fac_conitbis, fac_devuelto, fac_tasa, mon_codigo, cpa_codigo, ve' +
-        'n_codigo, caj_codigo, cli_codigo, usu_codigo, alm_codigo,'
+        'fac_conitbis, fac_devuelto, fac_tasa, mon_codigo, F.cpa_codigo, ' +
+        'F.ven_codigo, caj_codigo, F.cli_codigo, F.usu_codigo, alm_codigo' +
+        ','
       
         'ped_tipo,ped_numero, cot_numero, con_numero, fac_domicilio, fac_' +
-        'comisionpagada, fac_caja, pro_codigo, NCF_Fijo, NCF_Secuencia,'
+        'comisionpagada, fac_caja, F.pro_codigo, NCF_Fijo, NCF_Secuencia,'
       
         'fac_enviado, fac_selectivo_ad, fac_selectivo_con, fac_hold, fac_' +
         'rnc, fac_usuario_anulo, fac_motivo_anulo, fac_dividio, fac_numer' +
@@ -2580,20 +2630,24 @@ object frmFactura: TfrmFactura
         'cepto,'
       
         'Cashflow_TransaccionID, mapid, detallemapid, cen_codigo, fac_aut' +
-        'omatica, fac_interes, manu_codigo, tip_codigo, COT_PROYECTO, por' +
-        'c_desc_gral,'
+        'omatica, fac_interes, manu_codigo, F.tip_codigo, COT_PROYECTO, p' +
+        'orc_desc_gral,'
       
         'Tdesc_gral, Recargo, PedidoNo, Referencia, FAC_PROPINA, NUMERO_R' +
         'ESERVA, NIF, Tdesc_gral, porc_desc_gral, FAC_HOLD,fac_tasacambio' +
         ','
-      'fac_total_dolar'
+      
+        'fac_total_dolar, eNCF, E.emp_rnc, C.cli_rnc, t.cod_dgii as Tipoe' +
+        'NCF, FechaLimitePago'
       'from'
-      'FACTURAS'
-      'where emp_codigo = :emp'
-      'and tfa_codigo = :tipo'
-      'and fac_numero = :numero'
-      'and fac_forma = :forma'
-      'and suc_codigo = :suc')
+      'FACTURAS F INNER JOIN Empresas E ON E.emp_codigo=F.emp_codigo'
+      'LEFT join TipoNCF t on t.tip_codigo=f.tip_codigo'
+      'LEFT JOIN Clientes C ON C.cli_codigo= F.cli_codigo'
+      'where F.emp_codigo = :emp'
+      'and F.tfa_codigo = :tipo'
+      'and F.fac_numero = :numero'
+      'and F.fac_forma = :forma'
+      'and F.suc_codigo = :suc')
     Left = 456
     Top = 219
     object QFacturaCAJ_CODIGO: TIntegerField
@@ -2627,7 +2681,7 @@ object frmFactura: TfrmFactura
     end
     object QFacturaFAC_FECHA: TDateTimeField
       FieldName = 'FAC_FECHA'
-      DisplayFormat = 'DD/MM/YYYY'
+      EditMask = 'cc-cc-cccc'
     end
     object QFacturaFAC_FORMA: TStringField
       FieldName = 'FAC_FORMA'
@@ -2925,6 +2979,26 @@ object frmFactura: TfrmFactura
     object QFacturafac_total_dolar: TFloatField
       FieldName = 'fac_total_dolar'
     end
+    object QFacturaeNCF: TStringField
+      FieldName = 'eNCF'
+      Size = 50
+    end
+    object QFacturaemp_rnc: TStringField
+      FieldName = 'emp_rnc'
+      Size = 60
+    end
+    object QFacturacli_rnc: TStringField
+      FieldName = 'cli_rnc'
+      Size = 60
+    end
+    object QFacturaTipoeNCF: TIntegerField
+      FieldName = 'TipoeNCF'
+    end
+    object QFacturaFechaLimitePago: TDateField
+      FieldName = 'FechaLimitePago'
+      OnValidate = QFacturaFechaLimitePagoValidate
+      DisplayFormat = 'dd/mm/yyyy'
+    end
   end
   object dsFactura: TDataSource
     DataSet = QFactura
@@ -3027,7 +3101,7 @@ object frmFactura: TfrmFactura
       
         'Tdesc_gral, Recargo, PedidoNo, Referencia, FAC_PROPINA, NUMERO_R' +
         'ESERVA, NIF, Tdesc_gral, porc_desc_gral,fac_tasacambio,'
-      'id_facturatemporal'
+      'id_facturatemporal, FechaLimitePago'
       'from FACTURASTMP'
       
         'where emp_codigo = @empresa  and SUC_CODIGO = @sucursal and fac_' +
@@ -3338,6 +3412,9 @@ object frmFactura: TfrmFactura
     end
     object QFacTMPfac_tasacambio: TFloatField
       FieldName = 'fac_tasacambio'
+    end
+    object QFacTMPFechaLimitePago: TDateField
+      FieldName = 'FechaLimitePago'
     end
   end
   object QDetalleTMP: TADOQuery
@@ -4164,7 +4241,9 @@ object frmFactura: TfrmFactura
       
         'Medidor_Cantidad, pro_utilizamedidor,pro_UtilizaEnvio, pro_seria' +
         'lizado, pro_UtilizaRenta, DET_DESCUENTO'
-      ',SubPedido, Orden, Recargo, Secuencia'
+      
+        ',SubPedido, Orden, Recargo, Secuencia, det_servicio_construccion' +
+        ', porc_vendedor, ven_codigo'
       'From'
       'DET_FACTURA'
       'where emp_codigo = :emp'
@@ -4535,6 +4614,12 @@ object frmFactura: TfrmFactura
       FieldKind = fkCalculated
       FieldName = 'CalcItbisGral'
       Calculated = True
+    end
+    object QDetalledet_servicio_construccion: TBooleanField
+      FieldName = 'det_servicio_construccion'
+    end
+    object QDetalleporc_vendedor: TCurrencyField
+      FieldName = 'porc_vendedor'
     end
   end
   object PopupMenu1: TPopupMenu
@@ -5179,6 +5264,7 @@ object frmFactura: TfrmFactura
     Connection = DM.ADOSigma
     CursorType = ctStatic
     LockType = ltBatchOptimistic
+    AfterOpen = QParametrosAfterOpen
     Parameters = <
       item
         Name = 'emp_codigo'
@@ -5308,7 +5394,7 @@ object frmFactura: TfrmFactura
       
         'cot_dias_valides,par_validar_serie_en_inventario,PAR_FORMATOENVI' +
         'OCON,'
-      'par_impresora_boleto'
+      'par_impresora_boleto, par_comision_vend'
       'from'
       'PARAMETROS'
       'WHERE EMP_CODIGO = :emp_codigo')
@@ -6145,12 +6231,15 @@ object frmFactura: TfrmFactura
       FieldName = 'par_impresora_boleto'
       Size = 255
     end
+    object QParametrospar_comision_vend: TBooleanField
+      FieldName = 'par_comision_vend'
+    end
   end
   object DS_1: TDataSource
     AutoEdit = False
     DataSet = QSelectIncrem1
     Left = 428
-    Top = 392
+    Top = 360
   end
   object QVerificaNCF: TADOQuery
     Connection = DM.ADOSigma
@@ -7576,8 +7665,8 @@ object frmFactura: TfrmFactura
         'OT.porc_ITBIS, DOT.TIPO, OT.Porc_Desc_Serv, OT.Porc_Desc_Piezas,' +
         ' P.pro_nombre, pro_costo, p.dep_codigo, p.fam_codigo, p.pro_serv' +
         'icio')
-    Left = 608
-    Top = 363
+    Left = 640
+    Top = 355
     object qDetalleOrdenTallerPro_codigo: TIntegerField
       FieldName = 'Pro_codigo'
     end
@@ -9622,8 +9711,8 @@ object frmFactura: TfrmFactura
     end
   end
   object frxBarCodeObject1: TfrxBarCodeObject
-    Left = 404
-    Top = 433
+    Left = 380
+    Top = 401
   end
   object qGrabaCombos: TADOQuery
     Connection = DM.ADOSigma
@@ -10069,8 +10158,8 @@ object frmFactura: TfrmFactura
       'begin'
       ''
       'end.')
-    Left = 452
-    Top = 433
+    Left = 484
+    Top = 353
     Datasets = <>
     Variables = <>
     Style = <>
@@ -10371,8 +10460,8 @@ object frmFactura: TfrmFactura
       
         'WHERE emp_codigo = @EMP AND suc_codigo = @SUC AND ncr_numero = @' +
         'NC')
-    Left = 512
-    Top = 424
+    Left = 528
+    Top = 376
   end
   object qVerPrecProd: TADOQuery
     Connection = DM.ADOSigma
@@ -10713,5 +10802,83 @@ object frmFactura: TfrmFactura
       FieldName = 'suc_rnc'
       Size = 30
     end
+  end
+  object qBuscVend: TADOQuery
+    Connection = DM.ADOSigma
+    CursorType = ctStatic
+    LockType = ltBatchOptimistic
+    Parameters = <
+      item
+        Name = 'TIPO'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'CODIGO'
+        DataType = ftString
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'SUC'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end>
+    SQL.Strings = (
+      'DECLARE @TIPO INT'
+      'DECLARE @CODIGO VARCHAR(20)'
+      'DECLARE @SUC INT'
+      'SET @TIPO       = :TIPO'
+      'SET @CODIGO = :CODIGO'
+      'SET @SUC        = :SUC'
+      ''
+      'IF @TIPO = 0 BEGIN '
+      'SELECT PRO_CODIGO CODIGO, PRO_NOMBRE NOMBRE, PRO_PRECIO1 PRECIO,'
+      
+        '(SELECT EXI_CANTIDAD FROM EXISTENCIAS WHERE EMP_CODIGO = P.EMP_C' +
+        'ODIGO AND PRO_CODIGO = P.PRO_CODIGO AND ALM_CODIGO = '
+      
+        ' (SELECT ALM_CODIGO FROM SUCURSALES WHERE EMP_CODIGO = P.EMP_COD' +
+        'IGO AND SUC_CODIGO = @SUC)) EXIST'
+      'FROM PRODUCTOS P'
+      'WHERE PRO_CODIGO LIKE @CODIGO+'#39'%'#39
+      'ORDER BY PRO_CODIGO '
+      'END   '
+      ''
+      'IF @TIPO = 1 BEGIN '
+      
+        'SELECT PRO_RORIGINAL CODIGO, PRO_NOMBRE NOMBRE, PRO_PRECIO1 PREC' +
+        'IO,'
+      
+        '(SELECT EXI_CANTIDAD FROM EXISTENCIAS WHERE EMP_CODIGO = P.EMP_C' +
+        'ODIGO AND PRO_CODIGO = P.PRO_CODIGO AND ALM_CODIGO = '
+      
+        ' (SELECT ALM_CODIGO FROM SUCURSALES WHERE EMP_CODIGO = P.EMP_COD' +
+        'IGO AND SUC_CODIGO = @SUC)) EXIST'
+      'FROM PRODUCTOS P'
+      'WHERE PRO_RORIGINAL LIKE @CODIGO+'#39'%'#39
+      'ORDER BY PRO_RORIGINAL '
+      'END   '
+      ''
+      ''
+      'IF @TIPO = 2  BEGIN '
+      
+        'SELECT PRO_RFABRIC CODIGO, PRO_NOMBRE NOMBRE, PRO_PRECIO1 PRECIO' +
+        ','
+      
+        '(SELECT EXI_CANTIDAD FROM EXISTENCIAS WHERE EMP_CODIGO = P.EMP_C' +
+        'ODIGO AND PRO_CODIGO = P.PRO_CODIGO AND ALM_CODIGO = '
+      
+        ' (SELECT ALM_CODIGO FROM SUCURSALES WHERE EMP_CODIGO = P.EMP_COD' +
+        'IGO AND SUC_CODIGO = @SUC)) EXIST'
+      'FROM PRODUCTOS P'
+      'WHERE PRO_RFABRIC LIKE @CODIGO+'#39'%'#39
+      'ORDER BY PRO_RFABRIC '
+      'END   '
+      '')
+    Left = 384
+    Top = 344
   end
 end

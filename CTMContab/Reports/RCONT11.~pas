@@ -64,6 +64,7 @@ type
     StringField5: TStringField;
     FloatField3: TFloatField;
     FloatField4: TFloatField;
+    QCuentasbalance_act2: TCurrencyField;
     procedure QRBand3BeforePrint(Sender: TQRCustomBand;
       var PrintBand: Boolean);
     procedure QCuentasCalcFields(DataSet: TDataSet);

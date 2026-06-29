@@ -4,7 +4,7 @@ interface
 
 uses Windows, SysUtils, Messages, Classes, Graphics, Controls,
   StdCtrls, ExtCtrls, Forms, QuickRpt, QRPDFFilt, QRExport, QRCtrls, DB, IBCustomDataSet,
-  IBQuery, ADODB;
+  IBQuery, ADODB,DelphiZXingQRCode;
 
 type
   TRNotaCredito = class(TQuickRep)
@@ -64,7 +64,7 @@ type
     QRDBText4: TQRDBText;
     QRDBText5: TQRDBText;
     QNotaNumeroCF: TStringField;
-    QRDBText12: TQRDBText;
+    TNcf: TQRDBText;
     lbReimpresion: TQRLabel;
     QNotaNCF_Fijo: TStringField;
     QNotaNCF_Secuencia: TBCDField;
@@ -105,12 +105,26 @@ type
     QNotasuc_codigo: TIntegerField;
     dsNota: TDataSource;
     QNotaNCR_MONTO2: TFloatField;
+    qrImgQRCode: TQRImage;
+    lblcodigoseg: TQRLabel;
+    lblFirmaDigital: TQRLabel;
+    txtFirma: TQRDBText;
+    txtCodigoSeguridad: TQRDBText;
+    QNotaeNCF: TStringField;
+    QNotaEnviado_DGII: TBooleanField;
+    QNotaError_DGII: TBooleanField;
+    QNotaAceptadoDGII: TBooleanField;
+    QNotacodigoseguridad: TStringField;
+    QNotafechafirma: TDateTimeField;
+    QNotaUrlCodigoQR: TMemoField;
     procedure QNotaCalcFields(DataSet: TDataSet);
     procedure QNotaAfterOpen(DataSet: TDataSet);
+    procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
+      var PrintReport: Boolean);
   private
 
   public
-
+   procedure GenerarCodigoQR(const Texto: string; Imagen: TQRImage);
   end;
 
 var
@@ -123,9 +137,57 @@ uses SIGMA01;
 
 {$R *.DFM}
 
+procedure TRNotaCredito.GenerarCodigoQR(const Texto: string; Imagen: TQRImage);
+var
+  QRCode: TDelphiZXingQRCode;
+  Bitmap: TBitmap;
+  QRSize: Integer;
+  ModuleSize: Integer;
+  i, j: Integer;
+begin
+  QRCode := TDelphiZXingQRCode.Create;
+  try
+    QRCode.Data := Texto;
+    QRCode.QuietZone := 4;
+
+    // Calculamos el tamaño basado en módulos
+    ModuleSize := 5; // Cada módulo mide 5 píxeles (puedes ajustar)
+    QRSize := (QRCode.Rows + QRCode.QuietZone * 2) * ModuleSize;
+
+    Bitmap := TBitmap.Create;
+    try
+      Bitmap.Width := QRSize;
+      Bitmap.Height := QRSize;
+
+      Bitmap.Canvas.Brush.Color := clWhite;
+      Bitmap.Canvas.FillRect(Rect(0, 0, Bitmap.Width, Bitmap.Height));
+
+      Bitmap.Canvas.Brush.Color := clBlack;
+      for i := 0 to QRCode.Rows - 1 do
+        for j := 0 to QRCode.Columns - 1 do
+          if QRCode.IsBlack[i, j] then
+            Bitmap.Canvas.FillRect(Rect(
+              (j + QRCode.QuietZone) * ModuleSize,
+              (i + QRCode.QuietZone) * ModuleSize,
+              (j + QRCode.QuietZone + 1) * ModuleSize,
+              (i + QRCode.QuietZone + 1) * ModuleSize
+            ));
+
+      // Escalar para llenar el tamaño del QRImage
+      Imagen.Picture.Bitmap.Width := Imagen.Width;
+      Imagen.Picture.Bitmap.Height := Imagen.Height;
+      Imagen.Picture.Bitmap.Canvas.StretchDraw(Rect(0, 0, Imagen.Width, Imagen.Height), Bitmap);
+    finally
+      Bitmap.Free;
+    end;
+  finally
+    QRCode.Free;
+  end;
+end;
+
 procedure TRNotaCredito.QNotaCalcFields(DataSet: TDataSet);
 begin
-  QNotaDisp.Value := (QNotaNCR_MONTO.Value ) - QNotaNCR_MONTOUSADO.Value;
+  QNotaDisp.Value := (QNotaNCR_MONTO.Value ) - QNotaNCR_MONTOUSADO.Value+ QNotancr_itbis.Value;
   if not QNotaNCF_Fijo.IsNull then
     QNotaNumeroCF.Value := 'NCF:'+ QNotaNCF_Fijo.Value+FormatFloat('00000000',QNotaNCF_Secuencia.Value)
   else
@@ -135,6 +197,33 @@ end;
 procedure TRNotaCredito.QNotaAfterOpen(DataSet: TDataSet);
 begin
 qSucursal.Open;
+end;
+
+procedure TRNotaCredito.QuickRepBeforePrint(Sender: TCustomQuickRep;
+  var PrintReport: Boolean);
+begin
+ if  dm.QParametrosUsa_FacturacionElectronica.Value  then
+    begin
+      TNcf.DataField:='eNCF';
+      GenerarCodigoQR(QNotaUrlCodigoQR.AsString, qrImgQRCode)
+    end
+    else 
+    begin
+      TNcf.DataField:='NumeroCF';
+      qrImgQRCode.Visible:=False;
+      lblcodigoseg.Caption:= '';
+      lblFirmaDigital.Caption:='';
+      txtCodigoSeguridad.Visible:=False;
+      txtFirma.Visible:=False;
+    end;
+
+    if not QNotaAceptadoDGII.Value then
+   begin
+      lblcodigoseg.Caption:= '';
+      lblFirmaDigital.Caption:='';
+      txtCodigoSeguridad.Visible:=False;
+      txtFirma.Visible:=False;
+   end;
 end;
 
 end.

@@ -92,7 +92,6 @@ type
     btNota: TSpeedButton;
     DBEdit12: TDBEdit;
     DBEdit6: TDBEdit;
-    QPedidosPED_COTIZACION: TIntegerField;
     Label1: TLabel;
     DBEdit9: TDBEdit;
     QPedidosUSU_CODIGO: TIntegerField;
@@ -114,7 +113,6 @@ type
     btBuscaProdProv: TSpeedButton;
     Label11: TLabel;
     DBEdit13: TDBEdit;
-    QPedidosped_solicitud_compra: TIntegerField;
     QDetalleDET_NOTA: TMemoField;
     Label12: TLabel;
     QPedidosped_envio: TMemoField;
@@ -217,6 +215,8 @@ type
     QDetallepro_precio3: TFloatField;
     QDetallepro_precio4: TFloatField;
     QDetalledet_oferta: TFloatField;
+    QPedidosPED_COTIZACION: TStringField;
+    QPedidosped_solicitud_compra: TStringField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -1851,7 +1851,7 @@ if dm.QParametrospar_inv_unidad_medida.Value <> 'True' then
                 DBEdit15.Text := FormatCurr('#,0.00',QDetallepro_beneficio3.Value);
                 if ((DBEdit18.Text <> '') and (QDetallepro_precio4.Value>0)) then
                 QDetallePRO_BENEFICIO4.Value := ((QDetallepro_precio4.Value / QDetalleValorItbisUnd.Value)*100)-100;
-                DBEdit16.Text := FormatCurr('#,0.00',QDetallepro_beneficio4.Value);
+                DBEdit23.Text := FormatCurr('#,0.00',QDetallepro_beneficio4.Value);
             end
             else
             begin
@@ -1868,7 +1868,7 @@ if dm.QParametrospar_inv_unidad_medida.Value <> 'True' then
                 DBEdit15.Text := FormatCurr('#,0.00',QDetallepro_beneficio3.Value);
                 if ((DBEdit18.Text <> '') and (QDetallepro_precio4.Value>0)) then
                 QDetallePRO_BENEFICIO4.Value := ((QDetallepro_precio4.Value / QDetalleValorItbisUnd.Value)*100)-100;
-                DBEdit16.Text := FormatCurr('#,0.00',QDetallepro_beneficio4.Value);
+                DBEdit23.Text := FormatCurr('#,0.00',QDetallepro_beneficio4.Value);
             end;
             end;
           end

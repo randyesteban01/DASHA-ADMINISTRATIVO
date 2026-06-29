@@ -1,6 +1,6 @@
 object frmFacturaAutomatica: TfrmFacturaAutomatica
-  Left = 348
-  Top = 177
+  Left = 1178
+  Top = 251
   ActiveControl = DBEdit1
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle

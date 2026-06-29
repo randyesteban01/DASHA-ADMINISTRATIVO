@@ -1,6 +1,6 @@
 object frmAnulaDev: TfrmAnulaDev
-  Left = 272
-  Top = 307
+  Left = 340
+  Top = 384
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Anular devoluci'#243'n en venta'

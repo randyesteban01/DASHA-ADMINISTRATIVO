@@ -1,6 +1,6 @@
 object frmConsDesem: TfrmConsDesem
-  Left = 259
-  Top = 65
+  Left = 360
+  Top = 21
   ActiveControl = edCajero
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -59,6 +59,7 @@ object frmConsDesem: TfrmConsDesem
     TitleFont.Height = -11
     TitleFont.Name = 'Tahoma'
     TitleFont.Style = []
+    OnDrawColumnCell = DBGrid1DrawColumnCell
     Columns = <
       item
         Expanded = False
@@ -750,6 +751,20 @@ object frmConsDesem: TfrmConsDesem
       ParentFont = False
       TabOrder = 20
     end
+    object cbStatusDGII: TRadioGroup
+      Left = 697
+      Top = 3
+      Width = 232
+      Height = 75
+      ItemIndex = 0
+      Items.Strings = (
+        'Todas'
+        'Aceptada por DGII'
+        'Rechazada por DGII'
+        'Enviada (no procesada por DGII)')
+      TabOrder = 21
+      OnClick = btRefreshClick
+    end
   end
   object Memo1: TMemo
     Left = 24
@@ -840,7 +855,7 @@ object frmConsDesem: TfrmConsDesem
       NumGlyphs = 2
     end
     object ckDetalle: TCheckBox
-      Left = 500
+      Left = 393
       Top = 13
       Width = 241
       Height = 17
@@ -853,6 +868,16 @@ object frmConsDesem: TfrmConsDesem
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 3
+    end
+    object btnEnviarDGII: TBitBtn
+      Left = 648
+      Top = 8
+      Width = 95
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Enviar DGII >>'
+      TabOrder = 4
+      OnClick = btnEnviarDGIIClick
     end
   end
   object PageControl1: TPageControl
@@ -1325,7 +1350,14 @@ object frmConsDesem: TfrmConsDesem
         '                   AND suc_codigo=d.suc_codigo AND des_numero=D.' +
         'des_numero'
       #9#9#9#9'   )))-1) END) AS VARCHAR(30))  FACT_PAGADAS'
-      ',t.tip_nombre '
+      ',t.tip_nombre ,'
+      ''
+      
+        'ISNULL(d.AceptadoDGII,0) AS AceptadoDGII, ISNULL(d.Enviado_DGII,' +
+        '0) AS Enviado_DGII, ISNULL(d.Error_DGII,0) AS Error_DGII,'
+      ''
+      'e.emp_rnc, cl.cli_rnc, eNCF'
+      ''
       'from'
       'DESEMBOLSOS d'
       
@@ -1336,6 +1368,13 @@ object frmConsDesem: TfrmConsDesem
         'left join cajas j on d.emp_codigo = j.emp_codigo and d.des_caja ' +
         '= j.caj_codigo'
       'left join Tipo_Bienes_Servicios t on d.tip_codigo = t.tip_codigo'
+      ''
+      'INNER JOIN Empresas e ON e.emp_codigo=d.emp_codigo'
+      
+        'left join Clientes cl on cl.cli_codigo=d.cli_codigo and d.emp_co' +
+        'digo= cl.emp_codigo'
+      ''
+      ''
       
         'where d.des_fecha between convert(datetime,:fecha1,105) and conv' +
         'ert(datetime,:fecha2,105)'
@@ -1420,6 +1459,24 @@ object frmConsDesem: TfrmConsDesem
     object QDesemtip_nombre: TStringField
       FieldName = 'tip_nombre'
       Size = 50
+    end
+    object QDesemAceptadoDGII: TBooleanField
+      FieldName = 'AceptadoDGII'
+    end
+    object QDesemEnviado_DGII: TBooleanField
+      FieldName = 'Enviado_DGII'
+    end
+    object QDesemError_DGII: TBooleanField
+      FieldName = 'Error_DGII'
+    end
+    object QDesememp_rnc: TStringField
+      FieldName = 'emp_rnc'
+    end
+    object QDesemcli_rnc: TStringField
+      FieldName = 'cli_rnc'
+    end
+    object QDesemeNCF: TStringField
+      FieldName = 'eNCF'
     end
   end
   object QDetalle: TADOQuery

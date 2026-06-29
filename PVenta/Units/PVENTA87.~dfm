@@ -1,0 +1,1608 @@
+object frmConsComision: TfrmConsComision
+  Left = 380
+  Top = 275
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsSingle
+  Caption = 'Consulta de comisiones por vendedor'
+  ClientHeight = 416
+  ClientWidth = 708
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Font.Style = []
+  FormStyle = fsMDIChild
+  KeyPreview = True
+  OldCreateOrder = False
+  Position = poScreenCenter
+  Visible = True
+  OnActivate = FormActivate
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnKeyDown = FormKeyDown
+  OnPaint = FormPaint
+  PixelsPerInch = 96
+  TextHeight = 13
+  object Panel1: TPanel
+    Left = 0
+    Top = 0
+    Width = 708
+    Height = 41
+    Align = alTop
+    BevelInner = bvRaised
+    BevelOuter = bvLowered
+    TabOrder = 0
+    object Label6: TLabel
+      Left = 16
+      Top = 8
+      Width = 30
+      Height = 13
+      Caption = 'Fecha'
+    end
+    object Label12: TLabel
+      Left = 223
+      Top = 12
+      Width = 46
+      Height = 13
+      Caption = 'Vendedor'
+    end
+    object btVendedor: TSpeedButton
+      Left = 310
+      Top = 9
+      Width = 23
+      Height = 22
+      Flat = True
+      Glyph.Data = {
+        42010000424D4201000000000000760000002800000011000000110000000100
+        040000000000CC00000000000000000000001000000010000000000000000000
+        BF0000BF000000BFBF00BF000000BF00BF00BFBF0000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777777
+        77777000000077777777777777777000000070000077777000007000000070B0
+        00777770F0007000000070F000777770B0007000000070000000700000007000
+        0000700B000000B0000070000000700F000700F0000070000000700B000700B0
+        0000700000007700000000000007700000007770B00070B00077700000007770
+        0000700000777000000077770007770007777000000077770B07770B07777000
+        0000777700077700077770000000777777777777777770000000777777777777
+        777770000000}
+      OnClick = btVendedorClick
+    end
+    object Fecha1: TDateTimePicker
+      Left = 56
+      Top = 8
+      Width = 79
+      Height = 21
+      Date = 37506.000000000000000000
+      Time = 37506.000000000000000000
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+    end
+    object Fecha2: TDateTimePicker
+      Left = 136
+      Top = 8
+      Width = 79
+      Height = 21
+      Date = 37506.000000000000000000
+      Time = 37506.000000000000000000
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+    end
+    object tVendedor: TEdit
+      Left = 335
+      Top = 10
+      Width = 330
+      Height = 21
+      BevelKind = bkFlat
+      BorderStyle = bsNone
+      Color = clInfoBk
+      Enabled = False
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 2
+    end
+    object edVendedor: TEdit
+      Left = 274
+      Top = 10
+      Width = 33
+      Height = 21
+      BevelKind = bkFlat
+      BorderStyle = bsNone
+      CharCase = ecUpperCase
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 3
+      OnChange = edVendedorChange
+      OnKeyDown = edVendedorKeyDown
+    end
+  end
+  object Panel2: TPanel
+    Left = 0
+    Top = 376
+    Width = 708
+    Height = 40
+    Align = alBottom
+    BevelInner = bvRaised
+    BevelOuter = bvLowered
+    TabOrder = 1
+    DesignSize = (
+      708
+      40)
+    object BitBtn2: TBitBtn
+      Left = 424
+      Top = 5
+      Width = 75
+      Height = 30
+      Anchors = [akTop, akRight]
+      Caption = 'Imprimir'
+      TabOrder = 0
+      OnClick = BitBtn2Click
+      Glyph.Data = {
+        E6000000424DE6000000000000007600000028000000100000000E0000000100
+        0400000000007000000000000000000000001000000010000000000000000000
+        8000008000000080800080000000800080008080000080808000C0C0C0000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333333
+        3333330000000000003330777777777777033088888888899703308888888888
+        870333000000000000333330FCCCCCCF03333330FFFFFFFF03333330FCCCCCCF
+        03333330FFFFFFFF03333330FCCCCCCF03333330FFFFFFFF0333333000000000
+        03333333333333333333}
+    end
+    object btRefresh: TBitBtn
+      Left = 336
+      Top = 5
+      Width = 75
+      Height = 30
+      Anchors = [akTop, akRight]
+      Caption = 'Refrescar >>'
+      TabOrder = 1
+      OnClick = btRefreshClick
+    end
+    object btClose: TBitBtn
+      Left = 624
+      Top = 5
+      Width = 75
+      Height = 30
+      Anchors = [akTop, akRight]
+      Caption = '&Salir'
+      TabOrder = 2
+      OnClick = btCloseClick
+      Glyph.Data = {
+        76010000424D7601000000000000760000002800000020000000100000000100
+        04000000000000010000120B0000120B00001000000000000000000000000000
+        800000800000008080008000000080008000808000007F7F7F00BFBFBF000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00330000000000
+        03333377777777777F333301BBBBBBBB033333773F3333337F3333011BBBBBBB
+        0333337F73F333337F33330111BBBBBB0333337F373F33337F333301110BBBBB
+        0333337F337F33337F333301110BBBBB0333337F337F33337F333301110BBBBB
+        0333337F337F33337F333301110BBBBB0333337F337F33337F333301110BBBBB
+        0333337F337F33337F333301110BBBBB0333337F337FF3337F33330111B0BBBB
+        0333337F337733337F333301110BBBBB0333337F337F33337F333301110BBBBB
+        0333337F3F7F33337F333301E10BBBBB0333337F7F7F33337F333301EE0BBBBB
+        0333337F777FFFFF7F3333000000000003333377777777777333}
+      NumGlyphs = 2
+    end
+    object btnTickePos: TBitBtn
+      Left = 512
+      Top = 5
+      Width = 97
+      Height = 30
+      Hint = 'Imprime comisiones de  venta proveniente  del POS'
+      Anchors = [akTop, akRight]
+      Caption = 'Ticket POS'
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      OnClick = BitBtn2Click
+      Glyph.Data = {
+        E6000000424DE6000000000000007600000028000000100000000E0000000100
+        0400000000007000000000000000000000001000000010000000000000000000
+        8000008000000080800080000000800080008080000080808000C0C0C0000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333333
+        3333330000000000003330777777777777033088888888899703308888888888
+        870333000000000000333330FCCCCCCF03333330FFFFFFFF03333330FCCCCCCF
+        03333330FFFFFFFF03333330FCCCCCCF03333330FFFFFFFF0333333000000000
+        03333333333333333333}
+    end
+  end
+  object PageControl1: TPageControl
+    Left = 0
+    Top = 41
+    Width = 708
+    Height = 335
+    ActivePage = tsFacturasxProductos
+    Align = alClient
+    TabOrder = 2
+    OnChange = btRefreshClick
+    object tsFactura: TTabSheet
+      Caption = 'Facturas'
+      object dbgrdFacturas: TDBGrid
+        Left = 0
+        Top = 0
+        Width = 700
+        Height = 307
+        Align = alClient
+        Color = clInfoBk
+        DataSource = dsConsulta
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+        ParentFont = False
+        TabOrder = 0
+        TitleFont.Charset = ANSI_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'Tahoma'
+        TitleFont.Style = []
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'SUCURSAL'
+            Title.Caption = 'Sucursal'
+            Width = 130
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FORMA'
+            Title.Alignment = taCenter
+            Title.Caption = 'Grp'
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'TIPO'
+            Title.Alignment = taCenter
+            Title.Caption = 'Tipo'
+            Width = 28
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'NUM'
+            Title.Alignment = taCenter
+            Title.Caption = 'N'#250'mero'
+            Width = 50
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FEC'
+            Title.Alignment = taCenter
+            Title.Caption = 'Fecha'
+            Width = 56
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'CLIENTE'
+            Title.Caption = 'Nombre del Cliente'
+            Width = 210
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'TOTAL'
+            Title.Alignment = taCenter
+            Title.Caption = 'Monto'
+            Width = 58
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'PORCOMIS'
+            Title.Caption = '%Com.'
+            Width = 38
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'COMISION'
+            Title.Alignment = taCenter
+            Title.Caption = 'Comisi'#243'n'
+            Width = 48
+            Visible = True
+          end>
+      end
+    end
+    object tsRecibos: TTabSheet
+      Caption = 'Recibos'
+      ImageIndex = 1
+      object dbgrdRecibos: TDBGrid
+        Left = 0
+        Top = 0
+        Width = 700
+        Height = 307
+        Align = alClient
+        Color = clInfoBk
+        DataSource = dsConsulta
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+        ParentFont = False
+        TabOrder = 0
+        TitleFont.Charset = ANSI_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'Tahoma'
+        TitleFont.Style = []
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'SUCURSAL'
+            Title.Caption = 'Sucursal'
+            Width = 130
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FORMA'
+            Title.Alignment = taCenter
+            Title.Caption = 'Grp'
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'TIPO'
+            Title.Alignment = taCenter
+            Title.Caption = 'Tipo'
+            Width = 28
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'NUM'
+            Title.Alignment = taCenter
+            Title.Caption = 'N'#250'mero'
+            Width = 50
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FEC'
+            Title.Alignment = taCenter
+            Title.Caption = 'Fecha'
+            Width = 56
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'CLIENTE'
+            Title.Caption = 'Nombre del Cliente'
+            Width = 210
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'TOTAL'
+            Title.Alignment = taCenter
+            Title.Caption = 'Monto'
+            Width = 58
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'PORCOMIS'
+            Title.Caption = '%Com.'
+            Width = 38
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'COMISION'
+            Title.Alignment = taCenter
+            Title.Caption = 'Comisi'#243'n'
+            Width = 48
+            Visible = True
+          end>
+      end
+    end
+    object tsDevoluciones: TTabSheet
+      Caption = 'Devoluciones'
+      ImageIndex = 2
+      object dbgrdDevoluciones: TDBGrid
+        Left = 0
+        Top = 0
+        Width = 700
+        Height = 307
+        Align = alClient
+        Color = clInfoBk
+        DataSource = dsConsulta
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+        ParentFont = False
+        TabOrder = 0
+        TitleFont.Charset = ANSI_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'Tahoma'
+        TitleFont.Style = []
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'SUCURSAL'
+            Title.Caption = 'Sucursal'
+            Width = 130
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FORMA'
+            Title.Alignment = taCenter
+            Title.Caption = 'Grp'
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'TIPO'
+            Title.Alignment = taCenter
+            Title.Caption = 'Tipo'
+            Width = 28
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'NUM'
+            Title.Alignment = taCenter
+            Title.Caption = 'N'#250'mero'
+            Width = 50
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FEC'
+            Title.Alignment = taCenter
+            Title.Caption = 'Fecha'
+            Width = 56
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'CLIENTE'
+            Title.Caption = 'Nombre del Cliente'
+            Width = 210
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'TOTAL'
+            Title.Alignment = taCenter
+            Title.Caption = 'Monto'
+            Width = 58
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'PORCOMIS'
+            Title.Caption = '%Com.'
+            Width = 38
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'COMISION'
+            Title.Alignment = taCenter
+            Title.Caption = 'Comisi'#243'n'
+            Width = 48
+            Visible = True
+          end>
+      end
+    end
+    object tsCargosBancarios: TTabSheet
+      Caption = 'Cargos bancarios'
+      ImageIndex = 3
+      object dbgrdCargosBancarios: TDBGrid
+        Left = 0
+        Top = 0
+        Width = 700
+        Height = 307
+        Align = alClient
+        Color = clInfoBk
+        DataSource = dsConsulta
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+        ParentFont = False
+        TabOrder = 0
+        TitleFont.Charset = ANSI_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'Tahoma'
+        TitleFont.Style = []
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'SUCURSAL'
+            Title.Caption = 'Sucursal'
+            Width = 130
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FORMA'
+            Title.Alignment = taCenter
+            Title.Caption = 'Grp'
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'TIPO'
+            Title.Alignment = taCenter
+            Title.Caption = 'Tipo'
+            Width = 28
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'NUM'
+            Title.Alignment = taCenter
+            Title.Caption = 'N'#250'mero'
+            Width = 50
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FEC'
+            Title.Alignment = taCenter
+            Title.Caption = 'Fecha'
+            Width = 56
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'CLIENTE'
+            Title.Caption = 'Nombre del Cliente'
+            Width = 210
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'TOTAL'
+            Title.Alignment = taCenter
+            Title.Caption = 'Monto'
+            Width = 58
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'PORCOMIS'
+            Title.Caption = '%Com.'
+            Width = 38
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'COMISION'
+            Title.Alignment = taCenter
+            Title.Caption = 'Comisi'#243'n'
+            Width = 48
+            Visible = True
+          end>
+      end
+    end
+    object tsTicketPOS: TTabSheet
+      Caption = 'Ticket POS'
+      ImageIndex = 4
+      object dbgrdTicketPOS: TDBGrid
+        Left = 0
+        Top = 0
+        Width = 700
+        Height = 307
+        Align = alClient
+        Color = clInfoBk
+        DataSource = dsConsulta
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+        ParentFont = False
+        TabOrder = 0
+        TitleFont.Charset = ANSI_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'Tahoma'
+        TitleFont.Style = []
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'SUCURSAL'
+            Title.Caption = 'Sucursal'
+            Width = 130
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FORMA'
+            Title.Alignment = taCenter
+            Title.Caption = 'Grp'
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'TIPO'
+            Title.Alignment = taCenter
+            Title.Caption = 'Tipo'
+            Width = 28
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'NUM'
+            Title.Alignment = taCenter
+            Title.Caption = 'N'#250'mero'
+            Width = 50
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FEC'
+            Title.Alignment = taCenter
+            Title.Caption = 'Fecha'
+            Width = 56
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'CLIENTE'
+            Title.Caption = 'Nombre del Cliente'
+            Width = 210
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'TOTAL'
+            Title.Alignment = taCenter
+            Title.Caption = 'Monto'
+            Width = 58
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'PORCOMIS'
+            Title.Caption = '%Com.'
+            Width = 38
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'COMISION'
+            Title.Alignment = taCenter
+            Title.Caption = 'Comisi'#243'n'
+            Width = 48
+            Visible = True
+          end>
+      end
+    end
+    object tsFacturasxProductos: TTabSheet
+      Caption = 'Productos'
+      ImageIndex = 5
+      object dbgrdProductos: TDBGrid
+        Left = 0
+        Top = 0
+        Width = 700
+        Height = 307
+        Align = alClient
+        Color = clInfoBk
+        DataSource = dsConsulta
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+        ParentFont = False
+        TabOrder = 0
+        TitleFont.Charset = ANSI_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'Tahoma'
+        TitleFont.Style = []
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'SUCURSAL'
+            Title.Caption = 'Sucursal'
+            Width = 130
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FORMA'
+            Title.Alignment = taCenter
+            Title.Caption = 'Grp'
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'TIPO'
+            Title.Alignment = taCenter
+            Title.Caption = 'Tipo'
+            Width = 28
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'NUM'
+            Title.Alignment = taCenter
+            Title.Caption = 'N'#250'mero'
+            Width = 50
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'FEC'
+            Title.Alignment = taCenter
+            Title.Caption = 'Fecha'
+            Width = 56
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'CLIENTE'
+            Title.Caption = 'Nombre del Cliente'
+            Width = 210
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'TOTAL'
+            Title.Alignment = taCenter
+            Title.Caption = 'Monto'
+            Width = 58
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'PORCOMIS'
+            Title.Caption = '%Com.'
+            Width = 38
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'COMISION'
+            Title.Alignment = taCenter
+            Title.Caption = 'Comisi'#243'n'
+            Width = 48
+            Visible = True
+          end>
+      end
+    end
+  end
+  object Search: TQrySearchDlgADO
+    AliasName = DM.ADOSigma
+    Left = 272
+    Top = 216
+  end
+  object QConsulta: TADOQuery
+    Active = True
+    Connection = DM.ADOSigma
+    CursorType = ctStatic
+    Parameters = <>
+    SQL.Strings = (
+      'SELECT '
+      
+        '    S.suc_nombre SUCURSAL, F.FAC_FORMA FORMA, F.TFA_CODIGO TIPO,' +
+        ' F.FAC_NUMERO NUM, F.FAC_FECHA FEC,'
+      '    F.FAC_STATUS STA, DF.pro_nombre CLIENTE, '
+      
+        '    ROUND((CASE WHEN P.par_itbisincluido = '#39'True'#39' then DF.det_pr' +
+        'ecio / (1 + (DF.DET_ITBIS / 100)) else DF.det_precio end * DF.de' +
+        't_cantidad)  '
+      '    * (DF.porc_vendedor / 100),2) AS COMISION,'
+      
+        '    ROUND((CASE WHEN P.par_itbisincluido = '#39'True'#39' then DF.det_pr' +
+        'ecio / (1 + (DF.DET_ITBIS / 100)) else DF.det_precio end * DF.de' +
+        't_cantidad),2) AS TOTAL,'
+      '    DF.porc_vendedor AS PORCOMIS,    '
+      
+        '    ROUND((CASE WHEN P.par_itbisincluido = '#39'True'#39' then DF.det_pr' +
+        'ecio / (1 + (DF.DET_ITBIS / 100)) else DF.det_precio end * DF.de' +
+        't_cantidad)*(DF.DET_ITBIS / 100),2) ITBIS'
+      '    ,V.ven_nombre VENDEDOR'
+      '    FROM FACTURAS F'
+      '    INNER JOIN PARAMETROS P ON F.emp_codigo = P.emp_codigo'
+      
+        '    INNER JOIN SUCURSALES S ON F.emp_codigo = S.emp_codigo AND F' +
+        '.suc_codigo = S.suc_codigo'
+      
+        '    INNER JOIN Det_Factura DF ON F.EMP_CODIGO = DF.EMP_CODIGO  A' +
+        'ND F.SUC_CODIGO = DF.SUC_CODIGO'
+      
+        '    AND F.FAC_NUMERO = DF.FAC_NUMERO  AND F.tfa_codigo = DF.tfa_' +
+        'codigo'
+      '    AND F.FAC_FORMA = DF.FAC_FORMA'
+      
+        '    inner join Vendedores V on df.emp_codigo = v.emp_codigo and ' +
+        'df.ven_codigo = v.ven_codigo '
+      '    WHERE F.FAC_STATUS <> '#39'ANU'#39
+      '    and v.ven_comision_venta = '#39'True'#39
+      '    ORDER BY V.ven_nombre, f.fac_fecha, F.fac_numero'
+      '    ')
+    Left = 272
+    Top = 120
+    object QConsultaSUCURSAL: TStringField
+      FieldName = 'SUCURSAL'
+      Size = 60
+    end
+    object QConsultaFORMA: TStringField
+      FieldName = 'FORMA'
+      Size = 1
+    end
+    object QConsultaTIPO: TIntegerField
+      FieldName = 'TIPO'
+    end
+    object QConsultaNUM: TIntegerField
+      FieldName = 'NUM'
+    end
+    object QConsultaFEC: TDateTimeField
+      FieldName = 'FEC'
+    end
+    object QConsultaSTA: TStringField
+      FieldName = 'STA'
+      Size = 3
+    end
+    object QConsultaCLIENTE: TStringField
+      FieldName = 'CLIENTE'
+      Size = 255
+    end
+    object QConsultaCOMISION: TBCDField
+      FieldName = 'COMISION'
+      Precision = 15
+      Size = 2
+    end
+    object QConsultaTOTAL: TBCDField
+      FieldName = 'TOTAL'
+      ReadOnly = True
+      Precision = 19
+    end
+    object QConsultaITBIS: TBCDField
+      FieldName = 'ITBIS'
+      Precision = 18
+    end
+    object QConsultaPORCOMIS: TBCDField
+      FieldName = 'PORCOMIS'
+      Precision = 15
+      Size = 2
+    end
+    object QConsultaVENDEDOR: TStringField
+      FieldName = 'VENDEDOR'
+      Size = 60
+    end
+  end
+  object dsConsulta: TDataSource
+    DataSet = QConsulta
+    Left = 304
+    Top = 120
+  end
+  object DBReporte: TfrxDBDataset
+    UserName = 'DBReporte'
+    CloseDataSource = False
+    FieldAliases.Strings = (
+      'SUCURSAL=SUCURSAL'
+      'FORMA=FORMA'
+      'TIPO=TIPO'
+      'NUM=NUM'
+      'FEC=FEC'
+      'STA=STA'
+      'CLIENTE=CLIENTE'
+      'COMISION=COMISION'
+      'TOTAL=TOTAL'
+      'ITBIS=ITBIS'
+      'PORCOMIS=PORCOMIS'
+      'VENDEDOR=VENDEDOR')
+    DataSet = QConsulta
+    BCDToCurrency = False
+    Left = 500
+    Top = 121
+  end
+  object Rpt_Consulta: TfrxReport
+    Version = '4.13.1'
+    DotMatrixReport = False
+    IniFile = '\Software\Fast Reports'
+    PreviewOptions.Buttons = [pbPrint, pbLoad, pbSave, pbExport, pbZoom, pbFind, pbOutline, pbPageSetup, pbTools, pbEdit, pbNavigator, pbExportQuick]
+    PreviewOptions.Zoom = 1.000000000000000000
+    PrintOptions.Printer = 'Por defecto'
+    PrintOptions.PrintOnSheet = 0
+    ReportOptions.CreateDate = 46186.587956203700000000
+    ReportOptions.LastChange = 46186.587956203700000000
+    ScriptLanguage = 'PascalScript'
+    ScriptText.Strings = (
+      'begin'
+      ''
+      'end.')
+    OnBeforePrint = Rpt_ConsultaBeforePrint
+    Left = 540
+    Top = 121
+    Datasets = <
+      item
+        DataSet = DM.DB_CIA
+        DataSetName = 'DB_CIA'
+      end
+      item
+        DataSet = DBReporte
+        DataSetName = 'DBReporte'
+      end>
+    Variables = <>
+    Style = <>
+    object Data: TfrxDataPage
+      Height = 1000.000000000000000000
+      Width = 1000.000000000000000000
+    end
+    object Page1: TfrxReportPage
+      PaperWidth = 215.900000000000000000
+      PaperHeight = 279.400000000000000000
+      PaperSize = 1
+      LeftMargin = 10.000000000000000000
+      RightMargin = 10.000000000000000000
+      TopMargin = 10.000000000000000000
+      BottomMargin = 10.000000000000000000
+      object ReportTitle1: TfrxReportTitle
+        Height = 94.488250000000000000
+        Top = 18.897650000000000000
+        Width = 740.409927000000000000
+        StartNewPage = True
+        object Memo4: TfrxMemoView
+          Align = baRight
+          Left = 438.047527000000000000
+          Width = 302.362400000000000000
+          Height = 18.897650000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          HAlign = haRight
+          Memo.UTF8 = (
+            'Reporte de Comisiones por Vendedor')
+          ParentFont = False
+        end
+        object Memo8: TfrxMemoView
+          Align = baLeft
+          Top = 3.779530000000000000
+          Width = 423.307360000000000000
+          Height = 30.236240000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -21
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Memo.UTF8 = (
+            '[DB_CIA."EMP_NOMBRE"]')
+          ParentFont = False
+        end
+        object Memo5: TfrxMemoView
+          Align = baLeft
+          Top = 34.015770000000000000
+          Width = 423.307360000000000000
+          Height = 60.472480000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Memo.UTF8 = (
+            '[DB_CIA."EMP_DIRECCION"]'
+            '[DB_CIA."EMP_LOCALIDAD"]'
+            '[DB_CIA."EMP_TELEFONO"]')
+          ParentFont = False
+        end
+        object MFecha: TfrxMemoView
+          Align = baRight
+          Left = 438.047527000000000000
+          Top = 18.897650000000000000
+          Width = 302.362400000000000000
+          Height = 18.897650000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          HAlign = haRight
+          Memo.UTF8 = (
+            'Reporte de Comisiones por Vendedor')
+          ParentFont = False
+        end
+      end
+      object MDConsulta: TfrxMasterData
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = []
+        Height = 15.118120000000000000
+        ParentFont = False
+        Top = 241.889920000000000000
+        Width = 740.409927000000000000
+        DataSet = DBReporte
+        DataSetName = 'DBReporte'
+        RowCount = 0
+        object Memo25: TfrxMemoView
+          Align = baLeft
+          Width = 45.354360000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataField = 'FORMA'
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = []
+          Memo.UTF8 = (
+            '[DBReporte."FORMA"]')
+          ParentFont = False
+        end
+        object Memo26: TfrxMemoView
+          Align = baLeft
+          Left = 181.417440000000000000
+          Width = 64.252010000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataField = 'FEC'
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          DisplayFormat.FormatStr = 'mm-dd-yyyy'
+          DisplayFormat.Kind = fkDateTime
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = []
+          Memo.UTF8 = (
+            '[DBReporte."FEC"]')
+          ParentFont = False
+        end
+        object Memo27: TfrxMemoView
+          Align = baLeft
+          Left = 245.669450000000000000
+          Width = 313.700990000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataField = 'CLIENTE'
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = []
+          Memo.UTF8 = (
+            '[DBReporte."CLIENTE"]')
+          ParentFont = False
+        end
+        object Memo28: TfrxMemoView
+          Align = baLeft
+          Left = 559.370440000000000000
+          Width = 98.267716540000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataField = 'TOTAL'
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          DisplayFormat.FormatStr = '%2.2n'
+          DisplayFormat.Kind = fkNumeric
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = []
+          HAlign = haRight
+          Memo.UTF8 = (
+            '[DBReporte."TOTAL"]')
+          ParentFont = False
+        end
+        object Memo29: TfrxMemoView
+          Align = baLeft
+          Left = 657.638156540000000000
+          Width = 83.149606300000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          DisplayFormat.FormatStr = '%2.2n'
+          DisplayFormat.Kind = fkNumeric
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = []
+          HAlign = haRight
+          Memo.UTF8 = (
+            '[DBReporte."COMISION"]')
+          ParentFont = False
+        end
+        object Memo30: TfrxMemoView
+          Align = baLeft
+          Left = 45.354360000000000000
+          Width = 45.354360000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataField = 'TIPO'
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = []
+          Memo.UTF8 = (
+            '[DBReporte."TIPO"]')
+          ParentFont = False
+        end
+        object Memo31: TfrxMemoView
+          Align = baLeft
+          Left = 90.708720000000000000
+          Width = 90.708720000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataField = 'NUM'
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = []
+          Memo.UTF8 = (
+            '[DBReporte."NUM"]')
+          ParentFont = False
+        end
+      end
+      object GHVentas: TfrxGroupHeader
+        Height = 45.354360000000000000
+        Top = 173.858380000000000000
+        Width = 740.409927000000000000
+        Condition = 'DBReporte."VENDEDOR"'
+        object Memo32: TfrxMemoView
+          Align = baLeft
+          Top = 11.338590000000000000
+          Width = 506.457020000000000000
+          Height = 18.897650000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Memo.UTF8 = (
+            'VENDEDOR: [DBReporte."VENDEDOR"]')
+          ParentFont = False
+        end
+        object Memo33: TfrxMemoView
+          Align = baLeft
+          Top = 30.236240000000000000
+          Width = 45.354360000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Memo.UTF8 = (
+            'FORMA')
+          ParentFont = False
+        end
+        object Memo34: TfrxMemoView
+          Align = baLeft
+          Left = 181.417440000000000000
+          Top = 30.236240000000000000
+          Width = 64.252010000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          DisplayFormat.FormatStr = 'mm-dd-yyyy'
+          DisplayFormat.Kind = fkDateTime
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Memo.UTF8 = (
+            'FECHA')
+          ParentFont = False
+        end
+        object Memo35: TfrxMemoView
+          Align = baLeft
+          Left = 245.669450000000000000
+          Top = 30.236240000000000000
+          Width = 313.700990000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Memo.UTF8 = (
+            'CLIENTE')
+          ParentFont = False
+        end
+        object Memo36: TfrxMemoView
+          Align = baLeft
+          Left = 559.370440000000000000
+          Top = 30.236240000000000000
+          Width = 98.267780000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          DisplayFormat.FormatStr = '%2.2n'
+          DisplayFormat.Kind = fkNumeric
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          HAlign = haRight
+          Memo.UTF8 = (
+            'MONTO FACT')
+          ParentFont = False
+        end
+        object Memo37: TfrxMemoView
+          Align = baLeft
+          Left = 657.638220000000000000
+          Top = 30.236240000000000000
+          Width = 83.149660000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          DisplayFormat.FormatStr = '%2.2n'
+          DisplayFormat.Kind = fkNumeric
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          HAlign = haRight
+          Memo.UTF8 = (
+            'COMISION')
+          ParentFont = False
+        end
+        object Memo38: TfrxMemoView
+          Align = baLeft
+          Left = 45.354360000000000000
+          Top = 30.236240000000000000
+          Width = 45.354360000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Memo.UTF8 = (
+            'TIPO')
+          ParentFont = False
+        end
+        object Memo39: TfrxMemoView
+          Align = baLeft
+          Left = 90.708720000000000000
+          Top = 30.236240000000000000
+          Width = 90.708720000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Memo.UTF8 = (
+            'NUMERO')
+          ParentFont = False
+        end
+      end
+      object GFConsulta: TfrxGroupFooter
+        Height = 18.897650000000000000
+        Top = 279.685220000000000000
+        Width = 740.409927000000000000
+        object Memo40: TfrxMemoView
+          Align = baLeft
+          Width = 434.645950000000000000
+          Height = 18.897650000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Memo.UTF8 = (
+            'FIN VENDEDOR: [DBReporte."VENDEDOR"]')
+          ParentFont = False
+        end
+        object Memo41: TfrxMemoView
+          Align = baRight
+          Left = 558.992604160000000000
+          Width = 98.267716540000000000
+          Height = 18.897650000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          DisplayFormat.FormatStr = '%2.2n'
+          DisplayFormat.Kind = fkNumeric
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.DropShadow = True
+          Frame.Style = fsDouble
+          HAlign = haRight
+          Memo.UTF8 = (
+            '[SUM(<DBReporte."TOTAL">,MDConsulta)]')
+          ParentFont = False
+        end
+        object Memo42: TfrxMemoView
+          Align = baRight
+          Left = 657.260320700000000000
+          Width = 83.149606300000000000
+          Height = 18.897650000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          DisplayFormat.FormatStr = '%2.2n'
+          DisplayFormat.Kind = fkNumeric
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.DropShadow = True
+          Frame.Style = fsDouble
+          HAlign = haRight
+          Memo.UTF8 = (
+            '[SUM(<DBReporte."COMISION">,MDConsulta)]')
+          ParentFont = False
+        end
+        object Memo43: TfrxMemoView
+          Align = baRight
+          Left = 475.842944160000000000
+          Width = 83.149660000000000000
+          Height = 18.897650000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -15
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          HAlign = haRight
+          Memo.UTF8 = (
+            'TOTAL: ')
+          ParentFont = False
+        end
+      end
+      object Footer1: TfrxFooter
+        Height = 98.267780000000000000
+        Top = 321.260050000000000000
+        Width = 740.409927000000000000
+        object Memo1: TfrxMemoView
+          Align = baRight
+          Left = 558.992604160000000000
+          Top = 18.897650000000000000
+          Width = 98.267716540000000000
+          Height = 18.897650000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          DisplayFormat.FormatStr = '%2.2n'
+          DisplayFormat.Kind = fkNumeric
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -16
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Style = fsDouble
+          Frame.Typ = [ftBottom]
+          HAlign = haRight
+          Memo.UTF8 = (
+            '[SUM(<DBReporte."TOTAL">,MDConsulta)]')
+          ParentFont = False
+        end
+        object Memo2: TfrxMemoView
+          Align = baRight
+          Left = 657.260320700000000000
+          Top = 18.897650000000000000
+          Width = 83.149606300000000000
+          Height = 18.897650000000000000
+          ShowHint = False
+          DataSet = DBReporte
+          DataSetName = 'DBReporte'
+          DisplayFormat.FormatStr = '%2.2n'
+          DisplayFormat.Kind = fkNumeric
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -16
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Frame.Style = fsDouble
+          Frame.Typ = [ftBottom]
+          HAlign = haRight
+          Memo.UTF8 = (
+            '[SUM(<DBReporte."COMISION">,MDConsulta)]')
+          ParentFont = False
+        end
+        object Memo3: TfrxMemoView
+          Align = baRight
+          Left = 336.000334160000000000
+          Top = 18.897650000000000000
+          Width = 222.992270000000000000
+          Height = 18.897650000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -16
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          HAlign = haRight
+          Memo.UTF8 = (
+            'TOTAL GENERAL: ')
+          ParentFont = False
+        end
+      end
+      object PageFooter1: TfrxPageFooter
+        Height = 42.795300000000000000
+        Top = 480.000310000000000000
+        Width = 740.409927000000000000
+        object Memo7: TfrxMemoView
+          Align = baRight
+          Left = 438.047527000000000000
+          Top = 1.220470000000000000
+          Width = 302.362400000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          HAlign = haRight
+          Memo.UTF8 = (
+            'Fecha Impresion [Date] [Time]')
+          ParentFont = False
+        end
+        object MUsuario: TfrxMemoView
+          Align = baRight
+          Left = 438.047527000000000000
+          Top = 16.338590000000000000
+          Width = 302.362400000000000000
+          Height = 15.118120000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          HAlign = haRight
+          Memo.UTF8 = (
+            'Usuario Imprime ')
+          ParentFont = False
+        end
+        object MPagina: TfrxMemoView
+          Align = baRight
+          Left = 438.047527000000000000
+          Top = 31.456710000000000000
+          Width = 302.362400000000000000
+          Height = 11.338590000000000000
+          ShowHint = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -9
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          HAlign = haRight
+          Memo.UTF8 = (
+            'Pagina [Page#] de [TotalPages#]')
+          ParentFont = False
+        end
+      end
+    end
+  end
+  object frxXLSExport1: TfrxXLSExport
+    UseFileCache = True
+    ShowProgress = True
+    OverwritePrompt = False
+    DataOnly = False
+    ExportEMF = True
+    AsText = False
+    Background = True
+    FastExport = True
+    PageBreaks = True
+    EmptyLines = True
+    SuppressPageHeadersFooters = False
+    Left = 548
+    Top = 161
+  end
+  object frxPDFExport1: TfrxPDFExport
+    UseFileCache = True
+    ShowProgress = True
+    OverwritePrompt = False
+    DataOnly = False
+    PrintOptimized = False
+    Outline = False
+    Background = False
+    HTMLTags = True
+    Quality = 95
+    Author = 'FastReport'
+    Subject = 'FastReport PDF export'
+    ProtectionFlags = [ePrint, eModify, eCopy, eAnnot]
+    HideToolbar = False
+    HideMenubar = False
+    HideWindowUI = False
+    FitWindow = False
+    CenterWindow = False
+    PrintScaling = False
+    Left = 564
+    Top = 193
+  end
+end

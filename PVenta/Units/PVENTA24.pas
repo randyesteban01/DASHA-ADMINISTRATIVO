@@ -355,7 +355,7 @@ type
     procedure QFormasPagoBeforeOpen(DataSet: TDataSet);
     procedure QFormaBeforeOpen(DataSet: TDataSet);
   private
-    vl_cliente, vl_suc, vl_ticket, vl_MovSec :  Integer;
+    vl_cliente, vl_suc, vl_ticket, vl_MovSec: Integer;
       vl_dest, vl_tipoclie, vl_clienteN, vl_asunto, vl_factnum, vl_adjunto1, vl_adjunto2, vl_cuerpo :String;
     { Private declarations }
     procedure EnvioMail(Reporte: TQuickRep; Tipo: String);
@@ -598,7 +598,7 @@ end;
 
 procedure TfrmRecibos.SpeedButton2Click(Sender: TObject);
 var
-  cli : integer;
+  cli : String;
 begin
   Search.Query.clear;
   Search.AliasFields.clear;
@@ -642,7 +642,7 @@ begin
       lbVencido.Caption := Format('%n',[dm.Query1.fieldbyname('vencido').AsFloat]);
 
     edCliente.text := search.valuefield;
-    cli := StrToInt(Search.ValueField);
+
 
     dm.Query1.close;
     dm.Query1.sql.clear;
@@ -655,21 +655,21 @@ begin
     if dm.QParametrosPAR_CODIGOCLIENTE.value = 'I' then
     begin
       dm.Query1.sql.add('and cli_codigo = :cli');
-      dm.Query1.Parameters.parambyname('cli').Value := cli;
+      dm.Query1.Parameters.parambyname('cli').Value := search.valuefield;
     end
     else
     begin
       dm.Query1.sql.add('and cli_referencia = :cli');
-      dm.Query1.Parameters.parambyname('cli').Value := cli;
+      dm.Query1.Parameters.parambyname('cli').Value := search.valuefield;
     end;
     dm.Query1.Parameters.parambyname('emp').Value := dm.QEmpresasEMP_CODIGO.value;
     dm.Query1.open;
     QRecibospro_codigo.Value := dm.Query1.fieldbyname('pro_Codigo').asinteger;
     QRecibosREC_NOMBRE.value := dm.Query1.fieldbyname('cli_nombre').asstring;
-    cli := dm.Query1.fieldbyname('cli_Codigo').asinteger;
+    vl_cliente := dm.Query1.fieldbyname('cli_Codigo').asinteger;
     lbBalance.Caption := Format('%n',[dm.Query1.fieldbyname('cli_balance').AsFloat]);
     QRecibosVEN_CODIGO.Value := dm.Query1.fieldbyname('ven_Codigo').asinteger;
-    QRecibosCLI_CODIGO.value := cli;
+    QRecibosCLI_CODIGO.value := vl_cliente;
     dbedit2.setfocus;
   end;
 end;
@@ -2190,11 +2190,14 @@ begin
   qQuery.sql.add('select distinct m.mov_tipo, m.fac_forma, m.tfa_codigo, m.mov_numero,');
   qQuery.sql.add('isnull(c.cli_balance,0) cli_balance, m.mov_monto, m.mov_abono, m.mov_fecha,');
   qQuery.sql.add('m.mov_secuencia, m.mov_cuota, c.cli_cuenta, m.mov_interes, m.mov_fechavence,');
-  qQuery.SQL.Add('isnull((select ticket from montos_ticket where mov_numero = m.mov_numero and emp_codigo = m.emp_codigo and cli_codigo = m.cli_codigo),0) as ticket');
-  qQuery.sql.add('from movimientos m, clientes c');
-  qQuery.sql.add('where m.emp_codigo = c.emp_codigo');
-  qQuery.sql.add('and m.cli_Codigo = c.cli_codigo');
-  qQuery.sql.add('and m.emp_codigo = :emp');
+  qQuery.SQL.Add('ISNULL(t.ticket, 0) AS ticket');
+  qQuery.sql.add('FROM movimientos m JOIN clientes c ON m.emp_codigo = c.emp_codigo AND m.cli_codigo = c.cli_codigo');
+  qQuery.sql.add('LEFT JOIN montos_ticket t ON t.mov_numero = m.mov_numero AND t.emp_codigo = m.emp_codigo AND t.cli_codigo = m.cli_codigo');
+
+  {qQuery.sql.add('where m.emp_codigo = c.emp_codigo');
+  qQuery.sql.add('and m.cli_Codigo = c.cli_codigo');  }
+
+  qQuery.sql.add('where m.emp_codigo = :emp');
   qQuery.sql.add('and m.cli_Codigo = :cli');
   qQuery.sql.add('and m.mov_status = '+#39+'PEN'+#39);
   qQuery.sql.add('and m.suc_codigo = :suc');

@@ -1,8 +1,8 @@
 object frmMain: TfrmMain
-  Left = 319
-  Top = 203
-  Width = 939
-  Height = 445
+  Left = 258
+  Top = 181
+  Width = 1008
+  Height = 585
   HelpContext = 1
   Caption = 'DASHA'
   Color = clWhite
@@ -29,14 +29,14 @@ object frmMain: TfrmMain
     Left = 193
     Top = 33
     Width = 6
-    Height = 334
+    Height = 474
     Beveled = True
   end
   object Image1: TImage
     Left = 199
     Top = 33
-    Width = 724
-    Height = 334
+    Width = 793
+    Height = 474
     Align = alClient
     AutoSize = True
     Center = True
@@ -3373,8 +3373,8 @@ object frmMain: TfrmMain
   end
   object stBar1: TStatusBar
     Left = 0
-    Top = 367
-    Width = 923
+    Top = 507
+    Width = 992
     Height = 19
     Panels = <
       item
@@ -3413,11 +3413,11 @@ object frmMain: TfrmMain
     Left = 0
     Top = 33
     Width = 193
-    Height = 334
+    Height = 474
     Align = alLeft
     Constraints.MinWidth = 10
     Locked = True
-    ActiveGroupIndex = 0
+    ActiveGroupIndex = 8
     DragCopyCursor = -1119
     DragCursor = -1120
     DragDropFlags = [fAllowDragLink, fAllowDropLink, fAllowDragGroup, fAllowDropGroup]
@@ -3554,9 +3554,9 @@ object frmMain: TfrmMain
     end
     object navInventarioControl: TdxNavBarGroupControl
       Left = 1
-      Top = 26
+      Top = 234
       Width = 191
-      Height = 61
+      Height = 24
       TabOrder = 0
       GroupIndex = 0
       OriginalHeight = 41
@@ -3564,7 +3564,7 @@ object frmMain: TfrmMain
         Left = 0
         Top = 0
         Width = 191
-        Height = 61
+        Height = 24
         Align = alClient
         ParentFont = False
         PopupMenu = PopupMenu1
@@ -3623,7 +3623,7 @@ object frmMain: TfrmMain
     end
     object navVentasControl: TdxNavBarGroupControl
       Left = 1
-      Top = 118
+      Top = 258
       Width = 191
       Height = 24
       TabOrder = 7
@@ -3683,7 +3683,7 @@ object frmMain: TfrmMain
     end
     object navCxCControl: TdxNavBarGroupControl
       Left = 1
-      Top = 142
+      Top = 282
       Width = 191
       Height = 24
       TabOrder = 1
@@ -3732,7 +3732,7 @@ object frmMain: TfrmMain
     end
     object navCxPControl: TdxNavBarGroupControl
       Left = 1
-      Top = 166
+      Top = 306
       Width = 191
       Height = 24
       TabOrder = 2
@@ -3785,7 +3785,7 @@ object frmMain: TfrmMain
     end
     object navBancoControl: TdxNavBarGroupControl
       Left = 1
-      Top = 190
+      Top = 330
       Width = 191
       Height = 24
       TabOrder = 3
@@ -3854,7 +3854,7 @@ object frmMain: TfrmMain
     end
     object navContabControl: TdxNavBarGroupControl
       Left = 1
-      Top = 214
+      Top = 354
       Width = 191
       Height = 24
       TabOrder = 4
@@ -3927,7 +3927,7 @@ object frmMain: TfrmMain
     end
     object navRHControl: TdxNavBarGroupControl
       Left = 1
-      Top = 238
+      Top = 378
       Width = 191
       Height = 24
       Caption = 'navRHControl'
@@ -3968,7 +3968,7 @@ object frmMain: TfrmMain
     end
     object navSeguridadControl: TdxNavBarGroupControl
       Left = 1
-      Top = 262
+      Top = 402
       Width = 191
       Height = 24
       TabOrder = 6
@@ -4014,9 +4014,9 @@ object frmMain: TfrmMain
     end
     object navParamControl: TdxNavBarGroupControl
       Left = 1
-      Top = 286
+      Top = 26
       Width = 191
-      Height = 24
+      Height = 201
       Caption = 'navParamControl'
       TabOrder = 8
       GroupIndex = 8
@@ -4025,7 +4025,7 @@ object frmMain: TfrmMain
         Left = 0
         Top = 0
         Width = 191
-        Height = 24
+        Height = 201
         Align = alClient
         PopupMenu = PopupMenu1
         TabOrder = 0
@@ -4056,7 +4056,7 @@ object frmMain: TfrmMain
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 923
+    Width = 992
     Height = 33
     Align = alTop
     BevelInner = bvRaised
@@ -4185,7 +4185,7 @@ object frmMain: TfrmMain
       OnClick = SpeedButton1Click
     end
     object lblAlerta: TLabel
-      Left = 400
+      Left = 592
       Top = 8
       Width = 396
       Height = 16
@@ -4247,7 +4247,7 @@ object frmMain: TfrmMain
       OnClick = bListadoProductoClick
     end
     object lblAlertaCot: TLabel
-      Left = 816
+      Left = 992
       Top = 8
       Width = 407
       Height = 16
@@ -4264,8 +4264,74 @@ object frmMain: TfrmMain
       Visible = False
       OnClick = lblAlertaCotClick
     end
+    object btnSoporte: TSpeedButton
+      Left = 343
+      Top = 6
+      Width = 90
+      Height = 22
+      Caption = 'Soporte'
+      Flat = True
+      Glyph.Data = {
+        F6060000424DF606000000000000360000002800000018000000180000000100
+        180000000000C0060000C40E0000C40E00000000000000000000FFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFF0F0F08787873434340B0B0B000000000000000000FFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFC2C2C21B1B1B000000000000000000000000000000000000FF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFBEBEBE080808000000323232B5B5B5F2F2F2FFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEDEDED141414000000696969FDFDFD
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7171710000004C
+        4C4CFDFDFDFFFFFFFFFFFF7A7A7A060606000000000000000000000000000000
+        0000000000001D1D1DB7B7B7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA3A3
+        A3060606050505DBDBDBFFFFFFFFFFFFFFFFFF0C0C0C00000000000000000000
+        00000000000000000000000000000000001D1D1DFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFF8B8B8B000000000000636363FFFFFFFFFFFFFFFFFFFFFFFF7979790F0F
+        0F848484FFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000000FFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFF171717000000B9B9B9FFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000000000
+        00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1F1F1F000000C4C4C4FFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        0000000000000000001D1D1DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8B8B8B0000
+        00050505FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFF0000000000001C1C1CB6B6B6FFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFEFEFE000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000FFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000C6C6C6FFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC5C5C5000000000000FFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0C0C0C00000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000D0D0DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2A2A
+        2A00000007070700000000000000000000000000000000000000000000000000
+        00000000000707070000002C2C2CFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFF6F6F6F000000636363FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFF626262000000717171FFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFD4D4D4030303040404CECECEFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFCECECE040404030303D5D5D5FFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6C6C6C00000014
+        1414CECECEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFCDCDCD141414000000
+        6D6D6DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFF9F9F9444444000000040404646464CBCBCBF6F6F6F5F5F5CBCBCB63636304
+        0404000000444444F9F9F9FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFF9F9F96C6C6C0303030000000000000000000000
+        000000000000000303036D6D6DF9F9F9FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD4D4D4707070
+        2B2B2B0B0B0B0B0B0B2B2B2B707070D4D4D4FFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+      OnClick = btnSoporteClick
+    end
     object memonotificaciones: TMemo
-      Left = 359
+      Left = 551
       Top = 2
       Width = 34
       Height = 27
@@ -7875,7 +7941,7 @@ object frmMain: TfrmMain
   end
   object qRepBalanceFact: TADOQuery
     Connection = DM.ADOSigma
-    CommandTimeout = 120
+    CommandTimeout = 0
     Parameters = <
       item
         Name = 'EMP'
@@ -7890,10 +7956,7 @@ object frmMain: TfrmMain
         '), @NC INT, @SEC INT, @MOVTIPO CHAR(5), @MOVCUOTA int, @MONTONC ' +
         'NUMERIC(18,2)'
       ''
-      'SET @EMPRESA = :EMP'
-      ''
-      ''
-      ''
+      'SET @EMPRESA =  :EMP'
       ''
       'DECLARE Cr_Actualiza_CXC CURSOR FOR '
       
@@ -7901,8 +7964,8 @@ object frmMain: TfrmMain
         'odigo CLI, F.tfa_codigo TFAC, F.fac_forma FORMA, F.mov_tipo'
       'FROM MOVIMIENTOS F'
       
-        'WHERE F.MOV_status NOT IN ('#39'ANU'#39')  AND F.MOV_TIPO IN ('#39'CRE'#39', '#39'ND' +
-        #39')   AND F.EMP_CODIGO = @EMPRESA '
+        'WHERE F.MOV_status NOT IN ('#39'ANU'#39','#39'PAG'#39')  AND F.MOV_TIPO IN ('#39'CRE' +
+        #39', '#39'ND'#39')   AND F.EMP_CODIGO = @EMPRESA  AND F.CLI_CODIGO = @CLI'
       'ORDER BY F.suc_codigo, F.MOV_numero'
       ''
       ''
@@ -8022,7 +8085,7 @@ object frmMain: TfrmMain
         '             AND N.FAC_FORMA = @FORMA AND N.tfa_codigo = @TIPO),' +
         '0)'
       ''
-      '/*SET @PAGO = ISNULL(@PAGO,0) + '
+      'SET @PAGO = ISNULL(@PAGO,0) + '
       '             ISNULL((SELECT ISNULL(SUM(D.DET_MONTO),0) '
       '             FROM NotasCredito N '
       
@@ -8036,12 +8099,12 @@ object frmMain: TfrmMain
       #9#9#9' AND N.NCR_DEVOLUCION NOT IN '
       #9#9#9' (SELECT N.DEV_NUMERO FROM DEVOLUCION N '
       
-        '             WHERE N.dev_status = '#39'EMI'#39' AND N.fac_numero = @FAC ' +
-        'AND N.emp_codigo  = @EMPRESA AND N.suc_codigo = @SUC'
+        '             WHERE N.dev_status = '#39'EMI'#39' AND N.emp_codigo  = @EMP' +
+        'RESA AND N.suc_codigo = @SUC'
       
         '             AND N.FAC_FORMA = @FORMA AND N.tfa_codigo = @TIPO))' +
         ',0)'
-      '*/'
+      ''
       ''
       
         'SET @PAGO = ISNULL(@PAGO,0) + ISNULL((SELECT isnull(sum(DD.FAC_P' +
@@ -8078,7 +8141,9 @@ object frmMain: TfrmMain
       
         'WHERE emp_codigo = @EMPRESA AND suc_codigo = @SUC AND tfa_codigo' +
         ' = @tipo AND fac_forma = @FORMA '
-      'AND MOV_numero = @FAC and cli_codigo = @CLI'
+      
+        'AND MOV_numero = @FAC and cli_codigo = @CLI AND ISNULL(MOV_CUOTA' +
+        ','#39'False'#39')='#39'False'#39
       ''
       ''
       
@@ -8088,64 +8153,8 @@ object frmMain: TfrmMain
       'CLOSE Cr_Actualiza_CXC'
       'DEALLOCATE Cr_Actualiza_CXC'
       ''
-      'exec pr_actualiza_bce @empresa'
-      ''
-      ''
-      ''
-      ''
-      ''
-      ''
-      '/*CXP */'
-      'UPDATE PROVFACTURAS'
-      
-        'SET fac_status = CASE WHEN (ISNULL(fac_total,0)-ISNULL(fac_abono' +
-        ',0))>0.03 THEN '#39'PEN'#39' ELSE '#39'PAG'#39' END'
-      'WHERE FAC_STATUS = '#39'PEN'#39' '
-      ''
-      'DECLARE Cr_Actualiza_CXP CURSOR FOR '
-      
-        'SELECT F.EMP_CODIGO, F.suc_codigo SUC, F.FAC_numero FAC, F.sup_c' +
-        'odigo SUP'
-      'FROM ProvFacturas F'
-      'WHERE F.fac_status IN ('#39'PEN'#39') AND F.EMP_CODIGO = @EMPRESA'
-      'ORDER BY F.sup_codigo, F.fac_numero'
-      ''
-      ''
-      'OPEN Cr_Actualiza_CXP'
-      
-        'FETCH NEXT FROM Cr_Actualiza_CXP INTO @EMPRESA, @SUC, @FACSUP, @' +
-        'SUP'
-      'WHILE @@fetch_status = 0'
-      'BEGIN'
-      'SET @PAGO = 0'
-      ''
-      'set @pago = @pago + '
-      
-        'isnull((select isnull(sum(monto),0) from pr_pagos_cxp(@empresa, ' +
-        '@sup,@FACSUP)),0)'
-      ''
-      ''
-      'UPDATE PROVFACTURAS'
-      'SET fac_abono = isnull(@PAGO,0),'
-      
-        '    fac_status = (CASE WHEN (FAC_TOTAL-isnull(@PAGO,0))<=1 THEN ' +
-        #39'PAG'#39' ELSE '#39'PEN'#39' END)'
-      
-        'WHERE emp_codigo = @EMPRESA AND suc_codigo = @SUC AND sup_codigo' +
-        ' = @SUP'
-      'AND FAC_STATUS <> '#39'ANU'#39
-      'AND RTRIM(fac_numero) = @FACSUP'
-      ''
-      
-        'FETCH NEXT FROM Cr_Actualiza_CXP INTO @EMPRESA, @SUC, @FACSUP, @' +
-        'SUP'
-      'END'
-      'CLOSE Cr_Actualiza_CXP'
-      'DEALLOCATE Cr_Actualiza_CXP'
-      ''
-      'exec pr_actualiza_bce @empresa'
-      '')
-    Left = 304
-    Top = 136
+      'exec pr_actualiza_bce @empresa')
+    Left = 416
+    Top = 232
   end
 end

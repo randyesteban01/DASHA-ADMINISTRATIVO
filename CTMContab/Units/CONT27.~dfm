@@ -928,7 +928,7 @@ object frmCheque: TfrmCheque
       object lbFacturas: TStaticText
         Left = 0
         Top = 0
-        Width = 683
+        Width = 467
         Height = 17
         Align = alTop
         Alignment = taCenter

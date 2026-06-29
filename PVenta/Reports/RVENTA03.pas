@@ -4,7 +4,7 @@ interface
 
 uses Windows, SysUtils, Messages, Classes, Graphics, Controls,
   StdCtrls, ExtCtrls, Forms, QuickRpt, QRPDFFilt, QRExport, QRCtrls, DB, IBCustomDataSet,
-  IBQuery, ADODB;
+  IBQuery, ADODB,DelphiZXingQRCode;
 
 type
   TRDevolucion = class(TQuickRep)
@@ -23,23 +23,23 @@ type
     QRLabel28: TQRLabel;
     QRLabel29: TQRLabel;
     QRDBText24: TQRDBText;
-    QRLabel7: TQRLabel;
+    lblVendedor: TQRLabel;
     QRBand2: TQRBand;
     QRLabel8: TQRLabel;
     QRLabel9: TQRLabel;
     QRLabel10: TQRLabel;
     QRLabel11: TQRLabel;
-    QRLabel12: TQRLabel;
-    QRLabel13: TQRLabel;
+    lbldDescuento: TQRLabel;
+    lblDItbis: TQRLabel;
     QRLabel14: TQRLabel;
     QRBand3: TQRBand;
     lbProd: TQRDBText;
     QRDBText10: TQRDBText;
     QRDBText11: TQRDBText;
     QRDBText12: TQRDBText;
-    QRDBText13: TQRDBText;
-    QRDBText14: TQRDBText;
-    QRDBText15: TQRDBText;
+    dtaDescuento: TQRDBText;
+    dtaItbis: TQRDBText;
+    dtaValor: TQRDBText;
     QRBand4: TQRBand;
     QRLabel19: TQRLabel;
     QRLabel20: TQRLabel;
@@ -172,6 +172,17 @@ type
     qrdbtxtdev_nombre: TQRDBText;
     QRDBText21: TQRDBText;
     QRDBText23: TQRDBText;
+    QDevolucioneNCF: TStringField;
+    qrImgQRCode: TQRImage;
+    lblcodigoseg: TQRLabel;
+    lblFirmaDigital: TQRLabel;
+    txtFirma: TQRDBText;
+    txtCodigoSeguridad: TQRDBText;
+    QDevolucionfechafirma: TStringField;
+    QDevolucioncodigoseguridad: TStringField;
+    QDevolucionUrlCodigoQR: TMemoField;
+    QDevolucionAceptadoDGII: TBooleanField;
+    QDetalledev_montoItem: TFloatField;
     procedure QDetalleCalcFields(DataSet: TDataSet);
     procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
       var PrintReport: Boolean);
@@ -180,7 +191,7 @@ type
   private
 
   public
-
+   procedure GenerarCodigoQR(const Texto: string; Imagen: TQRImage);
   end;
 
 var
@@ -295,15 +306,105 @@ begin
   QRDBText18.Top := 76;
   end;
 
+    if  dm.QParametrosUsa_FacturacionElectronica.Value  then
+    begin
+    GenerarCodigoQR(QDevolucionUrlCodigoQR.AsString, qrImgQRCode)  end
+    else 
+    begin
+      qrImgQRCode.Visible:=False;
+      lblcodigoseg.Caption:= '';
+      lblFirmaDigital.Caption:='';
+      txtCodigoSeguridad.Visible:=False;
+      txtFirma.Visible:=False;
+    end;
+
+    if (not QDevolucionAceptadoDGII.Value) and (not dm.QParametrosintegracion_luganis.AsBoolean) then
+    
+   begin
+      lblcodigoseg.Caption:= '';
+      lblFirmaDigital.Caption:='';
+      txtCodigoSeguridad.Visible:=False;
+      txtFirma.Visible:=False;
+   end;
+
+   if DM.QParametrosintegracion_luganis.AsBoolean then
+  begin
+    dtaItbis.DataField:='';
+    dtaDescuento.DataField:='';
+    lblDItbis.Caption:='';
+    lbldDescuento.Caption:='';
+    lblVendedor.Caption := 'Contratista:';
+    dtaValor.DataField:='dev_montoItem'
+  end
+  else
+  begin
+
+    lblVendedor.Caption := 'Vendedor';
+
+
+  end;
+
+
+
 end;
+procedure TRDevolucion.GenerarCodigoQR(const Texto: string; Imagen: TQRImage);
+var
+  QRCode: TDelphiZXingQRCode;
+  Bitmap: TBitmap;
+  QRSize: Integer;
+  ModuleSize: Integer;
+  i, j: Integer;
+begin
+  QRCode := TDelphiZXingQRCode.Create;
+  try
+    QRCode.Data := Texto;
+    QRCode.QuietZone := 4;
+
+    // Calculamos el tamaño basado en módulos
+    ModuleSize := 5; // Cada módulo mide 5 píxeles (puedes ajustar)
+    QRSize := (QRCode.Rows + QRCode.QuietZone * 2) * ModuleSize;
+
+    Bitmap := TBitmap.Create;
+    try
+      Bitmap.Width := QRSize;
+      Bitmap.Height := QRSize;
+
+      Bitmap.Canvas.Brush.Color := clWhite;
+      Bitmap.Canvas.FillRect(Rect(0, 0, Bitmap.Width, Bitmap.Height));
+
+      Bitmap.Canvas.Brush.Color := clBlack;
+      for i := 0 to QRCode.Rows - 1 do
+        for j := 0 to QRCode.Columns - 1 do
+          if QRCode.IsBlack[i, j] then
+            Bitmap.Canvas.FillRect(Rect(
+              (j + QRCode.QuietZone) * ModuleSize,
+              (i + QRCode.QuietZone) * ModuleSize,
+              (j + QRCode.QuietZone + 1) * ModuleSize,
+              (i + QRCode.QuietZone + 1) * ModuleSize
+            ));
+
+      // Escalar para llenar el tamaño del QRImage
+      Imagen.Picture.Bitmap.Width := Imagen.Width;
+      Imagen.Picture.Bitmap.Height := Imagen.Height;
+      Imagen.Picture.Bitmap.Canvas.StretchDraw(Rect(0, 0, Imagen.Width, Imagen.Height), Bitmap);
+    finally
+      Bitmap.Free;
+    end;
+  finally
+    QRCode.Free;
+  end;
+end;
+
+
 
 procedure TRDevolucion.QRBand1BeforePrint(Sender: TQRCustomBand;
   var PrintBand: Boolean);
 begin
-  if not QDevolucionNCF_Fijo.IsNull then
+  lbNCF.Caption := QDevolucioneNCF.AsString;
+ { if not QDevolucionNCF_Fijo.IsNull then
     lbNCF.Caption := 'NCF: '+QDevolucionNCF_Fijo.AsString+FormatFloat('00000000',QDevolucionNCF_Secuencia.AsFloat)
   else
-    lbNCF.Caption := ' ';
+    lbNCF.Caption := ' ';  }
 end;
 
 end.

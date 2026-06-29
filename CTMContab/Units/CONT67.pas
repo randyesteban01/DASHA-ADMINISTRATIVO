@@ -271,7 +271,15 @@ begin
     WorkSheet.Cells.Item[linea,08] := Query1.FieldByName('Dia_Comprob').AsString;
     WorkSheet.Cells.Item[linea,11] := FloatToStr(Query1.FieldByName('Monto_Servicios').AsFloat);
     WorkSheet.Cells.Item[linea,12] := FloatToStr(Query1.FieldByName('Monto_Bienes').AsFloat);
-    WorkSheet.Cells.Item[linea,13] := FloatToStr(Query1.FieldByName('Total_Facturado').AsFloat);
+    
+    if Query1.FieldByName('Monto_Servicios').AsFloat > 0 then
+      WorkSheet.Cells.Item[linea,13] := FloatToStr(Query1.FieldByName('Monto_Servicios').AsFloat)
+    else if Query1.FieldByName('Monto_Bienes').AsFloat > 0 then
+      WorkSheet.Cells.Item[linea,13] := FloatToStr(Query1.FieldByName('Monto_Bienes').AsFloat)
+    else
+      WorkSheet.Cells.Item[linea,13] := '0.00';        
+
+    //WorkSheet.Cells.Item[linea,13] := FloatToStr(Query1.FieldByName('Total_Facturado').AsFloat);
     WorkSheet.Cells.Item[linea,14] := FloatToStr(Query1.FieldByName('Itbis_Facturado').AsFloat);
     if Query1.FieldByName('Itbis_Retenido').AsFloat > 0 then
     begin
@@ -377,7 +385,7 @@ begin
   Query1.SQL.Add('CASE WHEN MONTH(d.des_fecha)<10 THEN RTRIM(YEAR(d.des_fecha))+'+QuotedStr('0')+'+RTRIM(MONTH(d.des_fecha)) ELSE');
   Query1.SQL.Add('RTRIM(YEAR(d.des_fecha))+RTRIM(MONTH(d.des_fecha)) END FechaPag,');
   Query1.SQL.Add('day(d.des_fecha) as Dia_Pago,');
-  Query1.SQL.Add('0 Monto_Servicios, (ISNULL(d.des_monto,0)-ISNULL(d.des_itbis,0)) Monto_Bienes, 0 Total_Facturado,');
+  Query1.SQL.Add('0 Monto_Servicios, (ISNULL(d.des_monto,0)-ISNULL(d.des_itbis,0)) Monto_Bienes, des_monto Total_Facturado,');
   Query1.SQL.Add('ISNULL(d.des_itbis,0) Itbis_Facturado, 0 as Itbis_Retenido,');
   Query1.SQL.Add('0 itbis_proporc, 0 Itbis_Costo, 0 Itbis_Adelantar, 0 Itbis_Percibido_Compras,');
   Query1.SQL.Add(QuotedStr('')+' Tipo_Retencion, 0 as monto_ret_renta, 0 ISR_Percib_Compras, 0 Imp_Sel_Consumo,');

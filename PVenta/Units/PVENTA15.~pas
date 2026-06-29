@@ -49,7 +49,6 @@ type
     QProductosPRO_STATUS: TIBStringField;
     QProductosPRO_INVINICIAL: TFloatField;
     QProductosPRO_EXISTENCIA: TFloatField;
-    QProductosPRO_UBICACION: TIBStringField;
     QProductosPRO_STKMINIMO: TFloatField;
     QProductosPRO_STKMAXIMO: TFloatField;
     QProductosPRO_INVFISICO: TFloatField;
@@ -549,6 +548,9 @@ type
     CEdt_ValorEmp: TcxDBCurrencyEdit;
     CEdt_CostoEmp: TcxDBCurrencyEdit;
     spUptProducto: TADOStoredProc;
+    QProductosPRO_UBICACION: TStringField;
+    DBCheckBox10: TDBCheckBox;
+    QProductoswith_servicio_construccion: TBooleanField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btCloseClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;

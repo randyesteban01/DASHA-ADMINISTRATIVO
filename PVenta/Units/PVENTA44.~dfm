@@ -1,12 +1,12 @@
 object frmConsFacturas: TfrmConsFacturas
-  Left = 265
-  Top = 0
+  Left = 502
+  Top = 122
   ActiveControl = edTipo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Listado de Facturas'
-  ClientHeight = 696
-  ClientWidth = 1076
+  ClientHeight = 498
+  ClientWidth = 944
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -28,8 +28,8 @@ object frmConsFacturas: TfrmConsFacturas
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 0
-    Top = 571
-    Width = 1076
+    Top = 314
+    Width = 944
     Height = 4
     Cursor = crVSplit
     Align = alTop
@@ -37,7 +37,7 @@ object frmConsFacturas: TfrmConsFacturas
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1076
+    Width = 944
     Height = 152
     Align = alTop
     BevelInner = bvRaised
@@ -297,9 +297,9 @@ object frmConsFacturas: TfrmConsFacturas
     object Label17: TLabel
       Left = 8
       Top = 80
-      Width = 43
+      Width = 49
       Height = 13
-      Caption = 'Tipo NCF'
+      Caption = 'Tipo eNCF'
     end
     object SpeedButton5: TSpeedButton
       Left = 94
@@ -332,7 +332,6 @@ object frmConsFacturas: TfrmConsFacturas
         'B'
         'Todas')
       TabOrder = 0
-      Visible = False
       OnClick = cbGrupoClick
     end
     object edTipo: TEdit
@@ -792,18 +791,32 @@ object frmConsFacturas: TfrmConsFacturas
       OnChange = edtiponcfChange
       OnKeyDown = edtiponcfKeyDown
     end
+    object cbStatusDGII: TRadioGroup
+      Left = 697
+      Top = 3
+      Width = 232
+      Height = 75
+      ItemIndex = 0
+      Items.Strings = (
+        'Todas'
+        'Aceptada por DGII'
+        'Rechazada por DGII'
+        'Enviada (no procesada por DGII)')
+      TabOrder = 28
+      OnClick = cbStatusClick
+    end
   end
   object Panel2: TPanel
     Left = 0
-    Top = 656
-    Width = 1076
+    Top = 458
+    Width = 944
     Height = 40
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 1
     DesignSize = (
-      1076
+      944
       40)
     object lbCantidad: TLabel
       Left = 8
@@ -819,7 +832,7 @@ object frmConsFacturas: TfrmConsFacturas
       ParentFont = False
     end
     object BitBtn2: TBitBtn
-      Left = 912
+      Left = 780
       Top = 8
       Width = 75
       Height = 25
@@ -838,7 +851,7 @@ object frmConsFacturas: TfrmConsFacturas
         03333333333333333333}
     end
     object btRefresh: TBitBtn
-      Left = 752
+      Left = 620
       Top = 8
       Width = 75
       Height = 25
@@ -848,7 +861,7 @@ object frmConsFacturas: TfrmConsFacturas
       OnClick = btRefreshClick
     end
     object btClose: TBitBtn
-      Left = 992
+      Left = 860
       Top = 8
       Width = 75
       Height = 25
@@ -872,7 +885,7 @@ object frmConsFacturas: TfrmConsFacturas
       NumGlyphs = 2
     end
     object BitBtn1: TBitBtn
-      Left = 832
+      Left = 700
       Top = 8
       Width = 75
       Height = 25
@@ -899,7 +912,7 @@ object frmConsFacturas: TfrmConsFacturas
       Visible = False
     end
     object btnEmail: TBitBtn
-      Left = 661
+      Left = 529
       Top = 8
       Width = 85
       Height = 25
@@ -908,12 +921,32 @@ object frmConsFacturas: TfrmConsFacturas
       TabOrder = 5
       OnClick = btnEmailClick
     end
+    object btnEnviarDGII: TBitBtn
+      Left = 427
+      Top = 8
+      Width = 95
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Enviar DGII >>'
+      TabOrder = 6
+      OnClick = btnEnviarDGIIClick
+    end
+    object btnEnviarDGIIMasivo: TBitBtn
+      Left = 301
+      Top = 9
+      Width = 118
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Enviar todas DGII >>'
+      TabOrder = 7
+      OnClick = btnEnviarDGIIMasivoClick
+    end
   end
   object DBGrid1: TDBGrid
     Left = 0
     Top = 152
-    Width = 1076
-    Height = 419
+    Width = 944
+    Height = 162
     Align = alTop
     Anchors = [akLeft, akTop, akRight, akBottom]
     Color = clInfoBk
@@ -935,6 +968,7 @@ object frmConsFacturas: TfrmConsFacturas
     TitleFont.Height = -11
     TitleFont.Name = 'Tahoma'
     TitleFont.Style = []
+    OnDrawColumnCell = DBGrid1DrawColumnCell
     Columns = <
       item
         Alignment = taCenter
@@ -1025,6 +1059,14 @@ object frmConsFacturas: TfrmConsFacturas
       end
       item
         Expanded = False
+        FieldName = 'FAC_DESCUENTO'
+        Title.Alignment = taCenter
+        Title.Caption = 'Desc.Items'
+        Width = 74
+        Visible = True
+      end
+      item
+        Expanded = False
         FieldName = 'monto_exento'
         Title.Alignment = taCenter
         Title.Caption = 'Exento'
@@ -1037,14 +1079,6 @@ object frmConsFacturas: TfrmConsFacturas
         Title.Alignment = taCenter
         Title.Caption = 'Gravado'
         Width = 85
-        Visible = True
-      end
-      item
-        Expanded = False
-        FieldName = 'FAC_DESCUENTO'
-        Title.Alignment = taCenter
-        Title.Caption = 'Desc.Items'
-        Width = 74
         Visible = True
       end
       item
@@ -1181,6 +1215,11 @@ object frmConsFacturas: TfrmConsFacturas
         FieldName = 'fac_usuario_anulo'
         Title.Caption = 'USU_ANULO'
         Visible = True
+      end
+      item
+        Expanded = False
+        FieldName = 'Error_DGII'
+        Visible = False
       end>
   end
   object Memo1: TMemo
@@ -1195,10 +1234,10 @@ object frmConsFacturas: TfrmConsFacturas
   end
   object PageControl1: TPageControl
     Left = 0
-    Top = 575
-    Width = 1076
-    Height = 81
-    ActivePage = TabSheet3
+    Top = 318
+    Width = 944
+    Height = 140
+    ActivePage = TabSheet1
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -1215,8 +1254,8 @@ object frmConsFacturas: TfrmConsFacturas
       object Grid: TDBGrid
         Left = 0
         Top = 0
-        Width = 1118
-        Height = 89
+        Width = 936
+        Height = 114
         Align = alClient
         Ctl3D = False
         DataSource = dsDetalle
@@ -1348,8 +1387,8 @@ object frmConsFacturas: TfrmConsFacturas
       object DBGrid5: TDBGrid
         Left = 0
         Top = 0
-        Width = 1118
-        Height = 89
+        Width = 1068
+        Height = 114
         Align = alClient
         Color = clInfoBk
         Ctl3D = False
@@ -1400,8 +1439,8 @@ object frmConsFacturas: TfrmConsFacturas
       object DBGrid2: TDBGrid
         Left = 0
         Top = 0
-        Width = 1118
-        Height = 89
+        Width = 1068
+        Height = 114
         Align = alClient
         Color = clInfoBk
         Ctl3D = False
@@ -1484,7 +1523,7 @@ object frmConsFacturas: TfrmConsFacturas
         Left = 0
         Top = 0
         Width = 1068
-        Height = 55
+        Height = 114
         Align = alClient
         Color = clInfoBk
         Ctl3D = False
@@ -1735,10 +1774,10 @@ object frmConsFacturas: TfrmConsFacturas
       Caption = 'Cuentas contables'
       ImageIndex = 6
       DesignSize = (
-        1068
-        55)
+        936
+        114)
       object Label14: TLabel
-        Left = 911
+        Left = 779
         Top = 1
         Width = 40
         Height = 13
@@ -1752,7 +1791,7 @@ object frmConsFacturas: TfrmConsFacturas
         ParentFont = False
       end
       object Label15: TLabel
-        Left = 911
+        Left = 779
         Top = 17
         Width = 36
         Height = 13
@@ -1766,7 +1805,7 @@ object frmConsFacturas: TfrmConsFacturas
         ParentFont = False
       end
       object Label16: TLabel
-        Left = 911
+        Left = 779
         Top = 33
         Width = 37
         Height = 13
@@ -1782,8 +1821,8 @@ object frmConsFacturas: TfrmConsFacturas
       object GridCuentas: TDBGrid
         Left = 30
         Top = 0
-        Width = 875
-        Height = 55
+        Width = 743
+        Height = 114
         Align = alLeft
         Anchors = [akLeft, akTop, akRight, akBottom]
         Ctl3D = False
@@ -1842,7 +1881,7 @@ object frmConsFacturas: TfrmConsFacturas
           end>
       end
       object lbCR: TStaticText
-        Left = 965
+        Left = 833
         Top = 1
         Width = 103
         Height = 17
@@ -1860,7 +1899,7 @@ object frmConsFacturas: TfrmConsFacturas
         TabOrder = 1
       end
       object lbDB: TStaticText
-        Left = 965
+        Left = 833
         Top = 17
         Width = 103
         Height = 17
@@ -1878,7 +1917,7 @@ object frmConsFacturas: TfrmConsFacturas
         TabOrder = 2
       end
       object lbBAL: TStaticText
-        Left = 965
+        Left = 833
         Top = 33
         Width = 103
         Height = 17
@@ -1899,7 +1938,7 @@ object frmConsFacturas: TfrmConsFacturas
         Left = 0
         Top = 0
         Width = 30
-        Height = 55
+        Height = 114
         Align = alLeft
         BevelInner = bvRaised
         BevelOuter = bvLowered
@@ -1952,7 +1991,7 @@ object frmConsFacturas: TfrmConsFacturas
         end
       end
       object btcodificar: TBitBtn
-        Left = 908
+        Left = 776
         Top = 52
         Width = 159
         Height = 25
@@ -2065,7 +2104,7 @@ object frmConsFacturas: TfrmConsFacturas
       'FAC_NUMERO, FAC_OTROS, FAC_STATUS,'
       'FAC_TELEFONO, FAC_TOTAL, PED_NUMERO, TFA_CODIGO,'
       'USU_CODIGO, VEN_CODIGO, usu_nombre,'
-      'fac_vence, FAC_COMISION, FAC_CUOTAS,'
+      'FechaLimitePago fac_vence, FAC_COMISION, FAC_CUOTAS,'
       'con_numero, fac_devuelto, suc_codigo, fac_conitbis,'
       'Caja, NCF_Fijo, NCF_Secuencia, CAJ_NOMBRE,'
       'fac_selectivo_ad, fac_selectivo_con, ven_nombre, fac_rnc,'
@@ -2081,7 +2120,25 @@ object frmConsFacturas: TfrmConsFacturas
       
         '(ISNULL(FAC_TOTAL,0)-ISNULL(FAC_ITBIS,0)+ISNULL(fac_descuento,0)' +
         ') SUB_TOTAL,'
-      'RECARGO'
+      'RECARGO,Error_DGII,emp_rnc, cli_rnc, '
+      'ISNULL(eNCF,'
+      '  CASE '
+      '    WHEN NCF_Fijo IS NOT NULL AND LTRIM(RTRIM(NCF_Fijo)) <> '#39#39
+      '    THEN LTRIM(RTRIM(NCF_Fijo)) +'
+      '         CASE'
+      
+        '           WHEN LEN(CAST(ISNULL(NCF_Secuencia,0) AS varchar(50))' +
+        ') < 8'
+      
+        '             THEN REPLICATE('#39'0'#39', 8 - LEN(CAST(ISNULL(NCF_Secuenc' +
+        'ia,0) AS varchar(50))))'
+      '                  + CAST(ISNULL(NCF_Secuencia,0) AS varchar(50))'
+      '           ELSE CAST(ISNULL(NCF_Secuencia,0) AS varchar(50))'
+      '         END'
+      '    ELSE '#39#39
+      '  END) as eNCF,'
+      ''
+      ' cod_dgii, Enviado_DGII, AceptadoDGII'
       'FROM('
       'select '
       'f.fac_caja, f.pro_codigo, tdesc_gral,'
@@ -2092,7 +2149,7 @@ object frmConsFacturas: TfrmConsFacturas
       'f.FAC_NUMERO, f.FAC_OTROS, f.FAC_STATUS,'
       'f.FAC_TELEFONO, f.FAC_TOTAL, f.PED_NUMERO, f.TFA_CODIGO,'
       'f.USU_CODIGO, f.VEN_CODIGO, usu_nombre,'
-      'f.fac_vence, f.FAC_COMISION, f.FAC_CUOTAS,'
+      'f.FechaLimitePago, f.FAC_COMISION, f.FAC_CUOTAS,'
       'f.con_numero, f.fac_devuelto, f.suc_codigo, f.fac_conitbis,'
       
         'c.caj_nombre as Caja, f.NCF_Fijo, f.NCF_Secuencia, j.CAJ_NOMBRE,' +
@@ -2101,35 +2158,63 @@ object frmConsFacturas: TfrmConsFacturas
       
         'f.fac_domicilio, f.fac_tasa, tfa_actbalance, f.fac_interes, f.ti' +
         'p_codigo,'
+      ''
+      'isnull('
       
-        'isnull(case when ((det_itbis > 0) and (p.par_itbisincluido = '#39'Tr' +
-        'ue'#39') and (det_itbis > 0)) then (det_cantidad*det_precio)/(1+(det' +
-        '_itbis/100)) '
+        'case WHEN emp_rnc in ('#39'105081105'#39','#39'131861717'#39') and F.fac_itbis>0' +
+        ' and (p.par_itbisincluido = '#39'True'#39') then (det_cantidad*det_preci' +
+        'o)/(1+(det_itbis/100)) '
+      
+        'WHEN emp_rnc in ('#39'105081105'#39','#39'131861717'#39') and F.fac_itbis>0 and ' +
+        '(p.par_itbisincluido = '#39'False'#39') then  (det_cantidad*det_precio) ' +
+        ' '
+      
+        'ELSE case when ((det_itbis > 0) and (p.par_itbisincluido = '#39'True' +
+        #39') and (det_itbis > 0)) then (det_cantidad*det_precio)/(1+(det_i' +
+        'tbis/100)) '
       
         '            when ((det_itbis > 0) and (p.par_itbisincluido = '#39'Fa' +
         'lse'#39') and (det_itbis > 0)) then (det_cantidad*det_precio) '
-      '            else 0 end,0) monto_grabado_noincluido,'
+      '            else 0 end end,0) monto_grabado_noincluido,'
+      ''
+      'isnull('
       
-        'isnull(case when ((det_itbis > 0) and (p.par_itbisincluido = '#39'Tr' +
-        'ue'#39') and (det_itbis > 0)) then (det_cantidad*det_precio) '
+        'case WHEN emp_rnc in ('#39'105081105'#39','#39'131861717'#39') and F.fac_itbis>0' +
+        ' and (p.par_itbisincluido = '#39'True'#39') then (det_cantidad*det_preci' +
+        'o)'
+      
+        'WHEN emp_rnc in ('#39'105081105'#39','#39'131861717'#39') and F.fac_itbis>0 and ' +
+        '(p.par_itbisincluido = '#39'False'#39') then  (det_cantidad*det_precio)*' +
+        '(1+(det_itbis/100)) '
+      ''
+      
+        'else case when ((det_itbis > 0) and (p.par_itbisincluido = '#39'True' +
+        #39') and (det_itbis > 0)) then (det_cantidad*det_precio) '
       
         '            when ((det_itbis > 0) and (p.par_itbisincluido = '#39'Fa' +
         'lse'#39') and (det_itbis > 0)) then (det_cantidad*det_precio)*(1+(de' +
         't_itbis/100)) '
-      #9#9#9'ELSE 0 end,0) as monto_grabado_incluido,'
+      #9#9#9'ELSE 0 end end,0) as monto_grabado_incluido,'
+      'isnull('
       
-        'isnull(case when ((p.par_itbisincluido = '#39'True'#39') and (det_itbis ' +
-        '= 0)) then (det_cantidad*det_precio) '
+        'CASE  WHEN emp_rnc in ('#39'105081105'#39','#39'131861717'#39') and fac_itbis>0 ' +
+        'then 0 ELSE'
+      
+        'case when ((p.par_itbisincluido = '#39'True'#39') and (det_itbis = 0)) t' +
+        'hen (det_cantidad*det_precio) '
       
         '            when ((p.par_itbisincluido = '#39'False'#39') and (det_itbis' +
         ' = 0)) then (det_cantidad*det_precio) '
-      '            else 0 end,0) as monto_exento,'
+      '            else 0 end end,0) as monto_exento,'
+      ''
       'F.FAC_NOTA, ISNULL(F.FAC_PROPINA,0) PROPINA,'
       
         '(FAC_TOTAL*0.88231827112) FAC_PROYECTO, (FAC_TOTAL*0.10) FAC_SER' +
         'VICIOS,'
       'fac_usuario_anulo,'
-      'ISNULL(F.RECARGO,0) RECARGO'
+      
+        'ISNULL(F.RECARGO,0) RECARGO, Error_DGII, e.emp_rnc, cl.cli_rnc, ' +
+        'eNCF, ti.cod_dgii,  f.Enviado_DGII, f.AceptadoDGII'
       'from'
       'facturas f '
       
@@ -2152,6 +2237,14 @@ object frmConsFacturas: TfrmConsFacturas
       
         'INNER JOIN cajas c ON f.emp_codigo = c.emp_codigo and f.fac_caja' +
         ' = c.caj_codigo  '
+      'INNER JOIN Empresas e ON e.emp_codigo=f.emp_codigo'
+      
+        'left join Clientes cl on cl.cli_codigo=f.cli_codigo and f.emp_co' +
+        'digo= cl.emp_codigo'
+      
+        'left join TipoNCF ti on ti.tip_codigo=f.tip_codigo AND ti.emp_co' +
+        'digo=f.emp_codigo'
+      ''
       'where f.usu_codigo = f.usu_codigo'
       'and f.emp_codigo = f.emp_codigo'
       'and f.emp_codigo = :emp'
@@ -2444,6 +2537,30 @@ object frmConsFacturas: TfrmConsFacturas
     end
     object QFacturasRECARGO: TCurrencyField
       FieldName = 'RECARGO'
+    end
+    object QFacturasError_DGII: TBooleanField
+      FieldName = 'Error_DGII'
+    end
+    object QFacturasemp_rnc: TStringField
+      FieldName = 'emp_rnc'
+      Size = 50
+    end
+    object QFacturascli_rnc: TStringField
+      FieldName = 'cli_rnc'
+      Size = 50
+    end
+    object QFacturaseNCF: TStringField
+      FieldName = 'eNCF'
+      Size = 60
+    end
+    object QFacturascod_dgii: TIntegerField
+      FieldName = 'cod_dgii'
+    end
+    object QFacturasEnviado_DGII: TBooleanField
+      FieldName = 'Enviado_DGII'
+    end
+    object QFacturasAceptadoDGII: TBooleanField
+      FieldName = 'AceptadoDGII'
     end
   end
   object QDetalle: TADOQuery
@@ -3451,6 +3568,10 @@ object frmConsFacturas: TfrmConsFacturas
     end
     object AplicarNC1: TMenuItem
       Caption = 'Aplicar NC'
+    end
+    object InformacionDGII1: TMenuItem
+      Caption = 'Informacion DGII'
+      OnClick = InformacionDGII1Click
     end
   end
   object QClientes: TADOQuery
@@ -4850,8 +4971,8 @@ object frmConsFacturas: TfrmConsFacturas
       'LOGO=LOGO')
     DataSet = qFacturaOrdTaller
     BCDToCurrency = False
-    Left = 864
-    Top = 16
+    Left = 928
+    Top = 24
   end
   object qFacturaOrdTaller: TADOQuery
     Connection = DM.ADOSigma
@@ -4994,8 +5115,8 @@ object frmConsFacturas: TfrmConsFacturas
         'ro = :num  AND F.tfa_codigo = :tip)'
       'AS TEMP '
       'ORDER BY TIPO DESC')
-    Left = 832
-    Top = 16
+    Left = 880
+    Top = 80
     object qFacturaOrdTallerSUCURSAL: TStringField
       FieldName = 'SUCURSAL'
       Size = 60
@@ -5349,5 +5470,11 @@ object frmConsFacturas: TfrmConsFacturas
       '')
     Left = 296
     Top = 304
+  end
+  object tmr2: TTimer
+    Enabled = False
+    Interval = 2000
+    Left = 920
+    Top = 72
   end
 end

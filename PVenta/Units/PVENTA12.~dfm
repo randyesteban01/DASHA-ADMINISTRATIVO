@@ -1,10 +1,10 @@
 object frmUsuarios: TfrmUsuarios
-  Left = 292
-  Top = 29
+  Left = 365
+  Top = 160
   BorderIcons = [biSystemMenu, biMinimize, biHelp]
   BorderStyle = bsSingle
   Caption = 'Usuarios y Claves'
-  ClientHeight = 647
+  ClientHeight = 523
   ClientWidth = 1065
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -30,7 +30,7 @@ object frmUsuarios: TfrmUsuarios
     Left = 0
     Top = 68
     Width = 1065
-    Height = 579
+    Height = 455
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 2
@@ -54,7 +54,7 @@ object frmUsuarios: TfrmUsuarios
         Left = 0
         Top = 0
         Width = 297
-        Height = 551
+        Height = 427
         Align = alLeft
         Color = clInfoBk
         Font.Charset = ANSI_CHARSET
@@ -112,7 +112,7 @@ object frmUsuarios: TfrmUsuarios
         Top = 56
         Width = 401
         Height = 313
-        ActivePage = TabSheet5
+        ActivePage = TabSheet4
         TabOrder = 3
         object TabSheet4: TTabSheet
           Caption = 'Opci'#243'nes'
@@ -567,6 +567,18 @@ object frmUsuarios: TfrmUsuarios
             ValueChecked = 'True'
             ValueUnchecked = 'False'
           end
+          object DBCheckBox16: TDBCheckBox
+            Left = 9
+            Top = 233
+            Width = 239
+            Height = 17
+            Caption = 'Reenviar comprobantes rechazados a DGII'
+            DataField = 'usu_reenvia_dgii'
+            DataSource = dsUsuarios
+            TabOrder = 17
+            ValueChecked = 'True'
+            ValueUnchecked = 'False'
+          end
         end
         object tsParRestBar: TTabSheet
           Caption = 'RestBar'
@@ -875,7 +887,7 @@ object frmUsuarios: TfrmUsuarios
       
         'usu_supervisor, usu_Cajero, usu_camarero, usu_vendedor, usu_solo' +
         '_conduce'
-      ',usu_modifica_nombreprod,usu_suc_default'
+      ',usu_modifica_nombreprod,usu_suc_default, usu_reenvia_dgii'
       'from'
       'USUARIOS '
       'WHERE USU_STATUS <> '#39'INA'#39
@@ -1000,6 +1012,9 @@ object frmUsuarios: TfrmUsuarios
     end
     object QUsuariosusu_suc_default: TIntegerField
       FieldName = 'usu_suc_default'
+    end
+    object QUsuariosusu_reenvia_dgii: TBooleanField
+      FieldName = 'usu_reenvia_dgii'
     end
   end
   object dsUsuarios: TDataSource

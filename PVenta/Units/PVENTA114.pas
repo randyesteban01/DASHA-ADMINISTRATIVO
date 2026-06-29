@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Buttons, Mask, DBCtrls, Grids, DBGrids, DB,
-  IBCustomDataSet, IBQuery, IBUpdateSQL, DateUtils, ADODB;
+  IBCustomDataSet, IBQuery, IBUpdateSQL, DateUtils, ADODB, ToolEdit,
+  CurrEdit;
 
 type
   TfrmGeneraCuotas = class(TForm)
@@ -17,7 +18,6 @@ type
     btCalcular: TBitBtn;
     lbTotal: TStaticText;
     lbIntervalo: TStaticText;
-    lbFechaIni: TStaticText;
     Label1: TLabel;
     DBGrid1: TDBGrid;
     QMov: TADOQuery;
@@ -35,13 +35,11 @@ type
     QMovTFA_CODIGO: TIntegerField;
     dsMov: TDataSource;
     btClose: TBitBtn;
-    edCuotas: TEdit;
     QMovMOV_CUOTA: TIBStringField;
     QMovSUC_CODIGO: TIntegerField;
     QMovMON_CODIGO: TIntegerField;
     QMovMOV_TASA: TBCDField;
     LB_1: TLabel;
-    edtMontoInicial: TEdit;
     QUpdateAbono: TADOQuery;
     IntegerField1: TIntegerField;
     IntegerField2: TIntegerField;
@@ -59,20 +57,36 @@ type
     IntegerField6: TIntegerField;
     IntegerField7: TIntegerField;
     BCDField1: TBCDField;
-    procedure btCloseClick(Sender: TObject);
+    CEdtMontoInicial: TCurrencyEdit;
+    CEdtCuotas: TCurrencyEdit;
+    btnAceptar: TBitBtn;
+    Label6: TLabel;
+    lbTotalFact: TStaticText;
+    Label7: TLabel;
+    lbBal: TStaticText;
+    DEdt_FechaIni: TDateEdit;
     procedure FormActivate(Sender: TObject);
     procedure btCalcularClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure edCuotasKeyPress(Sender: TObject; var Key: Char);
+    procedure CEdtMontoInicialKeyPress(Sender: TObject; var Key: Char);
+    procedure CEdtCuotasKeyPress(Sender: TObject; var Key: Char);
+    procedure btCloseClick(Sender: TObject);
+    procedure btnAceptarClick(Sender: TObject);
+    procedure QMovAfterPost(DataSet: TDataSet);
+    procedure DEdt_FechaIniExit(Sender: TObject);
+    procedure QMovBeforeInsert(DataSet: TDataSet);
+    procedure DBGrid1KeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
+    vl_inicial, vl_balance, vl_montocuota , vl_totalcuotas : Currency;
   public
     { Public declarations }
     Tipo, Numero, Intervalo, Sucursal : Integer;
-    Total, vl_tasa : Double;
+    Total, vl_tasa : Currency;
     Forma, TipoM : String;
     Fecha : TDateTime;
+    Acepta : Boolean;
   end;
 
 var
@@ -80,37 +94,9 @@ var
 
 implementation
 
-uses PVENTA18, SIGMA01;
+uses PVENTA18, SIGMA01, Math;
 
 {$R *.dfm}
-
-procedure TfrmGeneraCuotas.btCloseClick(Sender: TObject);
-begin
-  if QMov.RecordCount > 0 then
-  begin
-    QMov.UpdateBatch;
-    dm.Query1.Close;
-    dm.Query1.SQL.Clear;
-    dm.Query1.SQL.Add('update facturas');
-    dm.Query1.SQL.Add('set fac_cuotas = :cuo');
-    dm.Query1.SQL.Add('where emp_codigo = :emp');
-    dm.Query1.SQL.Add('and fac_forma = :for');
-    dm.Query1.SQL.Add('and tfa_codigo = :tip');
-    dm.Query1.SQL.Add('and fac_numero = :num');
-    dm.Query1.SQL.Add('and suc_codigo = :suc');
-    dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
-    dm.Query1.Parameters.ParamByName('suc').Value := frmFactura.QFacturaSUC_CODIGO.Value;
-    dm.Query1.Parameters.ParamByName('for').Value := Forma;
-    dm.Query1.Parameters.ParamByName('tip').Value := Tipo;
-    dm.Query1.Parameters.ParamByName('num').Value := Numero;
-    dm.Query1.Parameters.ParamByName('cuo').Value := StrToInt(Trim(edCuotas.Text));
-    dm.Query1.ExecSQL;
-
-    Close;
-  end
-  else
-    messagedlg('DEBE GENERAR LAS CUOTAS',mterror,[mbok],0);
-end;
 
 procedure TfrmGeneraCuotas.FormActivate(Sender: TObject);
 begin
@@ -144,27 +130,28 @@ begin
   dm.Query1.Parameters.ParamByName('num').Value  := Numero;
   dm.Query1.ExecSQL;
 
+  QMov.Close;
   QMov.Parameters.ParamByName('emp').Value := dm.vp_cia;
   QMov.Parameters.ParamByName('tipo').Value := TipoM;
   QMov.Parameters.ParamByName('num').Value := -1;
   QMov.Open;
 
   lbIntervalo.Caption := IntToStr(Intervalo);
-  lbFechaIni.Caption  := DateToStr(frmFactura.QFacturaFAC_FECHA.Value);
+  DEdt_FechaIni.Date  := frmFactura.QFacturaFAC_FECHA.Value;
+  lbTotalFact.Caption := FormatCurr('#,0.00',Total);
 end;
 
 procedure TfrmGeneraCuotas.btCalcularClick(Sender: TObject);
 var
   a : integer;
-  vl_inicial, vl_balance : Double;
 begin
-  if Trim(edtMontoInicial.Text)<>'' then
-   vl_inicial := StrToFloat(edtMontoInicial.Text) else
+  if CEdtMontoInicial.Value <> 0 then
+   vl_inicial := CedtMontoInicial.Value else
    vl_inicial := 0;
-  vl_balance := StrToFloat(Format('%10.2f',[Total]))-vl_inicial;
-  if trim(edCuotas.Text) <> '' then
+  vl_balance := StrToFloat(Format('%10.2f',[Total]));
+  if CEdtCuotas.AsInteger <> 0 then
   Begin
-    //ACTUALIZAR ABONO
+  {  //ACTUALIZAR ABONO
     with QUpdateAbono do begin
       Close;
       Parameters.ParamByName('monto').Value    := vl_inicial;
@@ -172,11 +159,39 @@ begin
       Parameters.ParamByName('company').Value  := dm.vp_cia;
       Parameters.ParamByName('sucursal').Value := Sucursal;
     end;
-    //FIN ABONO A FACTURA
+    //FIN ABONO A FACTURA}
     QMov.Close;
     QMov.Open;
     QMov.DisableControls;
-    For a := 1 to StrToInt(Trim(edCuotas.text)) do
+    //Cuota 0
+      QMov.Append;
+      QMovSUC_CODIGO.Value := frmFactura.QFacturaSUC_CODIGO.Value;
+      QMovCLI_CODIGO.Value := frmFactura.QFacturaCLI_CODIGO.Value;
+      QMovEMP_CODIGO.Value := dm.vp_cia;
+      QMovFAC_FORMA.Value  := frmFactura.QFacturaFAC_FORMA.Value;
+      QMovMOV_ABONO.Value  := 0;
+      QMovMOV_FECHA.Value  := frmFactura.QFacturaFAC_FECHA.Value;
+      QMovMOV_FECHAVENCE.Value := QMovMOV_FECHA.Value;
+      if vl_tasa = 0 then
+      QMovMOV_MONTO.Value  := vl_inicial;//vl_balance;
+      QMovMOV_NUMERO.Value := Numero;
+      QMovMOV_SECUENCIA.Value := 0;
+      QMovMOV_STATUS.Value := 'PEN';
+      QMovMOV_TIPO.Value   := TipoM;
+      QMovTFA_CODIGO.Value := Tipo;
+      QMovMOV_CUOTA.Value  := 'True';
+      QMovMON_CODIGO.Value := frmFactura.QFacturaMON_CODIGO.Value;
+      QMovMOV_TASA.Value   := frmFactura.QFacturaFAC_TASA.Value;
+      QMov.Post;
+       vl_balance := vl_balance - vl_inicial;
+      //Fin Cuota 0
+
+     //Calcular monto cuotas
+     if vl_tasa = 0 then
+      vl_montocuota := (vl_balance/CEdtCuotas.AsInteger) else
+      vl_montocuota := (vl_balance/(CEdtCuotas.AsInteger*(1+(vl_tasa/100))));
+
+    For a := 1 to CEdtCuotas.AsInteger do
     Begin
       QMov.Append;
       QMovSUC_CODIGO.Value := frmFactura.QFacturaSUC_CODIGO.Value;
@@ -187,10 +202,7 @@ begin
       QMovMOV_FECHA.Value  := frmFactura.QFacturaFAC_FECHA.Value + (Intervalo*a);
       QMovMOV_FECHAVENCE.Value := QMovMOV_FECHA.Value;
       if vl_tasa = 0 then
-      QMovMOV_MONTO.Value  := (vl_balance/
-                              StrToInt(Trim(edCuotas.text))) else
-      QMovMOV_MONTO.Value  := vl_balance/
-                              StrToInt(Trim(edCuotas.text))*(1+(vl_tasa/100));
+      QMovMOV_MONTO.Value  := vl_montocuota;//vl_balance;
       QMovMOV_NUMERO.Value := Numero;
       QMovMOV_SECUENCIA.Value := a;
       QMovMOV_STATUS.Value := 'PEN';
@@ -200,8 +212,10 @@ begin
       QMovMON_CODIGO.Value := frmFactura.QFacturaMON_CODIGO.Value;
       QMovMOV_TASA.Value   := frmFactura.QFacturaFAC_TASA.Value;
       QMov.Post;
+      vl_balance := vl_balance - vl_montocuota;
     End;
     QMov.EnableControls;
+    lbTotal.Caption := FormatCurr('#,0.00',vl_balance+vl_montocuota);
   End;
 end;
 
@@ -211,14 +225,192 @@ begin
   if ssAlt in shift then key := 0;
 end;
 
-procedure TfrmGeneraCuotas.edCuotasKeyPress(Sender: TObject;
+procedure TfrmGeneraCuotas.CEdtMontoInicialKeyPress(Sender: TObject;
   var Key: Char);
 begin
-if not (key in ['0'..'9','.',#8]) then
+ if Key = #13 then
+  begin
+    Key := #0;
+    Perform(WM_NEXTDLGCTL, 0, 0);
+  end;
+end;
+
+procedure TfrmGeneraCuotas.CEdtCuotasKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+ if Key = #13 then
+  begin
+    Key := #0;
+    Perform(WM_NEXTDLGCTL, 0, 0);
+end;
+end;
+
+procedure TfrmGeneraCuotas.btCloseClick(Sender: TObject);
+begin
+  dm.Query1.Close;
+  dm.Query1.SQL.Clear;
+  dm.Query1.SQL.Add('delete from movimientos');
+  dm.Query1.SQL.Add('where emp_codigo = :emp');
+  dm.Query1.SQL.Add('and mov_tipo = :tipom');
+  dm.Query1.SQL.Add('and tfa_codigo = :tipo');
+  dm.Query1.SQL.Add('and fac_forma = :for');
+  dm.Query1.SQL.Add('and mov_numero = :num');
+  dm.Query1.SQL.Add('and suc_codigo = :suc');
+  dm.Query1.Parameters.ParamByName('emp').Value  := dm.vp_cia;
+  dm.Query1.Parameters.ParamByName('suc').Value  :=frmFactura.QFacturaSUC_CODIGO.Value;
+  dm.Query1.Parameters.ParamByName('tipom').Value := TipoM;
+  dm.Query1.Parameters.ParamByName('tipo').Value := Tipo;
+  dm.Query1.Parameters.ParamByName('for').Value   := Forma;
+  dm.Query1.Parameters.ParamByName('num').Value  := Numero;
+  dm.Query1.ExecSQL;
+
+  QMov.Close;
+  QMov.Parameters.ParamByName('emp').Value := dm.vp_cia;
+  QMov.Parameters.ParamByName('tipo').Value := TipoM;
+  QMov.Parameters.ParamByName('num').Value := -1;
+  QMov.Open;
+  QMov.Close;
+
+  
+  Acepta := False;
+  frmFactura.Totaliza := true;
+  frmFactura.QFactura.Edit;
+  frmGeneraCuotas.Close;
+end;
+
+procedure TfrmGeneraCuotas.btnAceptarClick(Sender: TObject);
+var
+  msj : String;
+  vl_dif : Currency;
+begin
+if QMov.RecordCount > 0 then
+  begin
+   if ((vl_dif>0) and (vl_dif < 0.1)) then
+   vl_dif := 0;
+   if vl_dif > 0 then begin
+     msj := 'Debes verificar las cuotas,'+Char(13)+
+            'ya que existe una diferencia entre'+Char(13)+
+            'el total de la factura y monto total de las cuotas'+Char(13)+
+            'LA DIFERENCIA ES DE '+FormatCurr('#,0.00',vl_dif);
+     ShowMessage(msj);
+   Exit;
+   end;
+    QMov.UpdateBatch;
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('update facturas');
+    dm.Query1.SQL.Add('set fac_cuotas = :cuo');
+    dm.Query1.SQL.Add(',fac_abono = :abono');
+    dm.Query1.SQL.Add('where emp_codigo = :emp');
+    dm.Query1.SQL.Add('and fac_forma = :for');
+    dm.Query1.SQL.Add('and tfa_codigo = :tip');
+    dm.Query1.SQL.Add('and fac_numero = :num');
+    dm.Query1.SQL.Add('and suc_codigo = :suc');
+    dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.ParamByName('suc').Value := frmFactura.QFacturaSUC_CODIGO.Value;
+    dm.Query1.Parameters.ParamByName('for').Value := Forma;
+    dm.Query1.Parameters.ParamByName('tip').Value := Tipo;
+    dm.Query1.Parameters.ParamByName('num').Value := Numero;
+    dm.Query1.Parameters.ParamByName('cuo').Value := CEdtCuotas.AsInteger;
+    dm.Query1.Parameters.ParamByName('abono').Value := vl_inicial;
+    dm.Query1.ExecSQL;
+    Acepta := True;
+    Close;
+  end;
+end;
+
+procedure TfrmGeneraCuotas.QMovAfterPost(DataSet: TDataSet);
+var
+vl_pos : Integer;
+vl_dif : Currency;
+begin
+vl_totalcuotas := 0;
+vl_balance := StrToFloat(Format('%10.2f',[Total]));
+vl_pos   := 0;
+if QMov.RecordCount > 0 then begin
+vl_pos := QMovMOV_SECUENCIA.Value;
+QMov.DisableControls;
+QMov.First;
+while not QMov.Eof do begin
+vl_totalcuotas := vl_totalcuotas + QMovMOV_MONTO.Value;
+QMov.Next;
+end;
+QMov.Locate('MOV_SECUENCIA',vl_pos,[]);
+QMov.EnableControls;
+lbTotal.Caption  := FormatCurr('#,0.00',vl_totalcuotas);
+if lbTotal.Caption <> lbTotalFact.Caption then
+lbTotal.Font.Color := clRed
+else
+lbTotal.Font.Color := clBlack;
+
+vl_dif := RoundTo(Total-vl_totalcuotas,-2);
+if ((vl_dif>0) and (vl_dif < 0.1)) then
+vl_dif := 0; 
+lbBal.Caption  := FormatCurr('#,0.00',vl_dif);
+if vl_dif<0 then
+lbBal.Font.Color := clRed
+else
+lbBal.Font.Color := clBlack;
+
+end;
+end;
+
+procedure TfrmGeneraCuotas.DEdt_FechaIniExit(Sender: TObject);
+var
+  a : Integer;
+  FechaPago : TDate;
+begin
+QMov.DisableControls;
+QMov.First;
+if QMovMOV_FECHA.Value <> DEdt_FechaIni.Date then
+begin
+a := 1;
+while not QMov.Eof do
+Begin
+QMov.Edit;
+if a = 1 then begin
+QMovMOV_FECHA.Value  := DEdt_FechaIni.Date;
+FechaPago := DEdt_FechaIni.Date;
+end else
+begin
+QMovMOV_FECHA.Value  := FechaPago + (Intervalo);
+FechaPago := FechaPago + (Intervalo);
+end;
+QMovMOV_FECHAVENCE.Value := QMovMOV_FECHA.Value;
+QMov.Post;
+a := a + 1;
+QMov.Next;
+End;
+QMov.EnableControls;
+end;
+end;
+
+procedure TfrmGeneraCuotas.QMovBeforeInsert(DataSet: TDataSet);
+var
+  TotalCuotas: Integer;
+begin
+  TotalCuotas := StrToIntDef(CEdtCuotas.Text, 0)+1;
+
+  if QMov.RecordCount >= TotalCuotas then
+  begin
+    MessageDlg('Límite de ' + IntToStr(TotalCuotas-1) +
+               ' cuota(s) alcanzado. No puede agregar más.',
+               mtWarning, [mbOK], 0);
+    Abort; // Cancela el insert antes de que ocurra
+  end;
+
+end;
+
+procedure TfrmGeneraCuotas.DBGrid1KeyPress(Sender: TObject; var Key: Char);
+begin
+if Key = #13 then // #13 = Enter
+  begin
+    if QMov.State in [dsEdit, dsInsert] then
     begin
-      key:=#0;
-      showmessage('Solo se permiten numero, favor verifique....');
+      QMov.Post;
+      Key := #0; // Anula el Enter para que no salte de celda
     end;
+  end;
 end;
 
 end.

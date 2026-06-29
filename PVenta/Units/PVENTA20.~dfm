@@ -1,6 +1,6 @@
 object frmPedidosProv: TfrmPedidosProv
-  Left = 286
-  Top = 205
+  Left = 420
+  Top = 170
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Orden de Compra'
@@ -1461,19 +1461,12 @@ object frmPedidosProv: TfrmPedidosProv
       Origin = 'PEDIDOS.PED_NOTA'
       BlobType = ftMemo
     end
-    object QPedidosPED_COTIZACION: TIntegerField
-      FieldName = 'PED_COTIZACION'
-      Origin = 'PEDIDOS.PED_COTIZACION'
-    end
     object QPedidosUSU_CODIGO: TIntegerField
       FieldName = 'USU_CODIGO'
       Origin = 'PEDIDOS.USU_CODIGO'
     end
     object QPedidosSUC_CODIGO: TIntegerField
       FieldName = 'SUC_CODIGO'
-    end
-    object QPedidosped_solicitud_compra: TIntegerField
-      FieldName = 'ped_solicitud_compra'
     end
     object QPedidosped_envio: TMemoField
       FieldName = 'ped_envio'
@@ -1503,6 +1496,12 @@ object frmPedidosProv: TfrmPedidosProv
     object QPedidosped_tasa: TFloatField
       FieldName = 'ped_tasa'
       DisplayFormat = '#,0.0000'
+    end
+    object QPedidosPED_COTIZACION: TStringField
+      FieldName = 'PED_COTIZACION'
+    end
+    object QPedidosped_solicitud_compra: TStringField
+      FieldName = 'ped_solicitud_compra'
     end
   end
   object dsPedidos: TDataSource
@@ -1602,7 +1601,7 @@ object frmPedidosProv: TfrmPedidosProv
     end
     object QDetalleDET_CANTIDAD: TFloatField
       FieldName = 'DET_CANTIDAD'
-      DisplayFormat = '#,0.0000'
+      DisplayFormat = '#,0.00'
     end
     object QDetalleDET_PRECIO: TFloatField
       FieldName = 'DET_PRECIO'

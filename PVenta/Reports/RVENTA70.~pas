@@ -47,12 +47,8 @@ type
     QRLabel13: TQRLabel;
     QRDBText7: TQRDBText;
     QRDBText10: TQRDBText;
-    ChildBand1: TQRChildBand;
-    QRRichText1: TQRRichText;
     procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
       var PrintReport: Boolean);
-    procedure ChildBand1BeforePrint(Sender: TQRCustomBand;
-      var PrintBand: Boolean);
   private
 
   public
@@ -91,27 +87,6 @@ begin
     end;
     dm.Query1.EnableControls;
   end;
-end;
-
-procedure TRepOrdenPedido.ChildBand1BeforePrint(Sender: TQRCustomBand;
-  var PrintBand: Boolean);
-begin
-  QRRichText1.Lines.Text := frmOrdenPedido.QProductosDET_NOTA.Value;
-  if dm.QParametrospar_inv_imprime_comentario.AsString <> 'True' then
-    PrintBand := (trim(QDetalleDET_NOTA.Value) <> '')
-  else
-    PrintBand := (trim(frmOrdenPedido.QProductosDET_NOTA.Value) <> '') or (trim(frmOrdenPedido.QProductospro_comentario.Value) <> '') ;
-
-  if dm.QParametrospar_inv_imprime_comentario.AsString = 'True' then
-  begin
-    if trim(frmOrdenPedido.QProductospro_comentario.Value) <> '' then
-    begin
-      QRRichText1.Lines.Text := frmOrdenPedido.QProductospro_comentario.Value;
-    end;
-  end;
-
-  if QRRichText1.Lines.Count = 0 then
-    ChildBand1.Height := 20;
 end;
 
 end.

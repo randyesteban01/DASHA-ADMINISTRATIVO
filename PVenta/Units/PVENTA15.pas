@@ -549,6 +549,8 @@ type
     CEdt_CostoEmp: TcxDBCurrencyEdit;
     spUptProducto: TADOStoredProc;
     QProductosPRO_UBICACION: TStringField;
+    DBCheckBox10: TDBCheckBox;
+    QProductoswith_servicio_construccion: TBooleanField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btCloseClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;

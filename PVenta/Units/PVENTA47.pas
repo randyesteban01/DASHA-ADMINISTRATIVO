@@ -320,6 +320,7 @@ begin
   QFormas.Parameters.ParamByName('fec1').Value    := Fecha1.Date;
   QFormas.Parameters.ParamByName('fec2').Value    := Fecha2.Date;
   QFormas.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+
   if TRim(edCaja.Text) <> '' then
     QFormas.Parameters.ParamByName('caja').Value    := StrToInt(edCaja.Text)
   else

@@ -1,6 +1,6 @@
 object frmConsRecibos: TfrmConsRecibos
-  Left = 294
-  Top = 201
+  Left = 368
+  Top = 251
   ActiveControl = edVendedor
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle

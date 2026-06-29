@@ -289,7 +289,7 @@ type
     Sec : integer;
     Ins, Totaliza, Buscando : boolean;
     Total : Double;
-    DecisionPrecio, MedidaAlm : string;
+    DecisionPrecio, MedidaAlm, PRO_SERVICIO : string;
     Procedure Totalizar;
     procedure precios;
 
@@ -302,7 +302,7 @@ var
 implementation
 
 uses PVENTA33, RVENTA37, SIGMA01, SIGMA00, PVENTA41, PVENTA15, PVENTA138,
-  PVENTA227, PVENTA121, PVENTA186, PVENTA36, DateUtils;
+  PVENTA227, PVENTA121, PVENTA186, PVENTA36, DateUtils, RVENTA37_SARITA;
 
 {$R *.DFM}
 
@@ -378,7 +378,7 @@ begin
   Totaliza := True;
   QEntradaSUC_CODIGO.Value := QSucursalsuc_codigo.Value;
   QEntradaEMP_CODIGO.value := dm.vp_cia;
-  DBEdit5.ReadOnly :=  False;
+  //DBEdit5.ReadOnly :=  False;
   QEntradaENT_FECHA.value  := date;
   QEntradaENT_FECHA_HORA.Value := DM.getFechaBDA;
   QEntradaENT_STATUS.value := 'EMI';
@@ -439,7 +439,12 @@ begin
   begin
     QSucursal.Parameters.ParamByName('usu').Value := dm.Usuario;
     QSucursal.Open;
-    DBLookupComboBox2.KeyValue := QSucursalsuc_codigo.Value;
+    if QSucursal.RecordCount > 0 then
+    DBLookupComboBox2.KeyValue := QSucursalsuc_codigo.Value else
+    begin
+      ShowMessage('ESTE USUARIO NO TIENE SUCURSAL ASIGNADA');
+      frmEntradas.Close;
+    end;
 
     QEntrada.Parameters.parambyname('emp').Value    := dm.vp_cia;
     QEntrada.Parameters.parambyname('numero').Value := -1;
@@ -617,7 +622,15 @@ begin
       else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'F' then
          QDetallePRO_RFABRIC.value := frmBuscaProducto.QProductosPRO_RFABRIC.value
       else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'O' then
-         QDetallePRO_RORIGINAL.value := frmBuscaProducto.QProductosPRO_RORIGINAL.value;
+      begin
+          if (frmBuscaProducto.QProductosPRO_RORIGINAL.value ='') then
+          begin
+            //QDetallePRO_RORIGINAL.value := frmBuscaProducto.QProductosPRO_RORIGINAL.value;
+            QDetallePRO_CODIGO.value := frmBuscaProducto.QProductosPRO_CODIGO.value
+          end
+          else QDetallePRO_RORIGINAL.value := frmBuscaProducto.QProductosPRO_RORIGINAL.value;
+      end;
+
 
       QDetallepro_serializado.value := frmBuscaProducto.QProductosPRO_serializado.value;
       if frmBuscaProducto.ckactiva.Checked then
@@ -636,16 +649,6 @@ procedure TfrmEntradas.QDetallePRO_CODIGOChange(Sender: TField);
 var
   cod : integer;
 begin
-  IF QEntradaENT_FECHA.Value < StrToDate(FormatDateTime('dd/mm/yyyy',DM.getFechaBDA)) THEN BEGIN
-  IF QEntradaALM_CODIGO.Value > 0 THEN BEGIN
-  if DM.GetProductoAjustado(QEntradaEMP_CODIGO.Value, QEntradaALM_CODIGO.Value, QDetallePRO_CODIGO.Value, QEntradaENT_FECHA.Value) = True then begin
-  MessageDlg('ESTE PRODUCTO TIENE AJUSTE POSTERIOR A LA FECHA DE LA ENTRADA,'+CHAR(13)+' NO ES POSIBLE AGREGAR ESTE PRODUCTO A ESTA ENTRADA...',
-             mtWarning,[MBOK],0);
-  Exit;
-  end;
-  end;
-  end;
-
   if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'I' then
   begin
     if not QDetallePRO_CODIGO.isnull then
@@ -661,23 +664,34 @@ begin
         end;
       end;
     end;
-  end;
+  end  ;
+  {else
+  begin
+    if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'O' then
+    begin
+      if (not QDetallePRO_CODIGO.isnull) and (QDetallePRO_RORIGINAL.value ='') then
+      begin
+        BuscaProd('I');
+        if Lista.Items.IndexOf(QDetallePRO_CODIGO.AsString) >= 0 then
+        begin
+          if MessageDlg('Ya este producto existe en la lista, desea continuar?', mtConfirmation, [mbYes, mbNo], 0) = mrNo then
+          begin
+            cod := QDetallePRO_CODIGO.Value;
+            QDetalle.Cancel;
+            QDetalle.Locate('pro_codigo', cod, []);
+          end;
+        end;
+      end;
+    end;
+
+  end;   }
 end;
 
 procedure TfrmEntradas.QDetallePRO_RFABRICChange(Sender: TField);
 var
   cod : integer;
 begin
-  IF QEntradaENT_FECHA.Value < StrToDate(FormatDateTime('dd/mm/yyyy',DM.getFechaBDA)) THEN BEGIN
-  IF QEntradaALM_CODIGO.Value > 0 THEN BEGIN
-  if DM.GetProductoAjustado(QEntradaEMP_CODIGO.Value, QEntradaALM_CODIGO.Value, QDetallePRO_CODIGO.Value, QEntradaENT_FECHA.Value) = True then begin
-  MessageDlg('ESTE PRODUCTO TIENE AJUSTE POSTERIOR A LA FECHA DE LA ENTRADA,'+CHAR(13)+' NO ES POSIBLE AGREGAR ESTE PRODUCTO A ESTA ENTRADA...',
-             mtWarning,[MBOK],0);
-  Exit;
-  end;
-  end;
-  end;
-  
+ 
   if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'F' then
   begin
     if not QDetallePRO_RFABRIC.isnull then
@@ -700,16 +714,6 @@ procedure TfrmEntradas.QDetallePRO_RORIGINALChange(Sender: TField);
 var
   cod : integer;
 begin
-  IF QEntradaENT_FECHA.Value < StrToDate(FormatDateTime('dd/mm/yyyy',DM.getFechaBDA)) THEN BEGIN
-  IF QEntradaALM_CODIGO.Value > 0 THEN BEGIN
-  if DM.GetProductoAjustado(QEntradaEMP_CODIGO.Value, QEntradaALM_CODIGO.Value, QDetallePRO_CODIGO.Value, QEntradaENT_FECHA.Value) = True then begin
-  MessageDlg('ESTE PRODUCTO TIENE AJUSTE POSTERIOR A LA FECHA DE LA ENTRADA,'+CHAR(13)+' NO ES POSIBLE AGREGAR ESTE PRODUCTO A ESTA ENTRADA...',
-             mtWarning,[MBOK],0);
-  Exit;
-  end;
-  end;
-  end;
-  
   if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'O' then
   begin
     if not QDetallePRO_RORIGINAL.isnull then
@@ -742,6 +746,7 @@ var
   Venta, NumItbis : Double;
   VentaEmp, NumItbisEmp : Double;
 begin
+
   if QDetalleDET_CONITBIS.Value = 'S' then
   begin
     QDetalleCalcCosto.Value    := (QDetalleDET_COSTOUND.Value * QDetalleDET_ITBIS.Value)/100;
@@ -871,6 +876,25 @@ begin
     end;
   end;}
 
+  
+if PRO_SERVICIO = 'TRUE' then
+  begin
+    MessageDlg('NO PUEDE INCLUIR ESTE PRODUCTO, DEBIDO A QUE'+#13+
+               'ES UN SERVICIO',mtError,[mbok],0);
+    Abort;
+  end;
+
+
+  IF QEntradaENT_FECHA.Value < StrToDate(FormatDateTime('dd/mm/yyyy',DM.getFechaBDA)) THEN BEGIN
+  IF QEntradaALM_CODIGO.Value > 0 THEN BEGIN
+  if DM.GetProductoAjustado(QEntradaEMP_CODIGO.Value, QEntradaALM_CODIGO.Value, QDetallePRO_CODIGO.Value, QEntradaENT_FECHA.Value) = True then begin
+  MessageDlg('ESTE PRODUCTO TIENE AJUSTE POSTERIOR A LA FECHA DE LA ENTRADA,'+CHAR(13)+' NO ES POSIBLE AGREGAR ESTE PRODUCTO A ESTA ENTRADA...',
+             mtWarning,[MBOK],0);
+  Exit;
+  end;
+  end;
+  end;
+
   if trim(QDetalleDET_MEDIDA.Value) = '' then QDetalleDET_MEDIDA.Value := MedidaAlm;
   QDetalleDET_CONITBIS.value := UpperCase(QDetalleDET_CONITBIS.value);
 
@@ -906,6 +930,7 @@ var
 begin
 if Trim(dbAlmacen.Text)='' then begin
   ShowMessage('Debe indicar el almacen');
+  dbAlmacen.Clear;
   dbAlmacen.SetFocus;
   Abort;
   end;
@@ -1047,6 +1072,10 @@ if Trim(dbAlmacen.Text)='' then begin
     if MessageDlg('SE HA GENERADO LA ENTRADA DE ALMACEN NUMERO '+inttostr(QEntradaENT_NUMERO.value)+#13+
                   'DESEA IMPRIMIR ESTA ENTRADA?',mtConfirmation,[mbyes,mbno],0) = mryes then
     begin
+    if not (DM.QParametrospar_formato_preimpreso.Value = 'Sarita & Asociados') then
+    begin
+      if dm.QParametrosPAR_FORMATOCON.Value = 2 then
+      begin
       Application.CreateForm(tREntradaAlm, REntradaAlm);
       REntradaAlm.QEntrada.Parameters.ParamByName('numero').Value := QEntradaENT_NUMERO.Value;
       REntradaAlm.QEntrada.Parameters.ParamByName('suc').Value := QEntradaSUC_CODIGO.Value;
@@ -1055,7 +1084,25 @@ if Trim(dbAlmacen.Text)='' then begin
       REntradaAlm.PrinterSetup;
       REntradaAlm.Print;
       REntradaAlm.Destroy;
+      end;
+    end
+    else
+    begin
+    Application.CreateForm(TREntradaAlmSarita, REntradaAlmSarita);
+      REntradaAlmSarita.QEntrada.Parameters.ParamByName('numero').Value := QEntradaENT_NUMERO.Value;
+      REntradaAlmSarita.QEntrada.Parameters.ParamByName('suc').Value := QEntradaSUC_CODIGO.Value;
+      REntradaAlmSarita.QEntrada.Open;
+      REntradaAlmSarita.QDetalle.Open;
+      REntradaAlmSarita.PrinterSetup;
+      REntradaAlmSarita.Print;
+      REntradaAlmSarita.Destroy;
     end;
+    end;
+
+
+
+
+
 
     QEntrada.Close;
     QEntrada.Parameters.parambyname('numero').Value := -1;
@@ -1074,16 +1121,17 @@ begin
   Suc := DBLookupComboBox2.KeyValue;
   Search.Query.clear;
   Search.AliasFields.clear;
-  Search.Query.add('select ent_numero, ent_fecha, ent_concepto');
-  Search.Query.add('from entradainv');
-  Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
+  Search.Query.add('select ent_numero, ent_fecha, ent_concepto, p.sup_nombre');
+  Search.Query.add('from entradainv e inner join Proveedores p on e.sup_codigo= p.sup_codigo ');
+  Search.Query.add('where e.emp_codigo = '+inttostr(dm.vp_cia));
   Search.Query.add('and ent_status = '+#39+'EMI'+#39);
   if trim(edProveedor.Text) <> '' then
-     Search.Query.add('and sup_codigo = '+trim(edProveedor.Text));
-  Search.Query.add('and suc_codigo = '+IntToStr(Suc));
+     Search.Query.add('and e.sup_codigo = '+trim(edProveedor.Text));
+  Search.Query.add('and e.suc_codigo = '+IntToStr(Suc));
   Search.AliasFields.add('Número');
   Search.AliasFields.add('Fecha');
   Search.AliasFields.add('Concepto');
+  Search.AliasFields.add('Proveedor');
   Search.Title := 'Entradas de Almacen';
   Search.ResultField := 'ent_numero';
   if Search.execute then
@@ -1220,7 +1268,7 @@ begin
     end;
     QDetalle.GotoBookmark(Punt);
     QDetalle.enablecontrols;
-    QEntradaENT_ITBIS.Value := RoundTo(titbis, -2);
+    QEntradaENT_ITBIS.Value := titbis;
     QEntradaENT_TOTAL.value := Total+QEntradaENT_ITBIS.Value;
   end;
 end;
@@ -1236,6 +1284,8 @@ begin
   if QDetalle.RecordCount > 0 then
   DBEdit5.ReadOnly :=  True else
   DBEdit5.ReadOnly :=  False;
+
+  PRO_SERVICIO := '';
 end;
 
 procedure TfrmEntradas.btEliminaClick(Sender: TObject);
@@ -1301,9 +1351,14 @@ begin
     begin
     tAlmacen.Clear;
     dbAlmacen.Clear;
-    QEntradaALM_CODIGO.IsNull;
+    QEntradaALM_CODIGO.Clear;
     MessageDlg('Debes indicar un almacen valido en la sucursal para esta entrada.....',mtInformation,[mbOK],0);
     end;
+end
+else
+begin
+  tAlmacen.Clear;
+  dbAlmacen.Clear;
 end;
 end;
 
@@ -1371,6 +1426,12 @@ begin
   begin
     QEntradaALM_CODIGO.value := StrToInt(Search.ValueField);
     dbAlmacen.setfocus;
+  end
+  else
+  begin
+    dbAlmacen.Clear;
+    QEntradaALM_CODIGO.Clear;
+    tAlmacen.Clear;
   end;
 end;
 
@@ -1672,7 +1733,6 @@ begin
           QDetallePRO_PRECIO1.Value := StrToFloat(Format('%10.2F',[(QDetalleValorItbisUnd.Value+((QDetalleValorItbisUnd.Value*QDetallePRO_BENEFICIO.Value)/100))]))
         else
           QDetallePRO_PRECIO1.Value := StrToFloat(Format('%10.2F',[(QDetalleDET_COSTOUND.Value+((QDetalleDET_COSTOUND.Value*QDetallePRO_BENEFICIO.Value)/100))]));
-   //      dm.ADOSigma.Execute('UPDATE Productos set PRO_PRECIO1 ='+FormatCurr('#,0.00',QDetallepro_precio1.Value)+ ' WHERE PRO_CODIGO ='+QDetallePRO_CODIGO.Text);
     //Precio2
     if QDetallePRO_BENEFICIO2.Value > 0 then
       if dm.QParametrosPAR_PRECIOUND.Value = 'Precio2' then
@@ -1680,7 +1740,6 @@ begin
            QDetallePRO_PRECIO2.Value := StrToFloat(Format('%10.2F',[(QDetalleValorItbisUnd.Value+((QDetalleValorItbisUnd.Value*QDetallePRO_BENEFICIO2.Value)/100))]))
          else
            QDetallePRO_PRECIO2.Value := StrToFloat(Format('%10.2F',[(QDetalleDET_COSTOUND.Value+((QDetalleDET_COSTOUND.Value*QDetallePRO_BENEFICIO2.Value)/100))]));
-     //    dm.ADOSigma.Execute('UPDATE Productos set PRO_PRECIO2 ='+FormatCurr('#,0.00',QDetallepro_precio2.Value)+ ' WHERE PRO_CODIGO ='+QDetallePRO_CODIGO.Text);
     //Precio3
     if QDetallePRO_BENEFICIO3.Value > 0 then
       if dm.QParametrosPAR_PRECIOUND.Value = 'Precio3' then
@@ -1688,7 +1747,6 @@ begin
            QDetallePRO_PRECIO3.Value := StrToFloat(Format('%10.2F',[(QDetalleValorItbisUnd.Value+((QDetalleValorItbisUnd.Value*QDetallePRO_BENEFICIO3.Value)/100))]))
          else
            QDetallePRO_PRECIO3.Value := StrToFloat(Format('%10.2F',[(QDetalleDET_COSTOUND.Value+((QDetalleDET_COSTOUND.Value*QDetallePRO_BENEFICIO3.Value)/100))]));
-       //  dm.ADOSigma.Execute('UPDATE Productos set PRO_PRECIO3 ='+FormatCurr('#,0.00',QDetallepro_precio3.Value)+ ' WHERE PRO_CODIGO ='+QDetallePRO_CODIGO.Text);
     //Precio4
     if QDetallePRO_BENEFICIO4.Value > 0 then
       if dm.QParametrosPAR_PRECIOUND.Value = 'Precio4' then
@@ -1696,7 +1754,6 @@ begin
            QDetallePRO_PRECIO4.Value := StrToFloat(Format('%10.2F',[(QDetalleValorItbisUnd.Value+((QDetalleValorItbisUnd.Value*QDetallePRO_BENEFICIO4.Value)/100))]))
          else
            QDetallePRO_PRECIO4.Value := StrToFloat(Format('%10.2F',[(QDetalleDET_COSTOUND.Value+((QDetalleDET_COSTOUND.Value*QDetallePRO_BENEFICIO4.Value)/100))]));
-      //   dm.ADOSigma.Execute('UPDATE Productos set PRO_PRECIO4 ='+FormatCurr('#,0.00',QDetallepro_precio4.Value)+ ' WHERE PRO_CODIGO ='+QDetallePRO_CODIGO.Text);
 
 
     //Empaque
@@ -2095,12 +2152,12 @@ begin
   qBuscaProd.close;
   qBuscaProd.sql.clear;
   qBuscaProd.sql.add('select pro_codigo, pro_nombre, pro_costo, isnull(pro_precio1,0)pro_precio1,');
-  qBuscaProd.sql.add('isnull(pro_precio2,0) pro_precio2, isnull(pro_precio3,0) pro_precio3, isnull(pro_precio4,0)pro_precio4, pro_servicio,');
+  qBuscaProd.sql.add('isnull(pro_precio2,0) pro_precio2, isnull(pro_precio3,0) pro_precio3, isnull(pro_precio4,0)pro_precio4, UPPER(pro_servicio) PRO_SERVICIO,');
   qBuscaProd.sql.add('pro_roriginal, pro_rfabric, pro_itbis, pro_vence,');
   qBuscaProd.sql.add('pro_costoempaque, isnull(pro_beneficio,0)pro_beneficio, isnull(pro_beneficio2,0)pro_beneficio2,');
   qBuscaProd.sql.add('isnull(pro_beneficio3,0)pro_beneficio3, isnull(pro_beneficio4,0)pro_beneficio4, pro_preciomenor, pro_status,');
   qBuscaProd.sql.add('pro_preciomenoremp, pro_costous, pro_detallado, pro_cantempaque,');
-  qBuscaProd.sql.add('UnidadID, pro_montoitbis, pro_serializado');
+  qBuscaProd.sql.add('UnidadID, pro_montoitbis, pro_serializado, PRO_COMBO');
   qBuscaProd.sql.add('from productos');
   qBuscaProd.sql.add('where emp_codigo = :emp');
   qBuscaProd.sql.add('and pro_status = '+QuotedStr('ACT'));
@@ -2116,26 +2173,34 @@ begin
   end
   else if campo = 'O' then
   begin
-    qBuscaProd.sql.add('and pro_roriginal = :cod');
-    qBuscaProd.Parameters.parambyname('cod').Value := QDetallePRO_RORIGINAL.value;
+    if QDetallePRO_RORIGINAL.value='' then
+    begin
+      qBuscaProd.sql.add('and pro_codigo = :cod');
+      qBuscaProd.Parameters.parambyname('cod').Value := QDetallePRO_CODIGO.value;
+    end
+    else
+    begin
+      qBuscaProd.sql.add('and pro_roriginal = :cod');
+      qBuscaProd.Parameters.parambyname('cod').Value := QDetallePRO_RORIGINAL.value;
+    end;
   end;
   qBuscaProd.Parameters.parambyname('emp').Value := dm.QParametrosPAR_INVEMPRESA.Value;
   qBuscaProd.open;
 
-  if qBuscaProd.FieldByName('pro_servicio').AsString = 'True' then
+  PRO_SERVICIO := qBuscaProd.FieldByName('PRO_SERVICIO').AsString;
+
+  if qBuscaProd.FieldByName('PRO_SERVICIO').AsString = 'TRUE' then
   begin
     MessageDlg('NO PUEDE INCLUIR ESTE PRODUCTO, DEBIDO A QUE'+#13+
                'ES UN SERVICIO',mtError,[mbok],0);
-    QDetalle.Cancel;
-    Grid.SelectedIndex := 0;
+    Exit;
   end
   else
   if qBuscaProd.FieldByName('pro_status').AsString = 'INA' then
   begin
     MessageDlg('NO PUEDE INCLUIR ESTE PRODUCTO, DEBIDO A QUE'+#13+
                'ESTA INACTIVO',mtError,[mbok],0);
-    QDetalle.Cancel;
-    Grid.SelectedIndex := 0;
+    Exit;
   end
   else
   begin

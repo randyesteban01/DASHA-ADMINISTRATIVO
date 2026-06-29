@@ -1206,7 +1206,7 @@ object frmEntradas: TfrmEntradas
       'and suc_codigo = :suc'
       'order by det_secuencia')
     Left = 448
-    Top = 208
+    Top = 224
     object QDetalleDET_CANTIDAD: TFloatField
       FieldName = 'DET_CANTIDAD'
       Origin = 'DET_ENTRADA.DET_CANTIDAD'
@@ -1591,7 +1591,7 @@ object frmEntradas: TfrmEntradas
   end
   object dsSuc: TDataSource
     DataSet = QSucursal
-    Left = 400
+    Left = 408
     Top = 144
   end
   object QSerie: TADOQuery

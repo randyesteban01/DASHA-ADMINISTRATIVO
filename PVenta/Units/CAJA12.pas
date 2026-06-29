@@ -4,7 +4,7 @@ interface
 
 uses Windows, SysUtils, Messages, Classes, Graphics, Controls,
   StdCtrls, ExtCtrls, Forms, QuickRpt, QRCtrls, DB, IBCustomDataSet,
-  IBQuery, ADODB;
+  IBQuery, ADODB,DelphiZXingQRCode;
 
 type
   TRTicketFormal = class(TQuickRep)
@@ -173,6 +173,16 @@ type
     QMasterncf_secuencia: TBCDField;
     lbnumero: TQRLabel;
     QMasterfecha_hora: TDateTimeField;
+    QMasterencf: TStringField;
+    QMastercodigoseguridad: TStringField;
+    QMasterAceptadoDGII: TBooleanField;
+    QMasterfechafirma: TStringField;
+    QMasterUrlCodigoQR: TMemoField;
+    qrImgQRCode: TQRImage;
+    lblcodigoseg: TQRLabel;
+    lblFirmaDigital: TQRLabel;
+    QRDBText16: TQRDBText;
+    QRDBText26: TQRDBText;
     procedure QRBand3BeforePrint(Sender: TQRCustomBand;
       var PrintBand: Boolean);
     procedure QDetalleCalcFields(DataSet: TDataSet);
@@ -188,6 +198,7 @@ type
     ActBalance, Credito : String;
     PrintDetalle : Boolean;
     tiponcf, cliente, empresa : integer;
+    procedure GenerarCodigoQR(const Texto: string; Imagen: TQRImage);
   end;
 
 var
@@ -280,6 +291,26 @@ begin
     lblocalidad.Caption := '';
     lbtelefono.Caption  := '';
   end;
+
+  if  dm.QParametrosUsa_FacturacionElectronica.Value  then
+    begin
+    GenerarCodigoQR(QMasterUrlCodigoQR.Value, qrImgQRCode)  end
+    else
+    begin
+      qrImgQRCode.Visible:=False;
+      lblcodigoseg.Caption:= '';
+      lblFirmaDigital.Caption:='';
+      QRDBText16.Visible:=False;
+      QRDBText26.Visible:=False;
+    end;
+
+   if not QMasterAceptadoDGII.Value then
+   begin
+      lblcodigoseg.Caption:= '';
+      lblFirmaDigital.Caption:='';
+      QRDBText16.Visible:=False;
+      QRDBText26.Visible:=False;
+   end;
 end;
 
 procedure TRTicketFormal.QRBand4BeforePrint(Sender: TQRCustomBand;
@@ -374,5 +405,55 @@ begin
   else
     lbtiponcf.Caption := ' ';
 end;
+
+procedure TRTicketFormal.GenerarCodigoQR(const Texto: string; Imagen: TQRImage);
+var
+  QRCode: TDelphiZXingQRCode;
+  Bitmap: TBitmap;
+  QRSize: Integer;
+  ModuleSize: Integer;
+  i, j: Integer;
+begin
+  QRCode := TDelphiZXingQRCode.Create;
+  try
+    QRCode.Data := Texto;
+    QRCode.QuietZone := 4;
+
+    // Calculamos el tamaño basado en módulos
+    ModuleSize := 5; // Cada módulo mide 5 píxeles (puedes ajustar)
+    QRSize := (QRCode.Rows + QRCode.QuietZone * 2) * ModuleSize;
+
+    Bitmap := TBitmap.Create;
+    try
+      Bitmap.Width := QRSize;
+      Bitmap.Height := QRSize;
+
+      Bitmap.Canvas.Brush.Color := clWhite;
+      Bitmap.Canvas.FillRect(Rect(0, 0, Bitmap.Width, Bitmap.Height));
+
+      Bitmap.Canvas.Brush.Color := clBlack;
+      for i := 0 to QRCode.Rows - 1 do
+        for j := 0 to QRCode.Columns - 1 do
+          if QRCode.IsBlack[i, j] then
+            Bitmap.Canvas.FillRect(Rect(
+              (j + QRCode.QuietZone) * ModuleSize,
+              (i + QRCode.QuietZone) * ModuleSize,
+              (j + QRCode.QuietZone + 1) * ModuleSize,
+              (i + QRCode.QuietZone + 1) * ModuleSize
+            ));
+
+      // Escalar para llenar el tamaño del QRImage
+      Imagen.Picture.Bitmap.Width := Imagen.Width;
+      Imagen.Picture.Bitmap.Height := Imagen.Height;
+      Imagen.Picture.Bitmap.Canvas.StretchDraw(Rect(0, 0, Imagen.Width, Imagen.Height), Bitmap);
+    finally
+      Bitmap.Free;
+    end;
+  finally
+    QRCode.Free;
+  end;
+end;
+
+
 
 end.

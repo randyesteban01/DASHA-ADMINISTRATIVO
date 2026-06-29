@@ -85,7 +85,6 @@ type
     QPedidoPED_TIPO: TIBStringField;
     QPedidoPED_NUMERO: TIntegerField;
     QPedidoPED_FECHA: TDateTimeField;
-    QPedidoPED_COTIZACION: TIntegerField;
     QPedidoCLI_CODIGO: TIntegerField;
     QPedidoCLI_REFERENCIA: TIBStringField;
     QPedidoPED_DIRECCION: TIBStringField;
@@ -98,7 +97,6 @@ type
     QPedidoPED_LOCALIDAD: TIBStringField;
     QPedidoPED_NOTA: TMemoField;
     QPedidoSUC_CODIGO: TIntegerField;
-    QPedidoped_solicitud_compra: TIntegerField;
     dsPedido: TDataSource;
     QDetalle: TADOQuery;
     QDetallePRO_CODIGO: TIntegerField;
@@ -137,6 +135,8 @@ type
     QDetallePrecioItbis: TCurrencyField;
     QDetalleValor: TCurrencyField;
     QDetalleValor2: TCurrencyField;
+    QPedidoped_solicitud_compra: TStringField;
+    QPedidoPED_COTIZACION: TStringField;
     procedure QRTHortonBeforePrint(Sender: TCustomQuickRep;
       var PrintReport: Boolean);
     procedure QDetalleCalcFields(DataSet: TDataSet);

@@ -1,6 +1,6 @@
 object frmPrecios: TfrmPrecios
-  Left = 627
-  Top = 360
+  Left = 396
+  Top = 304
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Precios'
@@ -73,7 +73,7 @@ object frmPrecios: TfrmPrecios
     Top = 40
     Width = 449
     Height = 193
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     TabOrder = 2
     TabStop = False
     object TabSheet1: TTabSheet
@@ -202,7 +202,7 @@ object frmPrecios: TfrmPrecios
         TitleFont.Height = -11
         TitleFont.Name = 'Tahoma'
         TitleFont.Style = []
-        OnColEnter = gunidadesColEnter
+        OnDblClick = gunidadesDblClick
         Columns = <
           item
             Expanded = False
@@ -667,12 +667,6 @@ object frmPrecios: TfrmPrecios
         Precision = 10
         Size = 4
         Value = Null
-      end
-      item
-        Name = 'uni'
-        DataType = ftString
-        Size = -1
-        Value = Null
       end>
     SQL.Strings = (
       'select'
@@ -683,7 +677,6 @@ object frmPrecios: TfrmPrecios
       'where'
       'p.emp_codigo = :emp_codigo'
       'and p.pro_codigo = :pro_codigo'
-      'and p.unidadid = :uni'
       'order by'
       'p.Secuencia')
     Left = 160

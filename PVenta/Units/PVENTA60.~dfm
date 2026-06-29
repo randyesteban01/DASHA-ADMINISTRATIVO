@@ -1,11 +1,11 @@
 object frmConsCxC: TfrmConsCxC
-  Left = 170
-  Top = 0
+  Left = 120
+  Top = 49
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Consulta general de cuentas por cobrar'
-  ClientHeight = 646
-  ClientWidth = 1048
+  ClientHeight = 655
+  ClientWidth = 1276
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -24,26 +24,26 @@ object frmConsCxC: TfrmConsCxC
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 0
-    Top = 441
-    Width = 1048
+    Top = 450
+    Width = 1276
     Height = 4
     Cursor = crVSplit
     Align = alTop
   end
   object Panel1: TPanel
     Left = 0
-    Top = 605
-    Width = 1048
+    Top = 614
+    Width = 1276
     Height = 41
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 1
     DesignSize = (
-      1048
+      1276
       41)
     object btRefresh: TBitBtn
-      Left = 522
+      Left = 750
       Top = 8
       Width = 75
       Height = 25
@@ -53,7 +53,7 @@ object frmConsCxC: TfrmConsCxC
       OnClick = btRefreshClick
     end
     object BitBtn2: TBitBtn
-      Left = 676
+      Left = 904
       Top = 8
       Width = 97
       Height = 25
@@ -72,7 +72,7 @@ object frmConsCxC: TfrmConsCxC
         03333333333333333333}
     end
     object btClose: TBitBtn
-      Left = 966
+      Left = 1194
       Top = 8
       Width = 75
       Height = 25
@@ -96,7 +96,7 @@ object frmConsCxC: TfrmConsCxC
       NumGlyphs = 2
     end
     object BitBtn1: TBitBtn
-      Left = 775
+      Left = 1003
       Top = 9
       Width = 105
       Height = 24
@@ -115,7 +115,7 @@ object frmConsCxC: TfrmConsCxC
         03333333333333333333}
     end
     object BitBtn3: TBitBtn
-      Left = 599
+      Left = 827
       Top = 8
       Width = 75
       Height = 25
@@ -152,7 +152,7 @@ object frmConsCxC: TfrmConsCxC
       OnClick = ckVenceClick
     end
     object btConsolidado: TBitBtn
-      Left = 880
+      Left = 1108
       Top = 8
       Width = 85
       Height = 25
@@ -171,7 +171,7 @@ object frmConsCxC: TfrmConsCxC
         03333333333333333333}
     end
     object btnEmail: TBitBtn
-      Left = 433
+      Left = 661
       Top = 8
       Width = 85
       Height = 25
@@ -183,8 +183,8 @@ object frmConsCxC: TfrmConsCxC
   end
   object Panel2: TPanel
     Left = 0
-    Top = 445
-    Width = 1048
+    Top = 454
+    Width = 1276
     Height = 113
     Align = alClient
     BevelInner = bvRaised
@@ -193,7 +193,7 @@ object frmConsCxC: TfrmConsCxC
     object DBGrid2: TDBGrid
       Left = 2
       Top = 2
-      Width = 1044
+      Width = 1272
       Height = 109
       Align = alClient
       Color = clInfoBk
@@ -355,8 +355,8 @@ object frmConsCxC: TfrmConsCxC
   end
   object Panel3: TPanel
     Left = 0
-    Top = 558
-    Width = 1048
+    Top = 567
+    Width = 1276
     Height = 47
     Align = alBottom
     BevelInner = bvRaised
@@ -550,7 +550,7 @@ object frmConsCxC: TfrmConsCxC
   object Panel4: TPanel
     Left = 0
     Top = 0
-    Width = 1048
+    Width = 1276
     Height = 63
     Align = alTop
     BevelInner = bvRaised
@@ -687,8 +687,8 @@ object frmConsCxC: TfrmConsCxC
   object DBGrid1: TDBGrid
     Left = 0
     Top = 63
-    Width = 1048
-    Height = 378
+    Width = 1276
+    Height = 387
     Align = alTop
     Anchors = [akLeft, akTop, akRight, akBottom]
     Color = clInfoBk
@@ -2580,6 +2580,14 @@ object frmConsCxC: TfrmConsCxC
         'SET @MONTOAPLICADO = (SELECT ISNULL((SELECT SUM(ISNULL(det_monto' +
         ',0)) FROM Det_NotaCredito WHERE emp_codigo = @EMP AND SUC_CODIGO' +
         ' = @SUC AND NCR_NUMERO = @NCID),0))'
+      ''
+      'IF (@MONTOAPLICADO=0) '
+      'BEGIN'
+      
+        'SET @MONTOAPLICADO = (SELECT ISNULL((SELECT SUM(ISNULL(ncr_monto' +
+        '-ncr_montousado,0)) FROM NOTASCREDITO WHERE emp_codigo = @EMP AN' +
+        'D SUC_CODIGO = @SUC AND NCR_NUMERO = @NCID),0))'
+      'END'
       
         'SET @CLI = (SELECT CLI_CODIGO FROM NOTASCREDITO WHERE EMP_CODIGO' +
         ' = @EMP AND SUC_CODIGO = @SUC AND ncr_numero = @NCID)'
@@ -3034,7 +3042,9 @@ object frmConsCxC: TfrmConsCxC
       
         'WHERE emp_codigo = @EMPRESA AND suc_codigo = @SUC AND tfa_codigo' +
         ' = @tipo AND fac_forma = @FORMA '
-      'AND MOV_numero = @FAC and cli_codigo = @CLI'
+      
+        'AND MOV_numero = @FAC and cli_codigo = @CLI AND ISNULL(MOV_CUOTA' +
+        ','#39'False'#39')='#39'False'#39
       ''
       ''
       
@@ -3104,45 +3114,17 @@ object frmConsCxC: TfrmConsCxC
       end>
     SQL.Strings = (
       
-        'declare @emp int, @suc int, @ncid int, @cli int, @monto numeric(' +
-        '18,2), @montousa numeric(18,2)'
-      #9'declare c_upd_notascredito cursor for'
+        'UPDATE nc'#10'SET nc.ncr_montousado = ISNULL(x.montousado, 0)'#10'FROM N' +
+        'otasCredito nc'#13#10#10
       
-        #9#9'select nc.emp_codigo, nc.suc_codigo, nc.ncr_numero, nc.cli_cod' +
-        'igo, nc.ncr_monto'
-      #9#9'from notascredito nc'
-      #9#9'where nc.ncr_status <> '#39'anu'#39
-      #9#9'order by nc.emp_codigo, nc.suc_codigo, nc.ncr_numero;'
-      #9
-      #9'open c_upd_notascredito;'
+        'LEFT JOIN ('#10'SELECT d.emp_codigo,'#10' d.suc_codigo,'#10' d.ncr_numero,'#10' ' +
+        'SUM(ISNULL(d.det_monto,0)) AS montousado'#10'    '
+      'FROM Det_NotaCredito d'#10'    '
+      'GROUP BY d.emp_codigo, d.suc_codigo, d.ncr_numero'#10') x '
       
-        #9'fetch next from c_upd_notascredito into @emp, @suc, @ncid, @cli' +
-        ', @monto;'
-      ''
-      #9'while @@fetch_status = 0 '
-      #9'begin'
-      '    select @montousa = isnull(sum(isnull(d.det_monto,0)),0)'
-      #9'from NotasCredito nc'
-      
-        #9'inner join Det_NotaCredito d on nc.emp_codigo = d.emp_codigo an' +
-        'd nc.suc_codigo = d.suc_codigo and nc.ncr_numero = d.ncr_numero'
-      
-        #9'where nc.emp_codigo = @emp and nc.suc_codigo = @suc and nc.ncr_' +
-        'numero = @ncid;'
-      #9
-      #9'update NotasCredito'
-      #9'set ncr_montousado = @montousa'
-      
-        #9'where emp_codigo = @emp and suc_codigo = @suc and ncr_numero = ' +
-        '@ncid;'
-      #9
-      
-        #9#9'fetch next from c_upd_notascredito into @emp, @suc, @ncid, @cl' +
-        'i, @monto;'
-      ''
-      #9'end'
-      #9'close c_upd_notascredito;'
-      #9'deallocate c_upd_notascredito;')
+        'ON nc.emp_codigo = x.emp_codigo'#10'   AND nc.suc_codigo = x.suc_cod' +
+        'igo'#10'   '
+      'AND nc.ncr_numero = x.ncr_numero'#10'WHERE nc.ncr_status <> '#39'anu'#39';')
     Left = 432
     Top = 248
   end

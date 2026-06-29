@@ -1,11 +1,11 @@
 object frmNomina: TfrmNomina
-  Left = 129
-  Top = 28
+  Left = -7
+  Top = 3
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Nomina'
-  ClientHeight = 660
-  ClientWidth = 1069
+  ClientHeight = 553
+  ClientWidth = 1004
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -208,8 +208,8 @@ object frmNomina: TfrmNomina
   object PageControl1: TPageControl
     Left = 0
     Top = 157
-    Width = 1069
-    Height = 503
+    Width = 1004
+    Height = 396
     ActivePage = TabSheet1
     Align = alBottom
     Anchors = [akLeft, akTop, akRight, akBottom]
@@ -219,8 +219,8 @@ object frmNomina: TfrmNomina
       object sgnomina: TStringGrid
         Left = 0
         Top = 0
-        Width = 1061
-        Height = 475
+        Width = 996
+        Height = 368
         Align = alClient
         ColCount = 3
         DefaultColWidth = 90

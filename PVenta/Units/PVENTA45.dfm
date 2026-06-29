@@ -1,11 +1,11 @@
 object frmFacProvee: TfrmFacProvee
-  Left = 542
-  Top = 81
+  Left = 396
+  Top = 13
   ActiveControl = edProveedor
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Factura de Proveedores'
-  ClientHeight = 607
+  ClientHeight = 548
   ClientWidth = 791
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -167,11 +167,11 @@ object frmFacProvee: TfrmFacProvee
       FocusControl = DBEdit25
     end
     object Label3: TLabel
-      Left = 248
-      Top = 48
-      Width = 20
+      Left = 246
+      Top = 52
+      Width = 26
       Height = 13
-      Caption = 'NCF'
+      Caption = 'eNCF'
       FocusControl = DBEdit9
     end
     object Label27: TLabel
@@ -663,7 +663,6 @@ object frmFacProvee: TfrmFacProvee
       MaxLength = 19
       ParentFont = False
       TabOrder = 6
-      Visible = False
     end
     object DBEdit20: TDBEdit
       Left = 680
@@ -1016,7 +1015,7 @@ object frmFacProvee: TfrmFacProvee
   end
   object Panel5: TPanel
     Left = 0
-    Top = 549
+    Top = 490
     Width = 791
     Height = 58
     Align = alBottom
@@ -1184,7 +1183,7 @@ object frmFacProvee: TfrmFacProvee
     Left = 0
     Top = 211
     Width = 791
-    Height = 338
+    Height = 279
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
@@ -1193,10 +1192,10 @@ object frmFacProvee: TfrmFacProvee
       Caption = 'Productos'
       DesignSize = (
         783
-        310)
+        251)
       object lbcant: TLabel
         Left = 8
-        Top = 240
+        Top = 181
         Width = 46
         Height = 13
         Anchors = [akLeft, akBottom]
@@ -1210,7 +1209,7 @@ object frmFacProvee: TfrmFacProvee
       end
       object Label18: TLabel
         Left = 186
-        Top = 240
+        Top = 181
         Width = 138
         Height = 13
         Anchors = [akLeft, akBottom]
@@ -1224,7 +1223,7 @@ object frmFacProvee: TfrmFacProvee
       end
       object Label20: TLabel
         Left = 493
-        Top = 240
+        Top = 181
         Width = 145
         Height = 13
         Anchors = [akLeft, akBottom]
@@ -1240,7 +1239,7 @@ object frmFacProvee: TfrmFacProvee
         Left = 0
         Top = 0
         Width = 783
-        Height = 210
+        Height = 151
         Align = alTop
         Anchors = [akLeft, akTop, akRight, akBottom]
         Ctl3D = False
@@ -1368,7 +1367,7 @@ object frmFacProvee: TfrmFacProvee
       end
       object pnprecios: TPanel
         Left = 0
-        Top = 259
+        Top = 200
         Width = 783
         Height = 51
         Align = alBottom
@@ -1747,7 +1746,7 @@ object frmFacProvee: TfrmFacProvee
       end
       object lbgrabados: TStaticText
         Left = 650
-        Top = 238
+        Top = 179
         Width = 103
         Height = 17
         Alignment = taRightJustify
@@ -1765,7 +1764,7 @@ object frmFacProvee: TfrmFacProvee
       end
       object lbexcentos: TStaticText
         Left = 343
-        Top = 238
+        Top = 179
         Width = 103
         Height = 17
         Alignment = taRightJustify
@@ -1796,10 +1795,10 @@ object frmFacProvee: TfrmFacProvee
       ImageIndex = 1
       DesignSize = (
         783
-        310)
+        251)
       object Label11: TLabel
         Left = 6
-        Top = 258
+        Top = 199
         Width = 54
         Height = 13
         Anchors = [akLeft, akBottom]
@@ -1813,7 +1812,7 @@ object frmFacProvee: TfrmFacProvee
       end
       object Label12: TLabel
         Left = 6
-        Top = 275
+        Top = 216
         Width = 49
         Height = 13
         Anchors = [akLeft, akBottom]
@@ -1827,7 +1826,7 @@ object frmFacProvee: TfrmFacProvee
       end
       object Label13: TLabel
         Left = 6
-        Top = 291
+        Top = 232
         Width = 51
         Height = 13
         Anchors = [akLeft, akBottom]
@@ -1876,7 +1875,7 @@ object frmFacProvee: TfrmFacProvee
       end
       object lbCR: TStaticText
         Left = 64
-        Top = 257
+        Top = 198
         Width = 103
         Height = 17
         Alignment = taRightJustify
@@ -1894,7 +1893,7 @@ object frmFacProvee: TfrmFacProvee
       end
       object lbDB: TStaticText
         Left = 64
-        Top = 273
+        Top = 214
         Width = 103
         Height = 17
         Alignment = taRightJustify
@@ -1912,7 +1911,7 @@ object frmFacProvee: TfrmFacProvee
       end
       object lbBAL: TStaticText
         Left = 64
-        Top = 290
+        Top = 231
         Width = 103
         Height = 17
         Alignment = taRightJustify
@@ -2263,13 +2262,13 @@ object frmFacProvee: TfrmFacProvee
         Value = Null
       end>
     SQL.Strings = (
-      'select EMP_CODIGO, FAC_ABONO, FAC_DESCUENTO, FAC_DIAS, '
+      'select f.EMP_CODIGO, FAC_ABONO, FAC_DESCUENTO, FAC_DIAS, '
       'FAC_EXENTO, FAC_FECHA, FAC_GRABADO, FAC_NUMERO, '
-      'FAC_STATUS, FAC_TOTAL, FAC_VENCE, SUP_CODIGO, '
-      'ALM_CODIGO, USU_CODIGO, FAC_ITBIS, PED_NUMERO,'
+      'FAC_STATUS, FAC_TOTAL, FAC_VENCE, f.SUP_CODIGO, '
+      'ALM_CODIGO, f.USU_CODIGO, FAC_ITBIS, PED_NUMERO,'
       'CEN_CODIGO, FAC_TASA, SUC_CODIGO, MON_CODIGO,'
       'fac_total_oferta, fac_selectivo, fac_flete, NCF, '
-      'fac_selectivo_ad, ent_numero, tip_codigo, fac_concepto,'
+      'fac_selectivo_ad, ent_numero, f.tip_codigo, fac_concepto,'
       
         'fac_retencion, Cashflow_Grupo, Cashflow_Subgrupo, Cashflow_Conce' +
         'pto,'
@@ -2278,11 +2277,16 @@ object frmFacProvee: TfrmFacProvee
         'ios, '
       
         'fac_proplegal, Tipo_Ret_Codigo, fac_otrosimpuestos, fac_form_pag' +
-        'o, cont_numeroSucursal, FAC_FECHA_EFECTIVA'
-      'from PROVFACTURAS'
-      'where emp_codigo = :emp'
-      'and sup_codigo = :sup'
-      'and fac_numero = :num')
+        'o, cont_numeroSucursal, FAC_FECHA_EFECTIVA,'
+      'eNCF, E.emp_rnc, C.sup_rnc, t.cod_dgii as TipoeNCF'
+      
+        'from PROVFACTURAS f INNER JOIN Empresas E ON E.emp_codigo=F.emp_' +
+        'codigo'
+      'LEFT join TipoNCF t on t.tip_codigo=f.tip_codigo'
+      'LEFT JOIN Proveedores C ON C.sup_codigo= F.sup_codigo'
+      'where f.emp_codigo = :emp'
+      'and f.sup_codigo = :sup'
+      'and f.fac_numero = :num')
     Left = 184
     Top = 168
     object QFacturaEMP_CODIGO: TIntegerField
@@ -2314,6 +2318,7 @@ object frmFacProvee: TfrmFacProvee
       FieldName = 'FAC_FECHA'
       Origin = 'PROVFACTURAS.FAC_FECHA'
       OnChange = QFacturaFAC_FECHAChange
+      EditMask = 'cc-cc-cccc'
     end
     object QFacturaFAC_GRABADO: TFloatField
       FieldName = 'FAC_GRABADO'
@@ -2493,6 +2498,18 @@ object frmFacProvee: TfrmFacProvee
     end
     object QFacturanumero_orden: TStringField
       FieldName = 'numero_orden'
+    end
+    object QFacturaemp_rnc: TStringField
+      FieldName = 'emp_rnc'
+    end
+    object QFacturasup_rnc: TStringField
+      FieldName = 'sup_rnc'
+    end
+    object QFacturaeNCF: TStringField
+      FieldName = 'eNCF'
+    end
+    object QFacturaTipoeNCF: TIntegerField
+      FieldName = 'TipoeNCF'
     end
   end
   object dsFactura: TDataSource

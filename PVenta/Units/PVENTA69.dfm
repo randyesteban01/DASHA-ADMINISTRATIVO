@@ -1,11 +1,11 @@
 object frmReimpresion: TfrmReimpresion
-  Left = 441
-  Top = 260
+  Left = 864
+  Top = 511
   ActiveControl = edGrupo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Reimpresi'#243'n de documentos'
-  ClientHeight = 192
+  ClientHeight = 183
   ClientWidth = 604
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -2791,8 +2791,8 @@ object frmReimpresion: TfrmReimpresion
       'and suc_codigo = :suc_codigo'
       'order by'
       'ser_secuencia')
-    Left = 79
-    Top = 24
+    Left = 103
+    Top = 8
     object QSerieEMP_CODIGO: TIntegerField
       FieldName = 'EMP_CODIGO'
     end

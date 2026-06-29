@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, Buttons, Mask, DBCtrls, Grids, DBGrids, DB,
   IBCustomDataSet, IBQuery, IBUpdateSQL, ADODB, QRCtrls, QuickRpt, QRPDFFilt,
-  QuerySearchDlgADO, ComCtrls, Math, DBGridObj, Menus, dxmdaset, QRExport;
+  QuerySearchDlgADO, ComCtrls, Math, DBGridObj, Menus, dxmdaset, QRExport, Variants;
 
 type
   TfrmConduce = class(TForm)
@@ -3742,6 +3742,7 @@ end;
 procedure TfrmConduce.BuscaFactura(num, suc, tfa: integer; forma: string);
 var
   a: integer;
+  vOriginal: Variant;
 begin
   Query1.close;
   Query1.sql.clear;
@@ -3841,7 +3842,7 @@ begin
     QUtil.sql.add('and fac_numero = :num');
     QUtil.sql.add('and suc_codigo = :suc');
     QUtil.sql.add('and tfa_codigo = :tfa');
-    QUtil.sql.add('and d.pro_codigo=16374 and isnull(d.det_despachado,0) < isnull(d.det_cantidad,0)');
+    QUtil.sql.add(' and isnull(d.det_despachado,0) < isnull(d.det_cantidad,0)');
     QUtil.Parameters.parambyname('emp').Value := dm.vp_cia;
     QUtil.Parameters.parambyname('num').Value := num;
     QUtil.Parameters.parambyname('suc').Value := suc;
@@ -3886,8 +3887,17 @@ begin
         if not QUtil.fieldbyname('pro_rfabric').IsNull then
           QDetallePRO_RFABRIC.value := QUtil.fieldbyname('pro_rfabric').asstring;
 
-        if not QUtil.fieldbyname('pro_roriginal').IsNull then
+          vOriginal := QUtil.FieldByName('pro_roriginal').Value;
+
+          if not VarIsNull(vOriginal) then
+            QDetallePRO_RORIGINAL.AsString  := QUtil.fieldbyname('pro_rfabric').asstring
+          else
+            QDetallePRO_RORIGINAL.Clear; // o asigna un valor por defecto
+
+
+        {if not QUtil.fieldbyname('pro_roriginal').IsNull then
           QDetallePRO_RORIGINAL.value := QUtil.fieldbyname('pro_roriginal').asstring;
+          }
 
         QDetallePRO_NOMBRE.Value := QUtil.FieldByName('pro_nombre').AsString;
         QDetalleDET_MANEJAESCALA.Value := QUtil.fieldbyname('det_manejaescala').asstring;

@@ -1,6 +1,6 @@
 object frmOrdenPedido: TfrmOrdenPedido
-  Left = 342
-  Top = 177
+  Left = 428
+  Top = 221
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Orden de pedido a proveedor'

@@ -644,22 +644,29 @@ end;
 procedure TfrmCatalogo.sgCatalogoSelectCell(Sender: TObject; ACol,
   ARow: Integer; var CanSelect: Boolean);
 begin
+ // if accion = 0 then
+  // Solo actualizar si no estás editando/inserción activa
+  //if (QCatalogo.State in [dsBrowse]) then
   if accion = 0 then
   begin
     QCatalogo.DisableControls;
     QCatalogo.Close;
-    QCatalogo.Parameters.ParamByName('CTA').Value := sgCatalogo.Cells[0,ARow];
+    QCatalogo.Parameters.ParamByName('CTA').Value := sgCatalogo.Cells[0, ARow];
+    QCatalogo.Parameters.ParamByName('emp_codigo').Value := dm.QEmpresasEMP_CODIGO.Value;
     QCatalogo.Open;
     QCatalogo.EnableControls;
+    
   end;
 end;
 
 procedure TfrmCatalogo.sgCatalogoEnter(Sender: TObject);
 begin
   if btInsert.Enabled then
+  //if (QCatalogo.State in [dsBrowse]) then
   begin
     QCatalogo.Close;
-    QCatalogo.Parameters.ParamByName('CTA').Value := sgCatalogo.Cells[0,sgCatalogo.Row];
+    QCatalogo.Parameters.ParamByName('CTA').Value := sgCatalogo.Cells[0, sgCatalogo.Row];
+    QCatalogo.Parameters.ParamByName('emp_codigo').Value := dm.QEmpresasEMP_CODIGO.Value;
     QCatalogo.Open;
   end;
 end;

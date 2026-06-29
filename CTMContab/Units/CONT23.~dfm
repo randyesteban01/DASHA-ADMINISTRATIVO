@@ -295,6 +295,7 @@ object frmRepMayorGeneral: TfrmRepMayorGeneral
   object QSucursal: TADOQuery
     Connection = DM.ADOSigma
     LockType = ltReadOnly
+    DataSource = DM.dsEmpresas
     Parameters = <
       item
         Name = 'emp_codigo'

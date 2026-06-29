@@ -1,12 +1,12 @@
 object frmConsNC: TfrmConsNC
-  Left = 541
-  Top = 299
+  Left = 383
+  Top = 167
   ActiveControl = edTipo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Consulta de notas de cr'#233'dito de clientes'
   ClientHeight = 416
-  ClientWidth = 697
+  ClientWidth = 894
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -29,7 +29,7 @@ object frmConsNC: TfrmConsNC
   object Splitter1: TSplitter
     Left = 0
     Top = 217
-    Width = 697
+    Width = 894
     Height = 4
     Cursor = crVSplit
     Align = alTop
@@ -37,7 +37,7 @@ object frmConsNC: TfrmConsNC
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 697
+    Width = 894
     Height = 105
     Align = alTop
     BevelInner = bvRaised
@@ -407,24 +407,38 @@ object frmConsNC: TfrmConsNC
       ParentFont = False
       TabOrder = 0
     end
+    object cbStatusDGII: TRadioGroup
+      Left = 697
+      Top = 3
+      Width = 232
+      Height = 75
+      ItemIndex = 0
+      Items.Strings = (
+        'Todas'
+        'Aceptada por DGII'
+        'Rechazada por DGII'
+        'Enviada (no procesada por DGII)')
+      TabOrder = 14
+      OnClick = cbStatusClick
+    end
   end
   object Panel2: TPanel
     Left = 0
     Top = 376
-    Width = 697
+    Width = 894
     Height = 40
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 1
     DesignSize = (
-      697
+      894
       40)
     object lbCantidad: TLabel
       Left = 8
       Top = 13
-      Width = 99
-      Height = 14
+      Width = 106
+      Height = 13
       Caption = '0 Notas de cr'#233'dito'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -434,7 +448,7 @@ object frmConsNC: TfrmConsNC
       ParentFont = False
     end
     object BitBtn2: TBitBtn
-      Left = 536
+      Left = 733
       Top = 8
       Width = 75
       Height = 25
@@ -453,7 +467,7 @@ object frmConsNC: TfrmConsNC
         03333333333333333333}
     end
     object btRefresh: TBitBtn
-      Left = 456
+      Left = 653
       Top = 8
       Width = 75
       Height = 25
@@ -463,7 +477,7 @@ object frmConsNC: TfrmConsNC
       OnClick = btRefreshClick
     end
     object btClose: TBitBtn
-      Left = 616
+      Left = 813
       Top = 8
       Width = 75
       Height = 25
@@ -486,11 +500,21 @@ object frmConsNC: TfrmConsNC
         0333337F777FFFFF7F3333000000000003333377777777777333}
       NumGlyphs = 2
     end
+    object btnEnviarDGII: TBitBtn
+      Left = 553
+      Top = 8
+      Width = 95
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Enviar DGII >>'
+      TabOrder = 3
+      OnClick = btnEnviarDGIIClick
+    end
   end
   object DBGrid1: TDBGrid
     Left = 0
     Top = 105
-    Width = 697
+    Width = 894
     Height = 112
     Align = alTop
     Anchors = [akLeft, akTop, akRight, akBottom]
@@ -512,6 +536,7 @@ object frmConsNC: TfrmConsNC
     TitleFont.Height = -11
     TitleFont.Name = 'Tahoma'
     TitleFont.Style = []
+    OnDrawColumnCell = DBGrid1DrawColumnCell
     Columns = <
       item
         Alignment = taCenter
@@ -640,13 +665,14 @@ object frmConsNC: TfrmConsNC
     Height = 41
     Lines.Strings = (
       'Memo1')
+    PopupMenu = PopupMenu2
     TabOrder = 3
     Visible = False
   end
   object PageControl1: TPageControl
     Left = 0
     Top = 221
-    Width = 697
+    Width = 894
     Height = 155
     ActivePage = TabSheet2
     Align = alClient
@@ -657,7 +683,7 @@ object frmConsNC: TfrmConsNC
       object GridMov: TDBGrid
         Left = 0
         Top = 0
-        Width = 689
+        Width = 886
         Height = 127
         Align = alClient
         Color = clInfoBk
@@ -728,10 +754,10 @@ object frmConsNC: TfrmConsNC
     object TabSheet1: TTabSheet
       Caption = 'Cuentas contables'
       DesignSize = (
-        689
+        886
         127)
       object Label9: TLabel
-        Left = 527
+        Left = 724
         Top = 3
         Width = 48
         Height = 13
@@ -745,7 +771,7 @@ object frmConsNC: TfrmConsNC
         ParentFont = False
       end
       object Label10: TLabel
-        Left = 527
+        Left = 724
         Top = 19
         Width = 43
         Height = 13
@@ -759,7 +785,7 @@ object frmConsNC: TfrmConsNC
         ParentFont = False
       end
       object Label11: TLabel
-        Left = 527
+        Left = 724
         Top = 35
         Width = 45
         Height = 13
@@ -773,7 +799,7 @@ object frmConsNC: TfrmConsNC
         ParentFont = False
       end
       object btBuscaCta: TSpeedButton
-        Left = 527
+        Left = 724
         Top = 82
         Width = 153
         Height = 25
@@ -788,7 +814,7 @@ object frmConsNC: TfrmConsNC
         OnClick = btBuscaCtaClick
       end
       object btElimina: TSpeedButton
-        Left = 527
+        Left = 724
         Top = 57
         Width = 153
         Height = 25
@@ -805,7 +831,7 @@ object frmConsNC: TfrmConsNC
       object GridCuentas: TDBGrid
         Left = 0
         Top = 0
-        Width = 521
+        Width = 718
         Height = 127
         Align = alLeft
         Anchors = [akLeft, akTop, akRight, akBottom]
@@ -864,7 +890,7 @@ object frmConsNC: TfrmConsNC
           end>
       end
       object lbCR: TStaticText
-        Left = 583
+        Left = 780
         Top = 3
         Width = 103
         Height = 17
@@ -882,7 +908,7 @@ object frmConsNC: TfrmConsNC
         TabOrder = 3
       end
       object lbDB: TStaticText
-        Left = 583
+        Left = 780
         Top = 19
         Width = 103
         Height = 17
@@ -900,7 +926,7 @@ object frmConsNC: TfrmConsNC
         TabOrder = 1
       end
       object lbBAL: TStaticText
-        Left = 583
+        Left = 780
         Top = 35
         Width = 103
         Height = 17
@@ -926,14 +952,6 @@ object frmConsNC: TfrmConsNC
     OnCalcFields = QNotasCalcFields
     Parameters = <
       item
-        Name = 'emp'
-        Attributes = [paSigned]
-        DataType = ftInteger
-        Precision = 10
-        Size = 4
-        Value = Null
-      end
-      item
         Name = 'fecha1'
         Attributes = [paNullable]
         DataType = ftDateTime
@@ -958,6 +976,11 @@ object frmConsNC: TfrmConsNC
         Precision = 10
         Size = 4
         Value = Null
+      end
+      item
+        Name = 'emp'
+        Size = -1
+        Value = Null
       end>
     SQL.Strings = (
       'select n.FAC_FORMA, n.FAC_NUMERO, n.NCR_CONCEPTO, '
@@ -965,18 +988,37 @@ object frmConsNC: TfrmConsNC
       'n.NCR_MONTOUSADO, n.NCR_NUMERO, n.NCR_STATUS, '
       'n.TFA_CODIGO, n.USU_CODIGO, n.VEN_CODIGO, c.cli_nombre, '
       'u.usu_nombre, n.emp_codigo, n.suc_codigo,'
-      'n.NCF_Fijo, n.NCF_Secuencia, NCF as NCF_Modifica,'
-      'ncr_fecha_factura'
-      'from '
-      'NOTASCREDITO n, usuarios u, clientes c'
-      'where n.usu_codigo = u.usu_codigo'
-      'and n.emp_codigo = :emp'
-      'and n.cli_codigo = c.cli_Codigo'
-      'and n.emp_codigo = c.emp_codigo'
       
-        'and n.ncr_fecha between convert(datetime,:fecha1,105) and conver' +
-        't(datetime,:fecha2,105)'
-      'and n.suc_codigo = :suc')
+        'n.NCF_Fijo, n.NCF_Secuencia, ISNULL(n.NCF,F.eNCF) as NCF_Modific' +
+        'a,'
+      'ncr_fecha_factura, isnull(n.eNCF, d.eNCF) as eNCF,'
+      
+        'case when n.ncr_devolucion is not null then  d.Enviado_DGII else' +
+        ' n.Enviado_DGII end as Enviado_DGII,'
+      
+        'case when n.ncr_devolucion is not null then  d.Error_DGII else n' +
+        '.Error_DGII end as Error_DGII,'
+      
+        'case when n.ncr_devolucion is not null then  d.AceptadoDGII else' +
+        ' n.AceptadoDGII end as AceptadoDGII,'
+      ' e.emp_rnc, c.cli_rnc'
+      'from '
+      'NOTASCREDITO n'
+      'inner join usuarios u on  n.usu_codigo = u.usu_codigo'
+      'INNER JOIN EMPRESAS E ON n.emp_codigo = e.emp_codigo'
+      
+        'inner join clientes c on  n.cli_codigo = c.cli_Codigo and n.emp_' +
+        'codigo = c.emp_codigo'
+      
+        'inner join facturas f on f.fac_numero = n.fac_numero and f.tfa_c' +
+        'odigo=n.tfa_codigo and f.fac_forma=n.fac_forma'
+      
+        'left join Devolucion d on d.dev_numero= n.ncr_devolucion and n.e' +
+        'mp_codigo= d.emp_codigo and n.suc_codigo=d.suc_codigo'
+      
+        'where  n.ncr_fecha between convert(datetime,:fecha1,105) and con' +
+        'vert(datetime,:fecha2,105)'
+      'and n.suc_codigo = :suc and n.emp_codigo =:emp')
     Left = 600
     Top = 112
     object QNotasFAC_FORMA: TIBStringField
@@ -1075,6 +1117,27 @@ object frmConsNC: TfrmConsNC
     end
     object QNotasncr_fecha_factura: TDateTimeField
       FieldName = 'ncr_fecha_factura'
+    end
+    object QNotasEnviado_DGII: TBooleanField
+      FieldName = 'Enviado_DGII'
+    end
+    object QNotasError_DGII: TBooleanField
+      FieldName = 'Error_DGII'
+    end
+    object QNotasAceptadoDGII: TBooleanField
+      FieldName = 'AceptadoDGII'
+    end
+    object QNotaseNCF: TStringField
+      FieldName = 'eNCF'
+      Size = 50
+    end
+    object QNotasemp_rnc: TStringField
+      FieldName = 'emp_rnc'
+      Size = 50
+    end
+    object QNotascli_rnc: TStringField
+      FieldName = 'cli_rnc'
+      Size = 50
     end
   end
   object dsNota: TDataSource
@@ -1408,5 +1471,13 @@ object frmConsNC: TfrmConsNC
       'where nc.NCF IS NULL')
     Left = 512
     Top = 264
+  end
+  object PopupMenu2: TPopupMenu
+    Left = 100
+    Top = 162
+    object FrmPopupDGIIQDGIIParametersParamByNamecaja1: TMenuItem
+      Caption = 'Informacion DGII'
+      OnClick = FrmPopupDGIIQDGIIParametersParamByNamecaja1Click
+    end
   end
 end

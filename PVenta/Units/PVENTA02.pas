@@ -310,6 +310,7 @@ begin
 
       dm.Usuario   := dm.Query1.fieldbyname('usu_codigo').asinteger;
       dm.suc_default   := dm.QUsuarios.fieldbyname('usu_suc_default').asinteger;
+      DM.usu_reenvia_dgii := dm.QUsuarios.fieldbyname('usu_reenvia_dgii').AsBoolean ;
 
       dm.vp_cia :=  cbemp.KeyValue;//QEmpresasEMP_CODIGO.Value;
       dm.NombreEmp := dm.QEmpresasEMP_NOMBRE.Value;

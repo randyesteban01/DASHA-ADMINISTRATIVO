@@ -64,9 +64,9 @@ object frmConsFTEnvios: TfrmConsFTEnvios
     object Label12: TLabel
       Left = 8
       Top = 31
-      Width = 32
+      Width = 36
       Height = 13
-      Caption = 'Origen'
+      Caption = 'Destino'
     end
     object btOrigen: TSpeedButton
       Left = 94

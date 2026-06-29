@@ -434,7 +434,7 @@ object RDevolucionPreImpresa: TRDevolucionPreImpresa
         ExportAs = exptText
         FontSize = 10
       end
-      object QRDBText19: TQRDBText
+      object qrdbtxtdev_nombre: TQRDBText
         Left = 104
         Top = 132
         Width = 305
@@ -456,7 +456,7 @@ object RDevolucionPreImpresa: TRDevolucionPreImpresa
         AutoStretch = False
         Color = clWhite
         DataSet = QDevolucion
-        DataField = 'CLI_NOMBRE'
+        DataField = 'dev_nombre'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -13

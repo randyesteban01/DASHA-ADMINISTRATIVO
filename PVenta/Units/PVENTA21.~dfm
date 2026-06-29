@@ -1,11 +1,11 @@
 object frmNotasCR: TfrmNotasCR
-  Left = 496
-  Top = 284
+  Left = 677
+  Top = 246
   ActiveControl = edCliente
   BorderIcons = [biSystemMenu, biMinimize, biHelp]
   BorderStyle = bsSingle
   Caption = 'Notas de cr'#233'dito'
-  ClientHeight = 408
+  ClientHeight = 461
   ClientWidth = 706
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -28,7 +28,7 @@ object frmNotasCR: TfrmNotasCR
   TextHeight = 13
   object spcentros: TSpeedButton
     Left = 483
-    Top = 378
+    Top = 429
     Width = 66
     Height = 22
     Caption = 'Centros'
@@ -124,7 +124,7 @@ object frmNotasCR: TfrmNotasCR
     Left = 8
     Top = 56
     Width = 689
-    Height = 313
+    Height = 361
     Ctl3D = True
     ParentCtl3D = False
     TabOrder = 1
@@ -136,7 +136,7 @@ object frmNotasCR: TfrmNotasCR
       Caption = 'Cliente'
     end
     object btCliente: TSpeedButton
-      Left = 276
+      Left = 280
       Top = 8
       Width = 23
       Height = 22
@@ -170,21 +170,48 @@ object frmNotasCR: TfrmNotasCR
       Caption = 'Concepto'
     end
     object Label6: TLabel
-      Left = 314
+      Left = 319
       Top = 56
       Width = 30
       Height = 13
       Caption = 'Monto'
     end
     object Label5: TLabel
-      Left = 455
+      Left = 460
       Top = 56
       Width = 19
       Height = 13
       Caption = 'Itbis'
     end
+    object Label24: TLabel
+      Left = 167
+      Top = 83
+      Width = 57
+      Height = 13
+      Caption = 'Motivo DGII'
+    end
+    object SpeedButton2: TSpeedButton
+      Left = 268
+      Top = 78
+      Width = 23
+      Height = 22
+      Flat = True
+      Glyph.Data = {
+        42010000424D4201000000000000760000002800000011000000110000000100
+        040000000000CC00000000000000000000001000000010000000000000000000
+        BF0000BF000000BFBF00BF000000BF00BF00BFBF0000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777777
+        77777000000077777777777777777000000070000077777000007000000070B0
+        00777770F0007000000070F000777770B0007000000070000000700000007000
+        0000700B000000B0000070000000700F000700F0000070000000700B000700B0
+        0000700000007700000000000007700000007770B00070B00077700000007770
+        0000700000777000000077770007770007777000000077770B07770B07777000
+        0000777700077700077770000000777777777777777770000000777777777777
+        777770000000}
+      OnClick = SpeedButton2Click
+    end
     object edCliente: TEdit
-      Left = 224
+      Left = 228
       Top = 8
       Width = 49
       Height = 21
@@ -201,9 +228,9 @@ object frmNotasCR: TfrmNotasCR
       OnKeyDown = edClienteKeyDown
     end
     object tCliente: TEdit
-      Left = 301
+      Left = 305
       Top = 8
-      Width = 380
+      Width = 372
       Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
@@ -218,9 +245,9 @@ object frmNotasCR: TfrmNotasCR
       TabOrder = 1
     end
     object DBEdit2: TDBEdit
-      Left = 224
+      Left = 228
       Top = 32
-      Width = 457
+      Width = 449
       Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
@@ -236,7 +263,7 @@ object frmNotasCR: TfrmNotasCR
       TabOrder = 2
     end
     object DBEdit3: TDBEdit
-      Left = 224
+      Left = 229
       Top = 56
       Width = 73
       Height = 21
@@ -253,7 +280,7 @@ object frmNotasCR: TfrmNotasCR
       TabOrder = 3
     end
     object DBEdit5: TDBEdit
-      Left = 352
+      Left = 357
       Top = 56
       Width = 89
       Height = 21
@@ -282,9 +309,9 @@ object frmNotasCR: TfrmNotasCR
     end
     object PageControl1: TPageControl
       Left = 1
-      Top = 80
+      Top = 112
       Width = 687
-      Height = 232
+      Height = 248
       ActivePage = TabSheet1
       Align = alBottom
       TabOrder = 6
@@ -603,11 +630,11 @@ object frmNotasCR: TfrmNotasCR
       end
     end
     object DBCheckBox1: TDBCheckBox
-      Left = 592
-      Top = 56
+      Left = 496
+      Top = 82
       Width = 89
       Height = 17
-      Caption = 'Genera NCF'
+      Caption = 'Genera eNCF'
       DataField = 'ncr_genera_ncf'
       DataSource = dsNota
       TabOrder = 8
@@ -615,7 +642,7 @@ object frmNotasCR: TfrmNotasCR
       ValueUnchecked = 'False'
     end
     object DBEdit4: TDBEdit
-      Left = 478
+      Left = 483
       Top = 56
       Width = 89
       Height = 21
@@ -631,10 +658,44 @@ object frmNotasCR: TfrmNotasCR
       ParentFont = False
       TabOrder = 5
     end
+    object DBEdit15: TDBEdit
+      Left = 231
+      Top = 80
+      Width = 33
+      Height = 21
+      BevelKind = bkFlat
+      BorderStyle = bsNone
+      DataField = 'motivo_dgi'
+      DataSource = dsNota
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 9
+    end
+    object tmotivodgi: TEdit
+      Left = 295
+      Top = 80
+      Width = 188
+      Height = 21
+      BevelKind = bkFlat
+      BorderStyle = bsNone
+      Color = clInfoBk
+      Enabled = False
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 10
+    end
   end
   object btLimpiar: TBitBtn
     Left = 168
-    Top = 376
+    Top = 427
     Width = 147
     Height = 25
     Caption = '[ F3 ] - Limpiar / Nueva'
@@ -649,7 +710,7 @@ object frmNotasCR: TfrmNotasCR
   end
   object BitBtn2: TBitBtn
     Left = 320
-    Top = 376
+    Top = 427
     Width = 155
     Height = 25
     Caption = '[ F10 ] - Salir / Cancelar'
@@ -665,7 +726,7 @@ object frmNotasCR: TfrmNotasCR
   end
   object btPost: TBitBtn
     Left = 16
-    Top = 375
+    Top = 426
     Width = 147
     Height = 25
     Caption = '[ F2 ] - Grabar Nota'
@@ -710,16 +771,22 @@ object frmNotasCR: TfrmNotasCR
         Value = Null
       end>
     SQL.Strings = (
-      'select CLI_CODIGO, CLI_REFERENCIA, EMP_CODIGO, NCR_CONCEPTO, '
+      
+        'select n.CLI_CODIGO, n.CLI_REFERENCIA, n.EMP_CODIGO, NCR_CONCEPT' +
+        'O, '
       'NCR_FECHA, NCR_MONTO, NCR_NUMERO, NCR_STATUS, '
-      'USU_CODIGO, FAC_FORMA, FAC_NUMERO, TFA_CODIGO, '
-      'NCR_MONTOUSADO, NCR_DEVOLUCION, VEN_CODIGO, '
+      'n.USU_CODIGO, FAC_FORMA, FAC_NUMERO, n.TFA_CODIGO, '
+      'NCR_MONTOUSADO, NCR_DEVOLUCION, n.VEN_CODIGO, '
       'NCR_TIPO, MOV_TIPO, DET_CUOTA,'
-      'MOV_CUOTA, SUC_CODIGO, ncr_genera_ncf, NCF, ncr_itbis'
-      'from NOTASCREDITO'
-      'where emp_codigo = :emp'
-      'and ncr_numero = :numero'
-      'and suc_codigo = :suc')
+      
+        'MOV_CUOTA, n.SUC_CODIGO, ncr_genera_ncf, NCF, ncr_itbis, eNCF, m' +
+        'otivo_dgi, e.emp_rnc, c.cli_rnc'
+      'from NOTASCREDITO n '
+      'INNER JOIN EMPRESAS E ON n.emp_codigo = e.emp_codigo'
+      'left join clientes c on c.cli_codigo=n.cli_codigo'
+      'where n.emp_codigo = :emp'
+      'and n.ncr_numero = :numero'
+      'and n.suc_codigo = :suc')
     Left = 224
     Top = 184
     object QNotaCLI_CODIGO: TIntegerField
@@ -830,6 +897,22 @@ object frmNotasCR: TfrmNotasCR
     object QNotaNCF: TStringField
       FieldName = 'NCF'
       Size = 19
+    end
+    object QNotaeNCF: TStringField
+      FieldName = 'eNCF'
+      Size = 100
+    end
+    object QNotamotivo_dgi: TIntegerField
+      FieldName = 'motivo_dgi'
+      OnGetText = QNotamotivo_dgiGetText
+    end
+    object QNotaemp_rnc: TStringField
+      FieldName = 'emp_rnc'
+      Size = 50
+    end
+    object QNotacli_rnc: TStringField
+      FieldName = 'cli_rnc'
+      Size = 50
     end
   end
   object dsNota: TDataSource

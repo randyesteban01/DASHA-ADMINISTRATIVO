@@ -1,6 +1,6 @@
 object RDevolucionPreImpresa: TRDevolucionPreImpresa
-  Left = 427
-  Top = 160
+  Left = 534
+  Top = 200
   Width = 874
   Height = 608
   Caption = 'RDevolucionPreImpresa'

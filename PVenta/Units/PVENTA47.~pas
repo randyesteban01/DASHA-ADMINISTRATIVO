@@ -124,7 +124,7 @@ var
 
 implementation
 
-uses PVENTA44, PVENTA48, PVENTA49, RVENTA56, SIGMA01, SIGMA00;
+uses PVENTA44, PVENTA48, PVENTA49, RVENTA56, SIGMA01, SIGMA00, RVENTA132;
 
 {$R *.dfm}
 
@@ -320,6 +320,7 @@ begin
   QFormas.Parameters.ParamByName('fec1').Value    := Fecha1.Date;
   QFormas.Parameters.ParamByName('fec2').Value    := Fecha2.Date;
   QFormas.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+
   if TRim(edCaja.Text) <> '' then
     QFormas.Parameters.ParamByName('caja').Value    := StrToInt(edCaja.Text)
   else
@@ -464,6 +465,99 @@ var
   TVenta, TCobro, TDesem : Double;
 begin
   btRefreshClick(Self);
+  if DM.QParametrospar_formato_preimpreso.Value = 'Caceres&Equipos' then begin
+   Application.CreateForm(tRCuadreCaceres, RCuadreCaceres);
+    RCuadreCaceres.QSucursal.Close;
+    RCuadreCaceres.QSucursal.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    RCuadreCaceres.QSucursal.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+    RCuadreCaceres.QSucursal.Open;
+
+    RCuadreCaceres.lbitbis.Caption   := lbItbis.Caption;
+    RCuadreCaceres.lbGrupo.Caption   := cbGrupo.Items[cbGrupo.itemindex];
+    RCuadreCaceres.lbFecha.Caption   := 'Del '+DateToStr(Fecha1.Date)+' Al '+DateToStr(Fecha2.Date);
+    RCuadreCaceres.lbinicial.Caption := lbinicial.Caption;
+    RCuadreCaceres.lbTotal.Caption   := lbTotal.Caption;
+    RCuadreCaceres.lbCobrado.Caption := lbefectivo.Caption;
+    RCuadreCaceres.lbretencion.Caption := lbretenciones.Caption;
+    if Trim(edCajero.text) <> '' then
+      RCuadreCaceres.lbCajero.Caption := 'Cajero : '+tCajero.Text
+    else
+      RCuadreCaceres.lbCajero.Caption := ' ';
+
+    if Trim(edCajero.text) <> '' then
+    begin
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('cajero1').Value := StrToInt(Trim(edCajero.Text));
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('cajero2').Value := StrToInt(Trim(edCajero.Text));
+
+      RCuadreCaceres.QTipo.Parameters.ParamByName('cajero1').Value := StrToInt(Trim(edCajero.Text));
+      RCuadreCaceres.QTipo.Parameters.ParamByName('cajero2').Value := StrToInt(Trim(edCajero.Text));
+    end
+    else
+    begin
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('cajero1').Value := 1;
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('cajero2').Value := 100;
+
+      RCuadreCaceres.QTipo.Parameters.ParamByName('cajero1').Value := 1;
+      RCuadreCaceres.QTipo.Parameters.ParamByName('cajero2').Value := 100;
+    end;
+
+    if Trim(edCaja.text) <> '' then
+    begin
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('caja1').Value := StrToInt(Trim(edCaja.Text));
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('caja2').Value := StrToInt(Trim(edCaja.Text));
+
+      RCuadreCaceres.QTipo.Parameters.ParamByName('caja1').Value := StrToInt(Trim(edCaja.Text));
+      RCuadreCaceres.QTipo.Parameters.ParamByName('caja2').Value := StrToInt(Trim(edCaja.Text));
+    end
+    else
+    begin
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('caja1').Value := 1;
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('caja2').Value := 100;
+
+      RCuadreCaceres.QTipo.Parameters.ParamByName('caja1').Value := 1;
+      RCuadreCaceres.QTipo.Parameters.ParamByName('caja2').Value := 100;
+    end;
+
+    if cbGrupo.ItemIndex < 2 then
+    begin
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('forma1').Value := cbGrupo.Items[cbGrupo.ItemIndex];
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('forma2').Value := cbGrupo.Items[cbGrupo.ItemIndex];
+
+      RCuadreCaceres.QTipo.Parameters.ParamByName('forma1').Value := cbGrupo.Items[cbGrupo.ItemIndex];
+      RCuadreCaceres.QTipo.Parameters.ParamByName('forma2').Value := cbGrupo.Items[cbGrupo.ItemIndex];
+    end
+    else
+    begin
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('forma1').Value := 'A';
+      RCuadreCaceres.QDetalle.Parameters.ParamByName('forma2').Value := 'B';
+
+      RCuadreCaceres.QTipo.Parameters.ParamByName('forma1').Value := 'A';
+      RCuadreCaceres.QTipo.Parameters.ParamByName('forma2').Value := 'B';
+    end;
+    RCuadreCaceres.QDetalle.Parameters.ParamByName('fec1').DataType := ftDate;
+    RCuadreCaceres.QDetalle.Parameters.ParamByName('fec2').DataType := ftDate;
+    RCuadreCaceres.QDetalle.Parameters.ParamByName('fec1').Value := Fecha1.Date;
+    RCuadreCaceres.QDetalle.Parameters.ParamByName('fec2').Value := Fecha2.Date;
+    RCuadreCaceres.QDetalle.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    RCuadreCaceres.QDetalle.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+
+    RCuadreCaceres.QTipo.Parameters.ParamByName('fec1').DataType := ftDate;
+    RCuadreCaceres.QTipo.Parameters.ParamByName('fec2').DataType := ftDate;
+    RCuadreCaceres.QTipo.Parameters.ParamByName('fec1').Value := Fecha1.Date;
+    RCuadreCaceres.QTipo.Parameters.ParamByName('fec2').Value := Fecha2.Date;
+    RCuadreCaceres.QTipo.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    RCuadreCaceres.QTipo.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+
+    RCuadreCaceres.QForma.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    RCuadreCaceres.QForma.Open;
+    RCuadreCaceres.QTipo.Open;
+    RCuadreCaceres.QDetalle.Open;
+
+    RCuadreCaceres.PrinterSetup;
+    RCuadreCaceres.Preview;
+    RCuadreCaceres.Destroy;
+  end
+  else
   if dm.QParametrosPAR_FORMATOCUADRE.Value = 2 then
   begin
     Application.CreateForm(tRCuadre, RCuadre);

@@ -2,7 +2,7 @@ unit RVENTA93;
 
 interface
 
-uses Windows, SysUtils, Messages, Classes, Graphics, Controls,
+uses Windows, SysUtils, Messages, Classes, Graphics, Controls,   Dialogs,
   StdCtrls, ExtCtrls, Forms, QuickRpt, QRPDFFilt, QRExport, QRCtrls, DB, ADODB;
 
 type
@@ -122,8 +122,8 @@ type
     QRShape2: TQRShape;
     lbfacturas: TQRLabel;
     lbmontoemp1: TQRLabel;
-    lbmontoemp2: TQRLabel;
     Query1: TADOQuery;
+    lbTituloDiferencia: TQRLabel;
     procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
       var PrintReport: Boolean);
     procedure QRBand2BeforePrint(Sender: TQRCustomBand;
@@ -145,61 +145,68 @@ uses SIGMA01;
 
 procedure TRepCuadreCajasIp.QuickRepBeforePrint(
   Sender: TCustomQuickRep; var PrintReport: Boolean);
+const
+  MONTOS: array[1..12] of Double = (2000, 1000, 500, 200, 100, 50, 25, 20, 10, 5, 1, 0.01);
 var
+  i: Integer;
+  Cantidad: Integer;
+  Valor,MontoActual: Double;
+  CantLabel, ValLabel: TLabel;
+  NombreCant, NombreVal: string;
   total, devueltack : double;
 begin
   //denominaciones
-  if QDenominacion.Locate('monto',2000,[]) then
+  if QDenominacion.Locate('monto',2000.00,[]) then
   begin
     lbcant1.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval1.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
-  if QDenominacion.Locate('monto',1000,[]) then
+  if QDenominacion.Locate('monto',1000.00,[]) then
   begin
     lbcant2.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval2.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
-  if QDenominacion.Locate('monto',500,[]) then
+  if QDenominacion.Locate('monto',500.00,[]) then
   begin
     lbcant3.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval3.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
-  if QDenominacion.Locate('monto',200,[]) then
+  if QDenominacion.Locate('monto',200.00,[]) then
   begin
     lbcant4.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval4.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
-  if QDenominacion.Locate('monto',100,[]) then
+  if QDenominacion.Locate('monto',100.00,[]) then
   begin
     lbcant5.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval5.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
-  if QDenominacion.Locate('monto',50,[]) then
+  if QDenominacion.Locate('monto',50.00,[]) then
   begin
     lbcant6.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval6.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
-  if QDenominacion.Locate('monto',25,[]) then
+  if QDenominacion.Locate('monto',25.00,[]) then
   begin
     lbcant7.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval7.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
-  if QDenominacion.Locate('monto',20,[]) then
+  if QDenominacion.Locate('monto',20.00,[]) then
   begin
     lbcant8.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval8.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
-  if QDenominacion.Locate('monto',10,[]) then
+  if QDenominacion.Locate('monto',10.00,[]) then
   begin
     lbcant9.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval9.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
-  if QDenominacion.Locate('monto',5,[]) then
+  if QDenominacion.Locate('monto',5.00,[]) then
   begin
     lbcant10.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval10.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
-  if QDenominacion.Locate('monto',1,[]) then
+  if QDenominacion.Locate('monto',1.00,[]) then
   begin
     lbcant11.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval11.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
@@ -209,7 +216,46 @@ begin
     lbcant12.Caption := IntToStr(QDenominacioncantidad.Value);
     lbval12.Caption  := format('%n',[QDenominacioncantidad.Value * QDenominacionmonto.Value]);
   end;
+   {
+ QDenominacion.First;
+while not QDenominacion.Eof do
+begin
+  ShowMessage('MONTO: ' + FloatToStr(QDenominacionmonto.Value) +
+              ' | CANTIDAD: ' + IntToStr(QDenominacioncantidad.Value));
+  QDenominacion.Next;
+end;
+          }
+          {
+ if not QDenominacion.Active then
+    QDenominacion.Open;
 
+  for i := 1 to Length(MONTOS) do
+  begin
+    QDenominacion.First;
+    while not QDenominacion.Eof do
+    begin
+      MontoActual := QDenominacionmonto.Value;
+      if Abs(MontoActual - MONTOS[i]) < 0.01 then
+      begin
+        Cantidad := QDenominacioncantidad.Value;
+        Valor := MontoActual * Cantidad;
+
+        NombreCant := 'lbcant' + IntToStr(i);
+        NombreVal  := 'lbval' + IntToStr(i);
+
+        CantLabel := TLabel(FindComponent(NombreCant));
+        ValLabel  := TLabel(FindComponent(NombreVal));
+
+        if Assigned(CantLabel) then
+          CantLabel.Caption := IntToStr(Cantidad);
+        if Assigned(ValLabel) then
+          ValLabel.Caption := Format('%n', [Valor]);
+
+        Break; // Ya se encontró la denominación, salir del while
+      end;
+      QDenominacion.Next;
+    end;
+  end; }
   //General
   total := QCuadreefectivo_cajero.Value + QCuadrecheque_cajero.Value + QCuadretarjeta_cajero.Value +
            QCuadrebonosclub_cajero.Value + QCuadrebonosotros_cajero.Value + QCuadrecredito_cajero.Value;
@@ -322,6 +368,11 @@ begin
   end;
   
   lbdif8.Caption := format('%n',[total+devueltack]);
+
+  if (total+devueltack < 0) then lbTituloDiferencia.Caption:='FALTANTE: '
+  else   lbTituloDiferencia.Caption:='SOBRANTE: '   ;
+
+  lbmontoemp1.Caption := format('%n',[total+devueltack]);
 end;
 
 procedure TRepCuadreCajasIp.QRBand2BeforePrint(Sender: TQRCustomBand;
@@ -371,7 +422,7 @@ begin
   Query1.Parameters.ParamByName('fec').Value    := QCuadrefecha.Value;
   Query1.Open;
   cheque := Query1.FieldByName('monto').AsFloat;
-  lbmontoemp1.Caption := format('%n',[efectivo+cheque]);
+  //lbmontoemp1.Caption := format('%n',[efectivo+cheque]);
 
   //empresa2
   //efectivo
@@ -389,7 +440,7 @@ begin
   Query1.Parameters.ParamByName('emp').Value    := empresa1;
   Query1.Open;
   efectivo := Query1.FieldByName('monto').AsFloat;
-  lbmontoemp2.Caption := format('%n',[efectivo]);
+  //lbmontoemp2.Caption := format('%n',[efectivo]);
 end;
 
 end.

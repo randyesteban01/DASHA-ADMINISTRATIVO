@@ -144,6 +144,7 @@ type
     QBoletosanulado: TBooleanField;
     QBoletoscomentario_anulado: TStringField;
     QBoletosEstado: TStringField;
+    QBoletosusu_nombre: TStringField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);

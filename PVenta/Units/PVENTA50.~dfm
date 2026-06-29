@@ -1,12 +1,12 @@
 object frmConsDev: TfrmConsDev
-  Left = 336
-  Top = 180
+  Left = 681
+  Top = 241
   ActiveControl = edTipo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Consulta de devoluciones'
-  ClientHeight = 416
-  ClientWidth = 1155
+  ClientHeight = 422
+  ClientWidth = 894
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -28,8 +28,8 @@ object frmConsDev: TfrmConsDev
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 0
-    Top = 233
-    Width = 1155
+    Top = 239
+    Width = 894
     Height = 4
     Cursor = crVSplit
     Align = alTop
@@ -37,7 +37,7 @@ object frmConsDev: TfrmConsDev
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1155
+    Width = 894
     Height = 105
     Align = alTop
     BevelInner = bvRaised
@@ -509,18 +509,32 @@ object frmConsDev: TfrmConsDev
       TabOrder = 18
       OnClick = btRefreshClick
     end
+    object cbStatusDGII: TRadioGroup
+      Left = 697
+      Top = 3
+      Width = 232
+      Height = 75
+      ItemIndex = 0
+      Items.Strings = (
+        'Todas'
+        'Aceptada por DGII'
+        'Rechazada por DGII'
+        'Enviada (no procesada por DGII)')
+      TabOrder = 19
+      OnClick = cbStatusClick
+    end
   end
   object Panel2: TPanel
     Left = 0
-    Top = 376
-    Width = 1155
+    Top = 382
+    Width = 894
     Height = 40
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 1
     DesignSize = (
-      1155
+      894
       40)
     object lbCantidad: TLabel
       Left = 8
@@ -536,7 +550,7 @@ object frmConsDev: TfrmConsDev
       ParentFont = False
     end
     object BitBtn2: TBitBtn
-      Left = 990
+      Left = 729
       Top = 8
       Width = 75
       Height = 25
@@ -555,7 +569,7 @@ object frmConsDev: TfrmConsDev
         03333333333333333333}
     end
     object btRefresh: TBitBtn
-      Left = 910
+      Left = 649
       Top = 8
       Width = 75
       Height = 25
@@ -565,7 +579,7 @@ object frmConsDev: TfrmConsDev
       OnClick = btRefreshClick
     end
     object btClose: TBitBtn
-      Left = 1070
+      Left = 809
       Top = 8
       Width = 75
       Height = 25
@@ -588,12 +602,22 @@ object frmConsDev: TfrmConsDev
         0333337F777FFFFF7F3333000000000003333377777777777333}
       NumGlyphs = 2
     end
+    object btnEnviarDGII: TBitBtn
+      Left = 547
+      Top = 9
+      Width = 95
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Enviar DGII >>'
+      TabOrder = 3
+      OnClick = btnEnviarDGIIClick
+    end
   end
   object DBGrid1: TDBGrid
     Left = 0
     Top = 105
-    Width = 1155
-    Height = 128
+    Width = 894
+    Height = 134
     Align = alTop
     Anchors = [akLeft, akTop, akRight, akBottom]
     Color = clInfoBk
@@ -607,6 +631,7 @@ object frmConsDev: TfrmConsDev
     Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
     ParentCtl3D = False
     ParentFont = False
+    PopupMenu = PopupMenu2
     ReadOnly = True
     TabOrder = 2
     TitleFont.Charset = ANSI_CHARSET
@@ -614,6 +639,7 @@ object frmConsDev: TfrmConsDev
     TitleFont.Height = -11
     TitleFont.Name = 'Tahoma'
     TitleFont.Style = []
+    OnDrawColumnCell = DBGrid1DrawColumnCell
     Columns = <
       item
         Alignment = taCenter
@@ -760,6 +786,11 @@ object frmConsDev: TfrmConsDev
         Title.Caption = 'Usuario'
         Width = 96
         Visible = True
+      end
+      item
+        Expanded = False
+        FieldName = 'Error_DGII'
+        Visible = False
       end>
   end
   object Memo1: TMemo
@@ -774,8 +805,8 @@ object frmConsDev: TfrmConsDev
   end
   object PageControl1: TPageControl
     Left = 0
-    Top = 237
-    Width = 1155
+    Top = 243
+    Width = 894
     Height = 139
     ActivePage = TabSheet2
     Align = alClient
@@ -892,10 +923,10 @@ object frmConsDev: TfrmConsDev
       Caption = 'Cuentas contables'
       ImageIndex = 1
       DesignSize = (
-        1147
+        886
         111)
       object Label9: TLabel
-        Left = 988
+        Left = 727
         Top = 6
         Width = 48
         Height = 13
@@ -909,7 +940,7 @@ object frmConsDev: TfrmConsDev
         ParentFont = False
       end
       object Label10: TLabel
-        Left = 988
+        Left = 727
         Top = 22
         Width = 43
         Height = 13
@@ -923,7 +954,7 @@ object frmConsDev: TfrmConsDev
         ParentFont = False
       end
       object Label11: TLabel
-        Left = 988
+        Left = 727
         Top = 38
         Width = 45
         Height = 13
@@ -937,7 +968,7 @@ object frmConsDev: TfrmConsDev
         ParentFont = False
       end
       object btBuscaCta: TSpeedButton
-        Left = 990
+        Left = 729
         Top = 83
         Width = 153
         Height = 25
@@ -952,7 +983,7 @@ object frmConsDev: TfrmConsDev
         OnClick = btBuscaCtaClick
       end
       object btElimina: TSpeedButton
-        Left = 990
+        Left = 729
         Top = 58
         Width = 153
         Height = 25
@@ -969,7 +1000,7 @@ object frmConsDev: TfrmConsDev
       object GridCuentas: TDBGrid
         Left = 0
         Top = 0
-        Width = 983
+        Width = 722
         Height = 111
         Align = alLeft
         Anchors = [akLeft, akTop, akRight, akBottom]
@@ -1028,7 +1059,7 @@ object frmConsDev: TfrmConsDev
           end>
       end
       object lbCR: TStaticText
-        Left = 1043
+        Left = 782
         Top = 6
         Width = 101
         Height = 17
@@ -1046,7 +1077,7 @@ object frmConsDev: TfrmConsDev
         TabOrder = 3
       end
       object lbDB: TStaticText
-        Left = 1043
+        Left = 782
         Top = 22
         Width = 101
         Height = 17
@@ -1064,7 +1095,7 @@ object frmConsDev: TfrmConsDev
         TabOrder = 1
       end
       object lbBAL: TStaticText
-        Left = 1043
+        Left = 782
         Top = 37
         Width = 101
         Height = 17
@@ -1129,17 +1160,35 @@ object frmConsDev: TfrmConsDev
       'D.DEV_NUMERO, D.DEV_STATUS, D.DEV_TOTAL,  D.FAC_FORMA, '
       'D.FAC_NUMERO, D.TFA_CODIGO, U.USU_NOMBRE, D.EMP_CODIGO, '
       'D.DEV_NOMBRE, D.DEV_CONITBIS, d.suc_codigo,'
+      ''
+      '  CASE '
+      '        WHEN ISNULL(d.Enviado_DGII, 0) = 1 THEN d.eNCF'
+      '        ELSE'
+      '            CASE '
       
-        'ncf_fijo+replicate('#39'0'#39',8-len(d.ncf_secuencia))+cast(d.ncf_secuen' +
-        'cia as varchar) as NCF,'
+        '                WHEN d.ncf_fijo IS NOT NULL AND d.ncf_secuencia ' +
+        'IS NOT NULL THEN'
+      
+        '                    d.ncf_fijo + RIGHT(REPLICATE('#39'0'#39', 8) + CAST(' +
+        'd.ncf_secuencia AS varchar(8)), 8)'
+      '                ELSE NULL'
+      '            END'
+      '    END AS NCF,'
+      ''
       'NCF as NCF_Modifica, d.ticket_cajero, d.ticket_numero, '
       'd.ticket_fecha, d.ticket_caja,'
-      'd.dev_fecha_factura'
+      
+        'd.dev_fecha_factura, d.Error_DGII,  e.emp_rnc, prov.cli_rnc,d.En' +
+        'viado_DGII, d.AceptadoDGII, eNCF, motivo_dgi'
       'FROM'
-      'DEVOLUCION D, USUARIOS U'
+      'DEVOLUCION D'
+      'inner join USUARIOS U on D.USU_CODIGO = U.USU_CODIGO'
+      'INNER JOIN Empresas e '
+      '        ON e.emp_codigo = D.emp_codigo'
+      '  LEFT JOIN Clientes prov '
+      '        ON prov.cli_codigo = D.cli_codigo'
       'WHERE'
-      'D.USU_CODIGO = U.USU_CODIGO'
-      'AND D.EMP_CODIGO = :EMP'
+      ' D.EMP_CODIGO = :EMP'
       
         'AND D.DEV_FECHA BETWEEN convert(datetime,:FECHA1,105) AND conver' +
         't(datetime,:FECHA2,105)'
@@ -1239,6 +1288,28 @@ object frmConsDev: TfrmConsDev
     end
     object QDevdev_fecha_factura: TDateTimeField
       FieldName = 'dev_fecha_factura'
+    end
+    object QDevemp_rnc: TStringField
+      FieldName = 'emp_rnc'
+    end
+    object QDevcli_rnc: TStringField
+      FieldName = 'cli_rnc'
+      Size = 0
+    end
+    object QDevEnviado_DGII: TBooleanField
+      FieldName = 'Enviado_DGII'
+    end
+    object QDevError_DGII: TBooleanField
+      FieldName = 'Error_DGII'
+    end
+    object QDevAceptadoDGII: TBooleanField
+      FieldName = 'AceptadoDGII'
+    end
+    object QDeveNCF: TStringField
+      FieldName = 'eNCF'
+    end
+    object QDevmotivo_dgi: TIntegerField
+      FieldName = 'motivo_dgi'
     end
   end
   object QProductos: TADOQuery
@@ -1931,5 +2002,13 @@ object frmConsDev: TfrmConsDev
       #9'deallocate c_devolucion')
     Left = 672
     Top = 168
+  end
+  object PopupMenu2: TPopupMenu
+    Left = 100
+    Top = 162
+    object FrmPopupDGIIQDGIIParametersParamByNamecaja1: TMenuItem
+      Caption = 'Informacion DGII'
+      OnClick = FrmPopupDGIIQDGIIParametersParamByNamecaja1Click
+    end
   end
 end

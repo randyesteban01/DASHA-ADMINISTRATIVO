@@ -1,8 +1,8 @@
 object DM: TDM
   OldCreateOrder = False
   OnCreate = DataModuleCreate
-  Left = 407
-  Top = 164
+  Left = 688
+  Top = 391
   Height = 356
   Width = 619
   object dsEmpresas: TDataSource
@@ -978,6 +978,64 @@ object DM: TDM
     object QParametrosPAR_cantidadRecibosImprimir: TIntegerField
       FieldName = 'PAR_cantidadRecibosImprimir'
     end
+    object QParametrosUsa_FacturacionElectronica: TBooleanField
+      FieldName = 'Usa_FacturacionElectronica'
+    end
+    object QParametrosImprimirCopia: TBooleanField
+      FieldName = 'ImprimirCopia'
+    end
+    object QParametrosservicio_construccion: TBooleanField
+      FieldName = 'servicio_construccion'
+    end
+    object QParametrosintegracion_luganis: TBooleanField
+      FieldName = 'integracion_luganis'
+    end
+    object QParametrosmesas_abiertas: TBooleanField
+      FieldName = 'mesas_abiertas'
+    end
+    object QParametrospar_luganis_baseurl: TStringField
+      FieldName = 'par_luganis_baseurl'
+      Size = 100
+    end
+    object QParametrospar_luganis_companycode: TStringField
+      FieldName = 'par_luganis_companycode'
+      Size = 100
+    end
+    object QParametrospar_luganis_username: TStringField
+      FieldName = 'par_luganis_username'
+      Size = 100
+    end
+    object QParametrospar_luganis_password: TStringField
+      FieldName = 'par_luganis_password'
+      Size = 100
+    end
+    object QParametrospar_luganis_appversion: TStringField
+      FieldName = 'par_luganis_appversion'
+      Size = 100
+    end
+    object QParametrospar_luganis_os: TStringField
+      FieldName = 'par_luganis_os'
+      Size = 100
+    end
+    object QParametrospar_luganis_deviceid: TStringField
+      FieldName = 'par_luganis_deviceid'
+      Size = 100
+    end
+    object QParametrospar_luganis_latitude: TStringField
+      FieldName = 'par_luganis_latitude'
+      Size = 100
+    end
+    object QParametrospar_luganis_longitude: TStringField
+      FieldName = 'par_luganis_longitude'
+      Size = 100
+    end
+    object QParametrospar_luganis_providerip: TStringField
+      FieldName = 'par_luganis_providerip'
+      Size = 100
+    end
+    object QParametrosPAR_FE_DetenerFacturacion: TBooleanField
+      FieldName = 'PAR_FE_DetenerFacturacion'
+    end
   end
   object QContab: TADOQuery
     Connection = ADOSigma
@@ -1793,7 +1851,7 @@ object DM: TDM
       
         'par_mailservidor, par_mailcorreo, par_mailusuario, par_mailpuert' +
         'o, par_mailclave, par_mailOK, usu_vendedor, usu_solo_conduce'
-      ',usu_modifica_nombreprod, usu_suc_default'
+      ',usu_modifica_nombreprod, usu_suc_default, usu_reenvia_dgii'
       'from'
       'USUARIOS'
       'where'
@@ -1912,6 +1970,9 @@ object DM: TDM
     end
     object QUsuariosusu_suc_default: TIntegerField
       FieldName = 'usu_suc_default'
+    end
+    object QUsuariosusu_reenvia_dgii: TBooleanField
+      FieldName = 'usu_reenvia_dgii'
     end
   end
   object QParamRH: TADOQuery
@@ -2336,5 +2397,13 @@ object DM: TDM
       'END')
     Left = 536
     Top = 48
+  end
+  object qEjecutar: TADOQuery
+    Connection = ADOSigma
+    LockType = ltReadOnly
+    CommandTimeout = 0
+    Parameters = <>
+    Left = 136
+    Top = 8
   end
 end

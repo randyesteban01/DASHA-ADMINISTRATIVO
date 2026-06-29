@@ -1,6 +1,6 @@
 object frmPrecios: TfrmPrecios
-  Left = 627
-  Top = 360
+  Left = 396
+  Top = 304
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Precios'
@@ -73,7 +73,7 @@ object frmPrecios: TfrmPrecios
     Top = 40
     Width = 449
     Height = 193
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     TabOrder = 2
     TabStop = False
     object TabSheet1: TTabSheet
@@ -252,7 +252,7 @@ object frmPrecios: TfrmPrecios
     Anchors = [akTop, akRight]
     Caption = '[ESC] - &Salir'
     TabOrder = 3
-    OnClick = btCloseClick
+    OnClick = exit
     Glyph.Data = {
       76010000424D7601000000000000760000002800000020000000100000000100
       04000000000000010000120B0000120B00001000000000000000000000000000

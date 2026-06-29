@@ -249,6 +249,7 @@ var
   col, row, semanas, ColTotalIng, a, coldesc : integer;
   v2000, v1000, v500, v100, v50, v20, v25, v10, v5, v1, v050, v025, v01 : integer;
   empCedula: string;
+  MontoAFPOtrosIngresos, MontoSFSOtrosIngresos: double;
 begin
   // Verificando si existe una nomina generada para esta fecha
   dm.Query1.Close;
@@ -436,7 +437,9 @@ begin
         TotalDesc := 0;
         TotalIng  := 0;
         MontoAFP  := 0;
+        MontoAFPOtrosIngresos := 0;
         MontoSFS  := 0;
+        MontoSFSOtrosIngresos  := 0;
         MontoSeguro := 0;
         SueldoImponible := 0;
 
@@ -639,11 +642,17 @@ begin
                 if Trim(sgnomina.Cells[Col, 0]) = Nombre then
                 begin
                   if dm.Query1.FieldByName('salario_total').AsFloat <= afp_salario_tope then
-                    MontoAFP := ((((dm.Query1.FieldByName('salario_total').AsFloat+MontoIngAfectaAFP-MontoDescAfectaAFP)*afp_aporte_afiliado)/100))
+                      begin
+                        MontoAFP := dm.Query1.FieldByName('salario_total').AsFloat*(afp_aporte_afiliado/100);
+                        MontoAFPOtrosIngresos := (MontoIngAfectaAFP-MontoDescAfectaAFP)*(afp_aporte_afiliado/100)
+                      end
+                    //MontoAFP := ((((dm.Query1.FieldByName('emp_salario').AsFloat+MontoIngAfectaAFP-MontoDescAfectaAFP)*afp_aporte_afiliado)/100))
                   else
                     MontoAFP := (((afp_salario_tope*afp_aporte_afiliado)/100));
+                    
+                  MontoAFP := MontoAFP + MontoAFPOtrosIngresos;
                   sgnomina.Cells[Col, sgnomina.RowCount-1] := Format('%n',[MontoAFP]);
-                  SueldoImponible := SueldoImponible - MontoAFP;
+                 // SueldoImponible := SueldoImponible - MontoAFP;
                   TotalDesc := TotalDesc + MontoAFP;
                   break;
                 end;
@@ -658,12 +667,20 @@ begin
               begin
                 if Trim(sgnomina.Cells[Col, 0]) = Nombre then
                 begin
+
                   if dm.Query1.FieldByName('salario_total').AsFloat <= afp_salario_tope then
-                    MontoAFP := ((((dm.Query1.FieldByName('salario_total').AsFloat+MontoIngAfectaAFP-MontoDescAfectaAFP)*afp_aporte_afiliado)/100))
+                    begin
+                      MontoAFP := dm.Query1.FieldByName('salario_total').AsFloat*(afp_aporte_afiliado/100);
+                      MontoAFPOtrosIngresos := (MontoIngAfectaAFP-MontoDescAfectaAFP)*(afp_aporte_afiliado/100)
+                    end
+                   // MontoAFP := ((((dm.Query1.FieldByName('emp_salario').AsFloat+MontoIngAfectaAFP-MontoDescAfectaAFP)*afp_aporte_afiliado)/100))
                   else
                     MontoAFP := (((afp_salario_tope*afp_aporte_afiliado)/100));
+
+                  MontoAFP := MontoAFP + MontoAFPOtrosIngresos;
                   sgnomina.Cells[Col, sgnomina.RowCount-1] := Format('%n',[MontoAFP]);
-                  SueldoImponible := SueldoImponible - MontoAFP;
+                  //Jhonattan Gomez 2026-05-28 09:51
+                  //SueldoImponible := SueldoImponible - MontoAFP;
                   TotalDesc := TotalDesc + MontoAFP;
                   break;
                 end;
@@ -679,12 +696,15 @@ begin
                 if Trim(sgnomina.Cells[Col, 0]) = Nombre then
                 begin
                   if dm.Query1.FieldByName('salario_total').AsFloat <= afp_salario_tope then
-                    MontoAFP := ((((dm.Query1.FieldByName('salario_total').AsFloat+MontoIngAfectaAFP-MontoDescAfectaAFP)*afp_aporte_afiliado)/100))
+                  begin
+                    MontoAFP := dm.Query1.FieldByName('salario_total').AsFloat*(afp_aporte_afiliado/100);
+                    MontoAFPOtrosIngresos := (MontoIngAfectaAFP-MontoDescAfectaAFP)*(afp_aporte_afiliado/100)
+                  end
                   else
                     MontoAFP := (((afp_salario_tope*afp_aporte_afiliado)/100));
 
-                  SueldoImponible := SueldoImponible - MontoAFP;
-                  MontoAFP := MontoAFP / dm.Query1.FieldByName('tno_cant_mensual').AsInteger;
+                  //SueldoImponible := SueldoImponible - MontoAFP;
+                  MontoAFP := (MontoAFP/ dm.Query1.FieldByName('tno_cant_mensual').AsInteger) + MontoAFPOtrosIngresos;
                   sgnomina.Cells[Col, sgnomina.RowCount-1] := Format('%n',[MontoAFP]);
                   TotalDesc := TotalDesc + MontoAFP;
                   break;
@@ -709,6 +729,7 @@ begin
         if Query2.RecordCount > 0 then
         begin
           Nombre := Query2.FieldByName('tde_nombre').AsString;
+
           if Query2.FieldByName('des_periodo_descuento').AsString = '1' then
           begin
             if (Dayof(fdesde.Date) >= 1) and (Dayof(fhasta.Date) <= 15) then
@@ -721,16 +742,20 @@ begin
                   begin
                     sgnomina.Cells[Col, sgnomina.RowCount-1] := Format('%n',[(((dm.Query1.FieldByName('salario_total').AsFloat*sfs_aporte_afiliado)/100)) +
                     (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres)]);
-                    MontoSFS := ((((dm.Query1.FieldByName('salario_total').AsFloat+MontoIngAfectaARS-MontoDescAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                    MontoSFS := ((((dm.Query1.FieldByName('salario_total').AsFloat)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                    MontoSFSOtrosIngresos := (MontoIngAfectaARS-MontoDescAfectaARS)* (sfs_aporte_afiliado/100) ;
+                    //MontoSFS := ((((dm.Query1.FieldByName('salario_total').AsFloat+MontoIngAfectaARS-MontoDescAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
                   end
                   else
                   begin
                     sgnomina.Cells[Col, sgnomina.RowCount-1] := Format('%n',[(((sfs_tope_sueldo*sfs_aporte_afiliado)/100)) +
                     (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres)]);
-                    MontoSFS := ((((sfs_tope_sueldo-MontoDescAfectaARS+MontoIngAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                    MontoSFS := ((((sfs_tope_sueldo)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                    MontoSFSOtrosIngresos := (MontoIngAfectaARS-MontoDescAfectaARS)*(sfs_aporte_afiliado/100)
                   end;
 
-                  SueldoImponible := SueldoImponible - MontoSFS;
+                  MontoSFS := MontoSFS +  MontoSFSOtrosIngresos;
+                  //SueldoImponible := SueldoImponible - MontoSFS;
                   TotalDesc := TotalDesc + MontoSFS;
                   break;
                 end;
@@ -749,15 +774,22 @@ begin
                   begin
                     sgnomina.Cells[Col, sgnomina.RowCount-1] := Format('%n',[(((dm.Query1.FieldByName('salario_total').AsFloat*sfs_aporte_afiliado)/100)) +
                     (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres)]);
-                    MontoSFS := ((((dm.Query1.FieldByName('salario_total').AsFloat+MontoIngAfectaARS-MontoDescAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                   // MontoSFS := ((((dm.Query1.FieldByName('salario_total').AsFloat+MontoIngAfectaARS-MontoDescAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                    MontoSFS := ((((dm.Query1.FieldByName('salario_total').AsFloat)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                    MontoSFSOtrosIngresos := (MontoIngAfectaARS-MontoDescAfectaARS)* (sfs_aporte_afiliado/100) ;
+
                   end
                   else
                   begin
                     sgnomina.Cells[Col, sgnomina.RowCount-1] := Format('%n',[(((sfs_tope_sueldo*sfs_aporte_afiliado)/100)) +
                     (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres)]);
-                    MontoSFS := ((((sfs_tope_sueldo+MontoIngAfectaARS-MontoDescAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                    MontoSFS := ((((sfs_tope_sueldo)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                    MontoSFSOtrosIngresos := (MontoIngAfectaARS-MontoDescAfectaARS)*(sfs_aporte_afiliado/100)
+                    //MontoSFS := ((((sfs_tope_sueldo+MontoIngAfectaARS-MontoDescAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
                   end;
-                  SueldoImponible := SueldoImponible - MontoSFS;
+                  
+                  MontoSFS := MontoSFS +  MontoSFSOtrosIngresos;
+                  //SueldoImponible := SueldoImponible - MontoSFS;
                   TotalDesc := TotalDesc + MontoSFS;
                   break;
                 end;
@@ -773,12 +805,20 @@ begin
                 if Trim(sgnomina.Cells[Col, 0]) = Nombre then
                 begin
                   if dm.Query1.FieldByName('salario_total').AsFloat <= sfs_tope_sueldo then
-                    MontoSFS := ((((dm.Query1.FieldByName('salario_total').AsFloat+MontoIngAfectaARS-MontoDescAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres)
+                  begin
+                    MontoSFS := ((((dm.Query1.FieldByName('salario_total').AsFloat)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                    MontoSFSOtrosIngresos := (MontoIngAfectaARS-MontoDescAfectaARS)* (sfs_aporte_afiliado/100) ;
+                  end
+                    //MontoSFS := ((((dm.Query1.FieldByName('salario_total').AsFloat+MontoIngAfectaARS-MontoDescAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres)
                   else
-                    MontoSFS := ((((sfs_tope_sueldo+MontoIngAfectaARS-MontoDescAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                  begin
+                    MontoSFS := ((((sfs_tope_sueldo)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
+                    MontoSFSOtrosIngresos := (MontoIngAfectaARS-MontoDescAfectaARS)*(sfs_aporte_afiliado/100) ;
+                  end;
+                    //MontoSFS := ((((sfs_tope_sueldo+MontoIngAfectaARS-MontoDescAfectaARS)*sfs_aporte_afiliado)/100)) + (dm.Query1.FieldByName('emp_sfs_padres').AsInteger*sfs_pago_padres);
 
-                  SueldoImponible := SueldoImponible - MontoSFS;
-                  MontoSFS := MontoSFS / dm.Query1.FieldByName('tno_cant_mensual').AsInteger;
+                  //SueldoImponible := SueldoImponible - MontoSFS;
+                  MontoSFS := (MontoSFS / dm.Query1.FieldByName('tno_cant_mensual').AsInteger) + (MontoSFSOtrosIngresos);
                   sgnomina.Cells[Col, sgnomina.RowCount-1] := Format('%n',[MontoSFS]);
                   TotalDesc := TotalDesc + MontoSFS;
                   break;
@@ -804,8 +844,8 @@ begin
         begin
           Nombre := Query2.FieldByName('tde_nombre').AsString;
 
-          if Query2.FieldByName('des_periodo_descuento').AsString = '1' then
-          begin
+         // if Query2.FieldByName('des_periodo_descuento').AsString = '1' then
+         // begin
             if (Dayof(fdesde.Date) >= 1) and (Dayof(fhasta.Date) <= 15) then
             begin
               for Col := 3 to sgnomina.ColCount -1 do
@@ -813,14 +853,17 @@ begin
                 if Trim(sgnomina.Cells[Col, 0]) = Nombre then
                 begin
                   Query2.Close;
-                  Query2.SQL.Clear;                                                      
-                  Query2.SQL.Add('select (((((('+FloatToStr(SueldoImponible)+'*12)-exceso_monto)*exceso_porciento)/100)+exceso_aumento)/12) as isr_deduccion');
+                  Query2.SQL.Clear;
+                  Query2.SQL.Add('declare @SueldoImponible numeric(18,2)');
+                  Query2.SQL.Add('set @SueldoImponible = :SueldoImponible');
+                  Query2.SQL.Add('select ((isnull(exceso_aumento,0) + (@SueldoImponible*12 - exceso_monto) * (exceso_porciento/100)) / 12)/2 isr_deduccion');
                   //Query2.SQL.Add('select (((((('+FloatToStr(TotalIng)+'*12)-exceso_monto)*exceso_porciento)/100)+exceso_aumento)/12) as isr_deduccion');
                   Query2.SQL.Add('from isr');
                   Query2.SQL.Add('where emp_codigo = :emp');
-                  Query2.SQL.Add('and ('+FloatToStr(SueldoImponible)+'*12) between Desde and Hasta');
+                  Query2.SQL.Add('and (@SueldoImponible*12) between Desde and Hasta');
                   //Query2.SQL.Add('and ('+FloatToStr(TotalIng)+'*12) between Desde and Hasta');
                   Query2.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
+                  Query2.Parameters.ParamByName('SueldoImponible').Value := SueldoImponible;
                   Query2.Open;
                   if Query2.RecordCount > 0 then
                   begin
@@ -829,11 +872,11 @@ begin
                     break;
                   end;
                 end;
-              end;
+              //end;
             end;
           end
-          else if Query2.FieldByName('des_periodo_descuento').AsString = '2' then
-          begin
+          else //if Query2.FieldByName('des_periodo_descuento').AsString = '2' then
+         // begin
             if (Dayof(fdesde.Date) >= 16) and (Dayof(fhasta.Date) <= 31) then
             begin
               for Col := 3 to sgnomina.ColCount -1 do
@@ -842,13 +885,16 @@ begin
                 begin
                   Query2.Close;
                   Query2.SQL.Clear;
-                  Query2.SQL.Add('select (((((('+FloatToStr(SueldoImponible)+'*12)-exceso_monto)*exceso_porciento)/100)+exceso_aumento)/12) as isr_deduccion');
+                  Query2.SQL.Add('declare @SueldoImponible numeric(18,2)');
+                  Query2.SQL.Add('set @SueldoImponible = :SueldoImponible');
+                  Query2.SQL.Add('select ((isnull(exceso_aumento,0) + (@SueldoImponible*12 - exceso_monto) * (exceso_porciento/100)) / 12)/2 isr_deduccion');
                   //Query2.SQL.Add('select (((((('+FloatToStr(TotalIng)+'*12)-exceso_monto)*exceso_porciento)/100)+exceso_aumento)/12) as isr_deduccion');
                   Query2.SQL.Add('from isr');
                   Query2.SQL.Add('where emp_codigo = :emp');
-                  Query2.SQL.Add('and ('+FloatToStr(SueldoImponible)+'*12) between Desde and Hasta');
+                  Query2.SQL.Add('and (@SueldoImponible*12) between Desde and Hasta');
                   //Query2.SQL.Add('and ('+FloatToStr(TotalIng)+'*12) between Desde and Hasta');
                   Query2.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
+                  Query2.Parameters.ParamByName('SueldoImponible').Value := SueldoImponible;
                   Query2.Open;
                   if Query2.RecordCount > 0 then
                   begin
@@ -858,10 +904,10 @@ begin
                   end;
                 end;
               end;
-            end;
+          //  end;
           end
-          else if Query2.FieldByName('des_periodo_descuento').AsString = '3' then
-          begin
+          else //if Query2.FieldByName('des_periodo_descuento').AsString = '3' then
+          //begin
             if (Dayof(fdesde.Date) >= 1) and (Dayof(fhasta.Date) <= 31) then
             begin
               for Col := 3 to sgnomina.ColCount -1 do
@@ -884,11 +930,13 @@ begin
                     TotalDesc := TotalDesc + Query2.FieldByName('isr_deduccion').AsFloat;
                     break;
                   end;
-                end;
+               // end;
               end;
             end;
           end;
         end;
+
+
 
         //*************
         //Seguro Medico
@@ -3000,20 +3048,20 @@ begin
         DM.adoMultiUso.SQL.Add('from ingresos i');
         DM.adoMultiUso.SQL.Add('inner join tipo_ingresos ti on i.tin_codigo = ti.tin_codigo');
         DM.adoMultiUso.SQL.Add('where ti.emp_codigo = :emp AND i.ing_fecha between :fec1 and :fec2');
-        DM.adoMultiUso.SQL.Add('and i.emp_numero = :num and i.ing_periodo_pago = :per');
+        DM.adoMultiUso.SQL.Add('and i.emp_numero = :num '); //and i.ing_periodo_pago = :per');
         DM.adoMultiUso.SQL.Add('and ti.tin_afecta_AFP = '+QuotedStr('True'));
 
         DM.adoMultiUso.Parameters.ParamByName('emp').DataType  := ftInteger;
         DM.adoMultiUso.Parameters.ParamByName('fec1').DataType := ftDateTime;
         DM.adoMultiUso.Parameters.ParamByName('fec2').DataType := ftDateTime;
         DM.adoMultiUso.Parameters.ParamByName('num').DataType  := ftInteger;
-        DM.adoMultiUso.Parameters.ParamByName('per').DataType  := ftInteger;
+        //DM.adoMultiUso.Parameters.ParamByName('per').DataType  := ftInteger;
 
         DM.adoMultiUso.Parameters.ParamByName('emp').Value  := dm.vp_cia;
         DM.adoMultiUso.Parameters.ParamByName('fec1').Value := fdesde.Date;
         DM.adoMultiUso.Parameters.ParamByName('fec2').Value := fhasta.Date;
         DM.adoMultiUso.Parameters.ParamByName('num').Value  := dm.Query1.FieldByName('emp_numero').AsString;
-        DM.adoMultiUso.Parameters.ParamByName('per').Value  := DBLookupComboBox1.KeyValue;
+        //DM.adoMultiUso.Parameters.ParamByName('per').Value  := DBLookupComboBox1.KeyValue;
         DM.adoMultiUso.Open;
 
 if DM.adoMultiUso.RecordCount > 0 then
@@ -3033,20 +3081,20 @@ begin
         DM.adoMultiUso.SQL.Add('from ingresos i');
         DM.adoMultiUso.SQL.Add('inner join tipo_ingresos ti on i.tin_codigo = ti.tin_codigo');
         DM.adoMultiUso.SQL.Add('where ti.emp_codigo = :emp AND i.ing_fecha between :fec1 and :fec2');
-        DM.adoMultiUso.SQL.Add('and i.emp_numero = :num and i.ing_periodo_pago = :per');
+        DM.adoMultiUso.SQL.Add('and i.emp_numero = :num');// and i.ing_periodo_pago = :per');
         DM.adoMultiUso.SQL.Add('and ti.tin_afecta_ARS = '+QuotedStr('True'));
 
         DM.adoMultiUso.Parameters.ParamByName('emp').DataType  := ftInteger;
         DM.adoMultiUso.Parameters.ParamByName('fec1').DataType := ftDateTime;
         DM.adoMultiUso.Parameters.ParamByName('fec2').DataType := ftDateTime;
         DM.adoMultiUso.Parameters.ParamByName('num').DataType  := ftInteger;
-        DM.adoMultiUso.Parameters.ParamByName('per').DataType  := ftInteger;
+       // DM.adoMultiUso.Parameters.ParamByName('per').DataType  := ftInteger;
 
         DM.adoMultiUso.Parameters.ParamByName('emp').Value  := dm.vp_cia;
         DM.adoMultiUso.Parameters.ParamByName('fec1').Value := fdesde.Date;
         DM.adoMultiUso.Parameters.ParamByName('fec2').Value := fhasta.Date;
         DM.adoMultiUso.Parameters.ParamByName('num').Value  := dm.Query1.FieldByName('emp_numero').AsString;
-        DM.adoMultiUso.Parameters.ParamByName('per').Value  := DBLookupComboBox1.KeyValue;
+        //DM.adoMultiUso.Parameters.ParamByName('per').Value  := DBLookupComboBox1.KeyValue;
         DM.adoMultiUso.Open;
 
 if DM.adoMultiUso.RecordCount > 0 then

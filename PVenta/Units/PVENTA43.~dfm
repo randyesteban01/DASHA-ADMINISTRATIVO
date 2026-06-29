@@ -1,6 +1,6 @@
 object frmFormaPagoFac: TfrmFormaPagoFac
-  Left = 584
-  Top = 227
+  Left = 545
+  Top = 305
   ActiveControl = DBGrid1
   BorderIcons = []
   BorderStyle = bsSingle
@@ -55,7 +55,7 @@ object frmFormaPagoFac: TfrmFormaPagoFac
     Height = 20
     Alignment = taRightJustify
     AutoSize = False
-    Caption = '0.0000'
+    Caption = '0.00'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clMaroon
     Font.Height = -16
@@ -70,7 +70,7 @@ object frmFormaPagoFac: TfrmFormaPagoFac
     Height = 20
     Alignment = taRightJustify
     AutoSize = False
-    Caption = '0.0000'
+    Caption = '0.00'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clMaroon
     Font.Height = -16
@@ -98,7 +98,7 @@ object frmFormaPagoFac: TfrmFormaPagoFac
     Height = 20
     Alignment = taRightJustify
     AutoSize = False
-    Caption = '0.0000'
+    Caption = '0.00'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clMaroon
     Font.Height = -16
@@ -108,7 +108,7 @@ object frmFormaPagoFac: TfrmFormaPagoFac
   end
   object DBGrid1: TDBGrid
     Left = 0
-    Top = 73
+    Top = 80
     Width = 491
     Height = 112
     TabStop = False
@@ -247,7 +247,7 @@ object frmFormaPagoFac: TfrmFormaPagoFac
     Left = 0
     Top = 0
     Width = 491
-    Height = 73
+    Height = 80
     Align = alTop
     BevelInner = bvRaised
     BevelOuter = bvLowered
@@ -416,7 +416,7 @@ object frmFormaPagoFac: TfrmFormaPagoFac
     object QFormaPagoFOR_MONTO: TFloatField
       FieldName = 'FOR_MONTO'
       Origin = 'FACFORMAPAGO.FOR_MONTO'
-      DisplayFormat = '#,0.0000'
+      DisplayFormat = '#,0.00'
     end
     object QFormaPagoFPA_CODIGO: TIntegerField
       FieldName = 'FPA_CODIGO'

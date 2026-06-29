@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, Buttons, Mask, DBCtrls, Grids, DBGrids, DB,
   IBCustomDataSet, IBQuery, IBUpdateSQL, ADODB, QRCtrls, QuickRpt, QRPDFFilt,
-  QuerySearchDlgADO, ComCtrls, Math, DBGridObj, Menus, dxmdaset, QRExport;
+  QuerySearchDlgADO, ComCtrls, Math, DBGridObj, Menus, dxmdaset, QRExport, Variants;
 
 type
   TfrmConduce = class(TForm)
@@ -3742,6 +3742,7 @@ end;
 procedure TfrmConduce.BuscaFactura(num, suc, tfa: integer; forma: string);
 var
   a: integer;
+  vOriginal: Variant;
 begin
   Query1.close;
   Query1.sql.clear;
@@ -3883,11 +3884,10 @@ begin
         QDetallePRO_CODIGO.value := QUtil.fieldbyname('pro_codigo').asinteger;
         QDetalledet_facturado.Value := QUtil.fieldbyname('det_cantidad').asfloat;
 
-        if not QUtil.fieldbyname('pro_rfabric').IsNull then
-          QDetallePRO_RFABRIC.value := QUtil.fieldbyname('pro_rfabric').asstring;
 
         if not QUtil.fieldbyname('pro_roriginal').IsNull then
           QDetallePRO_RORIGINAL.value := QUtil.fieldbyname('pro_roriginal').asstring;
+          
 
         QDetallePRO_NOMBRE.Value := QUtil.FieldByName('pro_nombre').AsString;
         QDetalleDET_MANEJAESCALA.Value := QUtil.fieldbyname('det_manejaescala').asstring;

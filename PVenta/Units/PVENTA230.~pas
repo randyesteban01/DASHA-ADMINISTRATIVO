@@ -629,7 +629,7 @@ procedure TfrmConsFTEnvios.BitBtn1Click(Sender: TObject);
 begin
 if (QEnviosstatus.Value = 'RECIBIDO') AND (QEnviosfacpagodestino.Value = False) THEN BEGIN
   if (QEnviosenv_recibido.Value = EmptyStr)or(QEnviosenv_rec_cedula.Value = EmptyStr)then
-     DBGrid1DblClick(self)
+      DBGrid1DblClick(self)
   else
     if MessageDlg('Desea imprimir en impresora grande?',mtConfirmation,[mbyes,mbno],0) = mryes then
        begin
@@ -645,7 +645,8 @@ if (QEnviosstatus.Value = 'RECIBIDO') AND (QEnviosfacpagodestino.Value = False) 
       end
       else
         Imp40Columnas ;
-end;
+        end;
+
 end;
 
 procedure TfrmConsFTEnvios.Imp40Columnas;
@@ -758,7 +759,25 @@ if (QEnviosstatus.Value = 'RECIBIDO') AND (QEnviosfacpagodestino.Value = False) 
            QDetalleenv_status.Value := 'E';
            QDetalleenv_rec_fecha.Value := now;
            QDetalle.Post;
-           btRefreshClick(self);
+          // btRefreshClick(self);
+
+             if MessageDlg('Desea imprimir en impresora grande?',mtConfirmation,[mbyes,mbno],0) = mryes then
+             begin
+              application.createform(tRENVIO, RENVIO);
+              RENVIO.QEnvios.close;
+              RENVIO.QEnvios.Parameters.ParamByName('emp_codigo').Value   := QEnviosemp_codigo.value;
+              RENVIO.QEnvios.Parameters.ParamByName('suc_codigo').Value   := QEnviossuc_codigo.Value;
+              RENVIO.QEnvios.Parameters.ParamByName('fac_numero').Value   := QEnviosfac_numero.Value;
+              RENVIO.QEnvios.open;
+              RENVIO.PrinterSetup;
+              RENVIO.Preview;
+              RENVIO.Destroy;
+            end
+            else
+              Imp40Columnas ;
+              
+
+
          end
       else MessageDlg('DEBE INGRESAR NOMBRE Y CEDULA DE QUIEN RECIBE EL ENVIO',
         mtError,[mbok],0);
@@ -836,7 +855,7 @@ begin
          RListadoEnvio.QEnvios.sql.Add('where e.emp_codigo = :emp and e.SELECCION = 1');
          RListadoEnvio.QEnvios.SQL.Add('and e.env_status = '+QuotedStr('PR'));
          RListadoEnvio.QEnvios.SQL.Add('and e.env_suc_destino = '+edOrigen.Text);
-         RListadoEnvio.QEnvios.SQL.Add('and e.suc_codigo = '+IntToStr(DBLookupComboBox2.KeyValue));
+        // RListadoEnvio.QEnvios.SQL.Add('and e.suc_codigo = '+IntToStr(DBLookupComboBox2.KeyValue));
          RListadoEnvio.QEnvios.SQL.Add('and e.nombrechofer = '+QuotedStr(chofer));
          RListadoEnvio.QEnvios.SQL.Add('and e.Ficha_id = (select Ficha_id from Fichas_Transp where ficha_nombre ='+QuotedStr(ficha)+')');
          RListadoEnvio.QEnvios.SQL.Add('and e.fecha between convert(datetime,:fecha1,105) and convert(datetime,:fecha2,105)');
