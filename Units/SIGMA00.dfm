@@ -1,8 +1,8 @@
 object frmMain: TfrmMain
-  Left = 323
-  Top = 226
-  Width = 1008
-  Height = 585
+  Left = 200
+  Top = 175
+  Width = 1297
+  Height = 620
   HelpContext = 1
   Caption = 'DASHA'
   Color = clWhite
@@ -29,14 +29,14 @@ object frmMain: TfrmMain
     Left = 193
     Top = 33
     Width = 6
-    Height = 474
+    Height = 509
     Beveled = True
   end
   object Image1: TImage
     Left = 199
     Top = 33
-    Width = 793
-    Height = 474
+    Width = 1082
+    Height = 509
     Align = alClient
     AutoSize = True
     Center = True
@@ -3373,8 +3373,8 @@ object frmMain: TfrmMain
   end
   object stBar1: TStatusBar
     Left = 0
-    Top = 507
-    Width = 992
+    Top = 542
+    Width = 1281
     Height = 19
     Panels = <
       item
@@ -3413,7 +3413,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 33
     Width = 193
-    Height = 474
+    Height = 509
     Align = alLeft
     Constraints.MinWidth = 10
     Locked = True
@@ -3554,7 +3554,7 @@ object frmMain: TfrmMain
     end
     object navInventarioControl: TdxNavBarGroupControl
       Left = 1
-      Top = 234
+      Top = 269
       Width = 191
       Height = 24
       TabOrder = 0
@@ -3623,7 +3623,7 @@ object frmMain: TfrmMain
     end
     object navVentasControl: TdxNavBarGroupControl
       Left = 1
-      Top = 258
+      Top = 293
       Width = 191
       Height = 24
       TabOrder = 7
@@ -3683,7 +3683,7 @@ object frmMain: TfrmMain
     end
     object navCxCControl: TdxNavBarGroupControl
       Left = 1
-      Top = 282
+      Top = 317
       Width = 191
       Height = 24
       TabOrder = 1
@@ -3732,7 +3732,7 @@ object frmMain: TfrmMain
     end
     object navCxPControl: TdxNavBarGroupControl
       Left = 1
-      Top = 306
+      Top = 341
       Width = 191
       Height = 24
       TabOrder = 2
@@ -3785,7 +3785,7 @@ object frmMain: TfrmMain
     end
     object navBancoControl: TdxNavBarGroupControl
       Left = 1
-      Top = 330
+      Top = 365
       Width = 191
       Height = 24
       TabOrder = 3
@@ -3854,7 +3854,7 @@ object frmMain: TfrmMain
     end
     object navContabControl: TdxNavBarGroupControl
       Left = 1
-      Top = 354
+      Top = 389
       Width = 191
       Height = 24
       TabOrder = 4
@@ -3927,7 +3927,7 @@ object frmMain: TfrmMain
     end
     object navRHControl: TdxNavBarGroupControl
       Left = 1
-      Top = 378
+      Top = 413
       Width = 191
       Height = 24
       Caption = 'navRHControl'
@@ -3968,7 +3968,7 @@ object frmMain: TfrmMain
     end
     object navSeguridadControl: TdxNavBarGroupControl
       Left = 1
-      Top = 402
+      Top = 437
       Width = 191
       Height = 24
       TabOrder = 6
@@ -4016,7 +4016,7 @@ object frmMain: TfrmMain
       Left = 1
       Top = 26
       Width = 191
-      Height = 201
+      Height = 236
       Caption = 'navParamControl'
       TabOrder = 8
       GroupIndex = 8
@@ -4025,7 +4025,7 @@ object frmMain: TfrmMain
         Left = 0
         Top = 0
         Width = 191
-        Height = 201
+        Height = 236
         Align = alClient
         PopupMenu = PopupMenu1
         TabOrder = 0
@@ -4056,7 +4056,7 @@ object frmMain: TfrmMain
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 992
+    Width = 1281
     Height = 33
     Align = alTop
     BevelInner = bvRaised

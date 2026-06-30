@@ -863,7 +863,7 @@ begin
                   Query2.SQL.Add('and (@SueldoImponible*12) between Desde and Hasta');
                   //Query2.SQL.Add('and ('+FloatToStr(TotalIng)+'*12) between Desde and Hasta');
                   Query2.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
-                  Query2.Parameters.ParamByName('SueldoImponible').Value := SueldoImponible;
+                  Query2.Parameters.ParamByName('SueldoImponible').Value := SueldoImponible-((MontoSFS+MontoAFP)*2);
                   Query2.Open;
                   if Query2.RecordCount > 0 then
                   begin
@@ -894,7 +894,7 @@ begin
                   Query2.SQL.Add('and (@SueldoImponible*12) between Desde and Hasta');
                   //Query2.SQL.Add('and ('+FloatToStr(TotalIng)+'*12) between Desde and Hasta');
                   Query2.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
-                  Query2.Parameters.ParamByName('SueldoImponible').Value := SueldoImponible;
+                  Query2.Parameters.ParamByName('SueldoImponible').Value := SueldoImponible-((MontoSFS+MontoAFP)*2);
                   Query2.Open;
                   if Query2.RecordCount > 0 then
                   begin
@@ -916,13 +916,16 @@ begin
                 begin
                   Query2.Close;
                   Query2.SQL.Clear;
-                  Query2.SQL.Add('select (((((('+FloatToStr(SueldoImponible)+'*12)-exceso_monto)*exceso_porciento)/100)+exceso_aumento)/12)/'+dm.Query1.FieldByName('tno_cant_mensual').AsString+' as isr_deduccion');
-                  //Query2.SQL.Add('select (((((('+FloatToStr(TotalIng)+'*12)-exceso_monto)*exceso_porciento)/100)+exceso_aumento)/12)/'+dm.Query1.FieldByName('tno_cant_mensual').AsString+' as isr_deduccion');
+                  Query2.SQL.Add('declare @SueldoImponible numeric(18,2)');
+                  Query2.SQL.Add('set @SueldoImponible = :SueldoImponible');
+                  Query2.SQL.Add('select ((isnull(exceso_aumento,0) + (@SueldoImponible*12 - exceso_monto) * (exceso_porciento/100)) / 12) isr_deduccion');
+                  //Query2.SQL.Add('select (((((('+FloatToStr(TotalIng)+'*12)-exceso_monto)*exceso_porciento)/100)+exceso_aumento)/12) as isr_deduccion');
                   Query2.SQL.Add('from isr');
                   Query2.SQL.Add('where emp_codigo = :emp');
-                  Query2.SQL.Add('and ('+FloatToStr(SueldoImponible)+'*12) between Desde and Hasta');
+                  Query2.SQL.Add('and (@SueldoImponible*12) between Desde and Hasta');
                   //Query2.SQL.Add('and ('+FloatToStr(TotalIng)+'*12) between Desde and Hasta');
                   Query2.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
+                  Query2.Parameters.ParamByName('SueldoImponible').Value := SueldoImponible-(MontoSFS+MontoAFP);
                   Query2.Open;
                   if Query2.RecordCount > 0 then
                   begin
