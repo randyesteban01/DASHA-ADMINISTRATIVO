@@ -1,0 +1,28 @@
+# Delphi build outputs
+*.dcu
+*.dcp
+*.bpl
+*.drc
+*.map
+*.tds
+*.exe
+*.dll
+*.ocx
+
+# Delphi backup and local files
+*.~*
+*.bak
+*.cbk
+*.local
+*.identcache
+
+# Temporary archives and logs
+*.rar
+*.zip
+*.log
+*.tmp
+
+# Local environment/configuration
+DashaSQL.ini
+DASHA.cfg
+
