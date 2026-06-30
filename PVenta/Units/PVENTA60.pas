@@ -536,11 +536,11 @@ var
   Total, Vencido, Mora : Double;
 begin
   //ACTUALIZA BALANCES
-  //DM.ADOSigma.Execute('EXEC pr_actualiza_bce '+IntToStr(DM.vp_cia));
+  DM.ADOSigma.Execute('EXEC pr_actualiza_bce '+IntToStr(DM.vp_cia));
   //punt := QCliente.GetBookmark;
 
   //VERIFICAR NOTAS CREDITO
- // qVerificarNCMontoUsados.ExecSQL;
+  qVerificarNCMontoUsados.ExecSQL;
 
   if (Trim(edTipo.Text)) = '' then edTipo.Text := '0';
 

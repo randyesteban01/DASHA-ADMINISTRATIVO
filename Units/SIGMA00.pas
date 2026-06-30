@@ -4070,31 +4070,73 @@ begin
 end;
 
 procedure TfrmMain.Generarfacturasautomticas1Click(Sender: TObject);
-var
-  qEjecutar: TADOQuery;
 begin
-  qEjecutar := dm.Query1;
-  qEjecutar.Close;
-  qEjecutar.SQL.Clear;
-  qEjecutar.SQL.Add('select * from factura_automatica where dia = '+IntToStr(DayOf(now)));
-  qEjecutar.open;
-  case qEjecutar.RecordCount of
+ dm.qEjecutar.Close;
+  dm.qEjecutar.SQL.Clear;
+  dm.qEjecutar.SQL.Add('select * from Clientes ');
+  dm.qEjecutar.SQL.Add('where isnull(facturaid2,0)=0 and isnull(facturaid,0)=0');
+  dm.qEjecutar.SQL.Add('and isnull(cond_monto,0)>0');
+  dm.qEjecutar.open;
+
+  if dm.qEjecutar.RecordCount > 0 then begin
+  if dm.qEjecutar.FieldByName('cond_fac_caja').IsNull then begin
+    ShowMessage('Debes indicar la caja'+char(13)+'en el modulo de clientes / condominio');
+    Exit;
+  end;
+  if dm.qEjecutar.FieldByName('cond_caj_codigo').IsNull then begin
+    ShowMessage('Debes indicar el cajero'+char(13)+'en el modulo de clientes / condominio');
+    Exit;
+  end;
+  if dm.qEjecutar.FieldByName('cond_pro_codigo').IsNull then begin
+    ShowMessage('Debes indicar la caja en el modulo de clientes / condominio');
+    Exit;
+  end;
+  if dm.qEjecutar.FieldByName('cond_tfa_codigo').IsNull then begin
+    ShowMessage('Debes indicar tipo de factura'+char(13)+'en el modulo de clientes / condominio');
+    Exit;
+  end;
+  if dm.qEjecutar.FieldByName('cond_mon_codigo').IsNull then begin
+    ShowMessage('Debes indicar la moneda'+char(13)+'en el modulo de clientes / condominio');
+    Exit;
+  end;
+  if dm.qEjecutar.FieldByName('cond_ven_codigo').IsNull then begin
+    ShowMessage('Debes indicar vendedor'+char(13)+'en el modulo de clientes / condominio');
+    Exit;
+  end;
+  if dm.qEjecutar.FieldByName('cond_cpa_codigo').IsNull then begin
+    ShowMessage('Debes indicar condicion de pago'+char(13)+'en el modulo de clientes / condominio');
+    Exit;
+  end;
+
+   dm.facturacion_auto := False;
+   activaforma(TFrmSelFecha, tform(FrmSelFecha));
+  end
+  else
+  begin   
+  dm.Query1.Close;
+  dm.Query1.SQL.Clear;
+  dm.Query1.SQL.Add('select * from factura_automatica where dia = '+IntToStr(DayOf(now)));
+  dm.Query1.open;
+  case dm.Query1.RecordCount of
     0 : if MessageDlg('NO HAY FACTURACION AUTOMATICA PARA ESTE DIA,'+#13+
         'DESEA CONTINUAR?',mtConfirmation, [mbyes,mbno], 0) = mryes then
         begin
+        dm.facturacion_auto := True;
         activaforma(TFrmSelFecha, tform(FrmSelFecha));
+
         end;
     else if MessageDlg('DESEA EJECUTAR EL PROCESO DE FACTURACION AUTOMATICA?',mtConfirmation, [mbyes,mbno], 0) = mryes then
           begin
-            qEjecutar.Close;
-            qEjecutar.SQL.Clear;
-            //qEjecutar.SQL.Add('exec pr_factura_automatica');
-            qEjecutar.SQL.Add('exec pr_factura_automatica :cia, :fecha');
-            qEjecutar.Parameters.ParamByName('cia').Value    := DM.vp_cia;
-            qEjecutar.Parameters.ParamByName('fecha').Value    := Date;
-            qEjecutar.ExecSQL;
+            dm.Query1.Close;
+            dm.Query1.SQL.Clear;
+            //.Query1.SQL.Add('exec pr_factura_automatica');
+            dm.Query1.SQL.Add('exec pr_factura_automatica :cia, :fecha');
+            dm.Query1.Parameters.ParamByName('cia').Value    := DM.vp_cia;
+            dm.Query1.Parameters.ParamByName('fecha').Value    := Date;
+            dm.Query1.ExecSQL;
             MessageDlg('PROCESO EJECUTADO SATISFACTORIAMENTE',mtInformation, [mbok], 0);
           end;
+  end;
   end;
 end;
 

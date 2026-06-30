@@ -41,6 +41,7 @@ uses SIGMA01;
 
 procedure TFrmSelFecha.btn1Click(Sender: TObject);
 begin
+         if dm.facturacion_auto = true then begin
           dm.Query1.Close;
           dm.Query1.SQL.Clear;
           dm.Query1.SQL.Add('exec pr_factura_automatica :cia,:fecha');
@@ -49,6 +50,20 @@ begin
           dm.Query1.ExecSQL;
           MessageDlg('PROCESO EJECUTADO SATISFACTORIAMENTE',mtInformation, [mbok], 0);
           FrmSelFecha.Close;
+          end
+          else
+          begin
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('exec pr_factura_condominio :cia, :suc, :fec, :usu');
+          dm.Query1.Parameters.ParamByName('cia').Value  := DM.vp_cia;
+          dm.Query1.Parameters.ParamByName('suc').Value  := QSucursalsuc_codigo.Value;
+          dm.Query1.Parameters.ParamByName('fec').Value  := dtp1.Date;
+          dm.Query1.Parameters.ParamByName('usu').Value  := DM.Usuario;
+          dm.Query1.ExecSQL;
+          MessageDlg('PROCESO EJECUTADO SATISFACTORIAMENTE',mtInformation, [mbok], 0);
+          FrmSelFecha.Close;
+          end;
 end;
 
 

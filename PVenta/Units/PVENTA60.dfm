@@ -1,6 +1,6 @@
 object frmConsCxC: TfrmConsCxC
-  Left = 120
-  Top = 49
+  Left = 286
+  Top = 149
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Consulta general de cuentas por cobrar'

@@ -1,8 +1,8 @@
 object DM: TDM
   OldCreateOrder = False
   OnCreate = DataModuleCreate
-  Left = 593
-  Top = 318
+  Left = 741
+  Top = 398
   Height = 356
   Width = 619
   object dsEmpresas: TDataSource
@@ -2398,12 +2398,25 @@ object DM: TDM
     Left = 536
     Top = 48
   end
+  object ADOQuery1: TADOQuery
+    Connection = ADOSigma
+    Parameters = <>
+    SQL.Strings = (
+      
+        'IF NOT EXISTS (SELECT * FROM SYS.objects WHERE NAME = '#39'UpTimeDB'#39 +
+        ') begin '
+      'CREATE TABLE [dbo].[UpTimeDB]('
+      #9'[rowid_reg] [int] NOT NULL,'
+      #9'[nombre] [varchar](100) NOT NULL,'
+      #9'[Fecha] datetime NOT NULL DEFAULT GETDATE())'
+      'end')
+    Left = 80
+    Top = 248
+  end
   object qEjecutar: TADOQuery
     Connection = ADOSigma
-    LockType = ltReadOnly
-    CommandTimeout = 0
     Parameters = <>
-    Left = 136
-    Top = 8
+    Left = 280
+    Top = 128
   end
 end

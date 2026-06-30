@@ -436,6 +436,8 @@ type
     QParametrospar_luganis_longitude: TStringField;
     QParametrospar_luganis_providerip: TStringField;
     QParametrosPAR_FE_DetenerFacturacion: TBooleanField;
+    ADOQuery1: TADOQuery;
+    qEjecutar: TADOQuery;
     procedure IBDatabaseAfterConnect(Sender: TObject);
     procedure QEmpresasCalcFields(DataSet: TDataSet);
     procedure DataModuleCreate(Sender: TObject);
@@ -451,7 +453,7 @@ type
     Usuario,suc_default, vl_tipocons, vp_cia: integer;
     NomUsu, NombreEmp, UltBusqueda, UltProducto, lcnombre, lcrnc, lccorreo, lcurl,
     lctelefono, bolImpresora, vp_formactivo, vp_seriallicencia, vp_usuario, vl_exportar  : String;
-    vp_usermailok, vp_solo_conduce, usu_reenvia_dgii : Boolean;
+    vp_usermailok, vp_solo_conduce, usu_reenvia_dgii, facturacion_auto : Boolean;
     procedure Imp40Columnas(const vARCH: TextFile);
     function GeneraLicencia(): string;
     function numero2Letras(paNumero: DOUBLE): string;
