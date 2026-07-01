@@ -1,8 +1,8 @@
 object FrmSelFecha: TFrmSelFecha
   Left = 561
   Top = 389
-  Width = 142
-  Height = 115
+  Width = 147
+  Height = 111
   BorderIcons = [biSystemMenu, biMinimize, biHelp]
   Caption = 'Facturacion Automatica'
   Color = clBtnFace
@@ -107,5 +107,15 @@ object FrmSelFecha: TFrmSelFecha
       FieldName = 'suc_rnc'
       Size = 30
     end
+  end
+  object qConsFacClien: TADOQuery
+    Parameters = <>
+    Left = 216
+    Top = 24
+  end
+  object qInsertFact: TADOQuery
+    Parameters = <>
+    Left = 264
+    Top = 24
   end
 end
