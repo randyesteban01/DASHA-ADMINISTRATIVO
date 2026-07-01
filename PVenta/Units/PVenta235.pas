@@ -55,7 +55,7 @@ begin
           end
           else
           begin
-          with dm.Query1 do begin
+          {with dm.Query1 do begin
           Close;
           SQL.Clear;
           SQL.Add('SELECT c.cli_codigo, cond_tfa_codigo, cond_ven_codigo, cond_caj_codigo, cond_fac_caja,');
@@ -97,7 +97,16 @@ begin
 
             end;
             end;
-          end;
+          end;   }
+
+          dm.Query1.Close;
+          dm.Query1.SQL.Clear;
+          dm.Query1.SQL.Add('exec pr_factura_condominio :cia, :suc, :fec, :usu');
+          dm.Query1.Parameters.ParamByName('cia').Value    := DM.vp_cia;
+          dm.Query1.Parameters.ParamByName('suc').Value    := QSucursalsuc_codigo.Value;
+          dm.Query1.Parameters.ParamByName('fec').Value  := dtp1.Date;
+          dm.Query1.Parameters.ParamByName('usu').Value  := dm.Usuario;
+          dm.Query1.ExecSQL;
 
           MessageDlg('PROCESO EJECUTADO SATISFACTORIAMENTE',mtInformation, [mbok], 0);
           FrmSelFecha.Close;

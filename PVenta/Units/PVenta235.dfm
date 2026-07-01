@@ -1,6 +1,6 @@
 object FrmSelFecha: TFrmSelFecha
-  Left = 561
-  Top = 389
+  Left = 449
+  Top = 311
   Width = 147
   Height = 111
   BorderIcons = [biSystemMenu, biMinimize, biHelp]
