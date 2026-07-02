@@ -483,6 +483,21 @@ uses PVENTA33, SIGMA01, SIGMA00, PVENTA141, RVENTA76, PVENTA13, PVENTA214,
 
 {$R *.dfm}
 
+function TipoDGIICompraProveedor(const ATipoProv: string): Integer;
+begin
+  if ATipoProv = 'I' then
+    Result := 41
+  else if ATipoProv = 'E' then
+    Result := 47
+  else
+    Result := 0;
+end;
+
+function ProveedorEnviaCompraDGII(const ATipoProv: string): Boolean;
+begin
+  Result := (ATipoProv = 'I') or (ATipoProv = 'E');
+end;
+
 function TfrmFacProvee.ValidarENCFDisponible(
   AEmp: Integer; ATipo: Integer;
   out AMsg: string;
@@ -526,7 +541,7 @@ begin
     vence := Q.FieldByName('FechaVencimientoSecuenciaDGII').AsDateTime;
     if Now > vence then
     begin
-      AMsg := 'La secuencia está vencida.';
+      AMsg := 'La secuencia est? vencida.';
       Exit;
     end;
   end;
@@ -552,7 +567,7 @@ begin
     Exit;
   end;
 
-  // Hay secuencia válida y disponible (sin reservar)
+  // Hay secuencia v?lida y disponible (sin reservar)
   ASiguienteCorrelativo := siguiente;
   Result := True;
 end;
@@ -1095,7 +1110,8 @@ var
     ok: Boolean;
    msg: string;
    prox: Int64;
-   
+   tipoDGII: Integer;
+
 begin
 
 
@@ -1241,11 +1257,12 @@ begin
             Grabar := False;
         end;
 
-        if (DM.QParametrosPAR_FE_DetenerFacturacion.Value and dm.QParametrosUsa_FacturacionElectronica.Value and  (TipoProv = 'I')) then
+        if (DM.QParametrosPAR_FE_DetenerFacturacion.Value and dm.QParametrosUsa_FacturacionElectronica.Value and ProveedorEnviaCompraDGII(TipoProv)) then
         begin
+          tipoDGII := TipoDGIICompraProveedor(TipoProv);
           ok := ValidarENCFDisponible(
                         dm.vp_cia,
-                        41,
+                        tipoDGII,
                         msg, prox);
           if (not ok) then
           begin
@@ -1274,7 +1291,7 @@ begin
             QDetalleFAC_NUMERO.Value    := QFacturaFAC_NUMERO.Value;
             QDetalleSUP_CODIGO.Value    := QFacturaSUP_CODIGO.Value;
 
-              // Asegurarse de que el costo no sea vacío y asignar un valor por defecto
+              // Asegurarse de que el costo no sea vac?o y asignar un valor por defecto
               if Trim(QDetalleDET_COSTO.Text) = '' then
                 costo := '0'  // O el valor predeterminado que consideres apropiado
               else
@@ -1400,8 +1417,9 @@ begin
 
         if dm.QParametrosUsa_FacturacionElectronica.Value then
         begin
-          if (TipoProv = 'I') then
+          if ProveedorEnviaCompraDGII(TipoProv) then
           begin
+            tipoDGII := TipoDGIICompraProveedor(TipoProv);
             QFactura.Edit;
 
             // RNC de la empresa
@@ -1439,7 +1457,7 @@ begin
               dm.Query1.Open;
               QFacturaeNCF.AsString := dm.Query1.FieldByName('eNCF').AsString;
 
-              // Tipo eNCF (código DGII)
+              // Tipo eNCF (c?digo DGII)
               {dm.Query1.Close;
               dm.Query1.SQL.Clear;
               dm.Query1.SQL.Add('select cod_dgii from TipoNCF where tip_codigo = :tip_codigo');
@@ -1449,10 +1467,10 @@ begin
               }
 
               // Guarda los cambios locales antes de enviar
-              QFacturaTipoeNCF.AsInteger :=41;
+              QFacturaTipoeNCF.AsInteger := tipoDGII;
               QFactura.Post;
 
-              // Después de EnviarCompras a la DGII, si LUGANIS está activo
+              // Despu?s de EnviarCompras a la DGII, si LUGANIS est? activo
               if dm.QParametrosintegracion_luganis.AsBoolean then
               begin
                 Servicio := CoFacturaElectronicaService.Create;
@@ -1497,7 +1515,7 @@ begin
                   QFacturasup_rnc.AsString,
                   '',
                   '',
-                  '41'
+                  IntToStr(tipoDGII)
                 );
               finally
                 // liberar si es necesario
@@ -1600,14 +1618,14 @@ begin
   begin
     Search.AliasFields.Add('RNC');
     Search.AliasFields.Add('Nombre');
-    Search.AliasFields.Add('Código');
+    Search.AliasFields.Add('C?digo');
     Search.Query.add('select substring(sup_rnc,1,13) as sup_rnc, substring(sup_nombre,1,50) as sup_nombre, sup_codigo');
   end
   else
   begin
     Search.AliasFields.Add('Nombre');
     Search.AliasFields.Add('RNC');
-    Search.AliasFields.Add('Código');
+    Search.AliasFields.Add('C?digo');
     Search.Query.add('select substring(sup_nombre,1,50) as sup_nombre, substring(sup_rnc,1,13) as sup_rnc, sup_codigo');
   end;
   Search.ResultField := 'sup_codigo';
@@ -1676,7 +1694,7 @@ procedure TfrmFacProvee.btAlmacenClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.clear;
   Search.Query.add('select alm_nombre, alm_codigo');
   Search.ResultField := 'alm_codigo';
@@ -2030,7 +2048,7 @@ begin
     Search.Query.add('and (ped_status = '+QuotedStr('EMI')+' or ped_status = '+QuotedStr('PAR')+')');
     Search.Query.add('and sup_codigo = '+IntToStr(QFacturaSUP_CODIGO.Value));
     Search.Query.add('and suc_codigo = '+IntToStr(DBLookupComboBox2.KeyValue));
-    Search.AliasFields.add('Número');
+    Search.AliasFields.add('N?mero');
     Search.AliasFields.add('Fecha');
     Search.AliasFields.add('Proveedor');
     Search.Title := 'Ordenes de Compra';
@@ -2392,7 +2410,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and cat_movimiento = '+#39+'S'+#39);
-  Search.AliasFields.Add('Descripción');
+  Search.AliasFields.Add('Descripci?n');
   Search.AliasFields.Add('Cuenta');
   Search.ResultField := 'cat_cuenta';
   Search.Title := 'Catalogo de Cuentas';
@@ -2797,7 +2815,7 @@ begin
     end;
     QDetalle.GotoBookmark(Punt);
     QDetalle.EnableControls;
-    lbcant.Caption := IntToStr(CantLineas)+' Líneas';
+    lbcant.Caption := IntToStr(CantLineas)+' L?neas';
     lbexcentos.Caption := Format('%n',[Exento]);
     lbgrabados.Caption := Format('%n',[Grabado]);
     TotalProducto := (Exento + Grabado) + titbis;
@@ -3440,7 +3458,7 @@ procedure TfrmFacProvee.btmonedaClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.clear;
   Search.Query.add('select mon_nombre, mon_codigo');
   Search.ResultField := 'mon_codigo';
@@ -4060,7 +4078,7 @@ begin
         begin
           if DecisionPrecio = '' then
           begin
-            if MessageDlg('El Costo cambió, desea actualizar los precios?',mtConfirmation,[mbyes,mbno], 0) = mryes then
+            if MessageDlg('El Costo cambi?, desea actualizar los precios?',mtConfirmation,[mbyes,mbno], 0) = mryes then
             begin
               DecisionPrecio := 'S';
               Precios;
@@ -4172,7 +4190,7 @@ begin
   Search.Query.add('and ent_status = '+#39+'EMI'+#39);
   Search.Query.add('and suc_codigo = '+IntToStr(DBLookupComboBox2.KeyValue));
   Search.Query.add('and sup_codigo = '+QFacturasup_codigo.AsString);
-  Search.AliasFields.add('Número');
+  Search.AliasFields.add('N?mero');
   Search.AliasFields.add('Concepto');
   Search.AliasFields.add('Fecha');
   Search.Title := 'Entradas de Almacen';
@@ -4298,7 +4316,7 @@ procedure TfrmFacProvee.btTipoClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.clear;
   Search.Query.add('select tip_nombre, tip_codigo');
   Search.ResultField := 'tip_codigo';
@@ -4460,7 +4478,7 @@ procedure TfrmFacProvee.SpeedButton1Click(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.Clear;
   Search.Query.Add('select Nombre, GrupoID');
   Search.Query.Add('from Cashflow_Grupo');
@@ -4478,7 +4496,7 @@ procedure TfrmFacProvee.SpeedButton2Click(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.Clear;
   Search.Query.Add('select Nombre, SubgrupoID');
   Search.Query.Add('from Cashflow_Subgrupo');
@@ -4497,7 +4515,7 @@ procedure TfrmFacProvee.SpeedButton5Click(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.Clear;
   Search.Query.Add('select Nombre, ConceptoID');
   Search.Query.Add('from Cashflow_Conceptos');
@@ -4922,7 +4940,7 @@ procedure TfrmFacProvee.bTipoRetClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.clear;
   Search.Query.add('select ret_nombre, ret_codigo');
   Search.ResultField := 'ret_codigo';
@@ -4961,7 +4979,7 @@ procedure TfrmFacProvee.bfac_form_pagoClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.clear;
   Search.Query.add('select fpap_nombre, fpap_codigo');
   Search.ResultField := 'fpap_codigo';
@@ -5177,7 +5195,7 @@ begin
           begin
             if DecisionPrecio = '' then
             begin
-              if MessageDlg('El Costo cambió, desea actualizar los precios?',mtConfirmation,[mbyes,mbno], 0) = mryes then
+              if MessageDlg('El Costo cambi?, desea actualizar los precios?',mtConfirmation,[mbyes,mbno], 0) = mryes then
               begin
                 DecisionPrecio := 'S';
                 Precios;
@@ -5319,7 +5337,7 @@ Search.Query.Clear;
   Search.Query.Add('select suc_nombre, cont_numeroSucursal from sucursales');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Title := 'Localidades / Sucursales';
   Search.ResultField := 'cont_numeroSucursal';
   if Search.execute then

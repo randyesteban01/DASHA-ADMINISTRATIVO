@@ -381,6 +381,22 @@ implementation
 uses RVENTA13, SIGMA00, SIGMA01, RVENTA76, PVENTA15, PVENTA138, SIGMA08,FacturacionElectronicaDGII_TLB,ComObj;
 
 {$R *.dfm}
+
+function TipoDGIICompraProveedor(const ATipoProv: string): Integer;
+begin
+  if ATipoProv = 'I' then
+    Result := 41
+  else if ATipoProv = 'E' then
+    Result := 47
+  else
+    Result := 0;
+end;
+
+function ProveedorEnviaCompraDGII(const ATipoProv: string): Boolean;
+begin
+  Result := (ATipoProv = 'I') or (ATipoProv = 'E');
+end;
+
 function TfrmConsFacProvee.ValidarENCFDisponible(
   AEmp: Integer; ATipo: Integer;
   out AMsg: string;
@@ -424,7 +440,7 @@ begin
     vence := Q.FieldByName('FechaVencimientoSecuenciaDGII').AsDateTime;
     if Now > vence then
     begin
-      AMsg := 'La secuencia está vencida.';
+      AMsg := 'La secuencia est? vencida.';
       Exit;
     end;
   end;
@@ -450,7 +466,7 @@ begin
     Exit;
   end;
 
-  // Hay secuencia válida y disponible (sin reservar)
+  // Hay secuencia v?lida y disponible (sin reservar)
   ASiguienteCorrelativo := siguiente;
   Result := True;
 end;
@@ -535,7 +551,7 @@ procedure TfrmConsFacProvee.btProveedorClick(Sender: TObject);
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.clear;
   Search.Query.add('select sup_nombre, sup_codigo');
   Search.ResultField := 'sup_codigo';
@@ -598,7 +614,7 @@ procedure TfrmConsFacProvee.SpeedButton3Click(Sender: TObject);
 begin
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('C?digo');
   Search.Query.clear;
   Search.Query.add('select usu_nombre, usu_codigo');
   Search.Query.add('from usuarios');
@@ -1099,7 +1115,7 @@ begin
   Search.Query.Add('from centrocostos');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Title := 'Centro de Costos';
   Search.ResultField := 'cen_codigo';
   if Search.execute then
@@ -1185,7 +1201,7 @@ begin
   Search.Query.Add('select cen_nombre, cen_codigo');
   Search.Query.Add('from centrocostos');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
-  Search.AliasFields.Add('Descripción');
+  Search.AliasFields.Add('Descripci?n');
   Search.AliasFields.Add('Cuenta');
   Search.ResultField := 'cen_codigo';
   Search.Title := 'Centros de Costo';
@@ -1299,7 +1315,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and cat_movimiento = '+#39+'S'+#39);
-  Search.AliasFields.Add('Descripción');
+  Search.AliasFields.Add('Descripci?n');
   Search.AliasFields.Add('Cuenta');
   Search.ResultField := 'cat_cuenta';
   Search.Title := 'Catalogo de Cuentas';
@@ -1347,7 +1363,7 @@ begin
   Search.query.clear;
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('C?digo');
   Search.Title := 'Moneda';
   Search.ResultField := 'mon_codigo';
   Search.query.add('select mon_nombre, mon_codigo');
@@ -1412,7 +1428,7 @@ begin
   Search.query.clear;
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('C?digo');
   Search.Title := 'Moneda';
   Search.ResultField := 'mon_codigo';
   Search.query.add('select mon_nombre, mon_codigo');
@@ -1476,7 +1492,7 @@ begin
   Search.query.clear;
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('C?digo');
   Search.Title := 'Tipo de Bien';
   Search.ResultField := 'tip_codigo';
   Search.query.add('select tip_nombre, tip_codigo');
@@ -1506,7 +1522,7 @@ begin
   supfac    := QFacturasSUP_CODIGO.Value;
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('C?digo');
   Search.Query.clear;
   Search.Query.add('select emp_nombre, emp_codigo');
   Search.Query.add('from empresas');
@@ -1518,7 +1534,7 @@ begin
     empnueva := StrToInt(Search.ValueField);
     search.AliasFields.clear;
     search.AliasFields.add('Nombre');
-    search.AliasFields.add('Código');
+    search.AliasFields.add('C?digo');
     Search.Query.clear;
     Search.Query.add('select sup_nombre, sup_codigo');
     Search.Query.add('from proveedores');
@@ -1802,7 +1818,7 @@ begin
 Search.query.clear;
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('C?digo');
   Search.Title := 'Formas Pagos Proveedor';
   Search.ResultField := 'fpap_codigo';
   Search.query.add('select fpap_nombre, fpap_codigo');
@@ -1826,7 +1842,7 @@ begin
 Search.query.clear;
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('C?digo');
   Search.Title := 'Tipo de Proveedor';
   Search.ResultField := 'tip_codigo';
   Search.query.add('select tip_nombre, tip_codigo');
@@ -1878,7 +1894,7 @@ begin
   Search.Query.Add('select suc_nombre, cont_numeroSucursal from sucursales');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Title := 'Localidades / Sucursales';
   Search.ResultField := 'cont_numeroSucursal';
   if Search.execute then
@@ -1903,7 +1919,7 @@ begin
   Search.Query.Add('select suc_nombre, cont_numeroSucursal from sucursales');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Title := 'Localidades / Sucursales';
   Search.ResultField := 'cont_numeroSucursal';
   if Search.execute then
@@ -2033,20 +2049,23 @@ ok: Boolean;
    msg: string;
    prox: Int64;
    ncfNuevo : string;
+   tipoDGII: Integer;
 begin
 //QFacturassup_tipo
 
-if not (QFacturassup_tipo.AsString = 'I') then
+if not ProveedorEnviaCompraDGII(QFacturassup_tipo.AsString) then
 begin
-      ShowMessage('Solo se deben enviar facturas a proveedores Informales.');
+      ShowMessage('Solo se deben enviar facturas a proveedores Informales o Extranjeros.');
        Exit; // Salimos del procedimiento para no reenviar
 end;
+
+tipoDGII := TipoDGIICompraProveedor(QFacturassup_tipo.AsString);
 
  if (DM.QParametrosPAR_FE_DetenerFacturacion.Value and dm.QParametrosUsa_FacturacionElectronica.Value ) then
         begin
           ok := ValidarENCFDisponible(
                         dm.vp_cia,
-                        41,
+                        tipoDGII,
                         msg, prox);
           if (not ok) then
           begin
@@ -2081,11 +2100,11 @@ end;
         end
         else
         begin
-          // >>> CONFIRMACIÓN <<<
+          // >>> CONFIRMACI?N <<<
           if MessageDlg(
                'Esta factura fue RECHAZADA por la DGII.' + sLineBreak +
-               '¿Está seguro que desea reenviarla?' + sLineBreak +
-               'Se generará una NUEVA SECUENCIA.',
+               '?Est? seguro que desea reenviarla?' + sLineBreak +
+               'Se generar? una NUEVA SECUENCIA.',
                mtConfirmation, [mbYes, mbNo], 0
              ) = mrNo then
           begin
@@ -2096,7 +2115,7 @@ end;
           dm.Query1.SQL.Clear;
           dm.Query1.SQL.Add('SELECT dbo.fn_obtenerSecuenciaDGI(:emp, :tipo) AS NuevaSecuencia;');
           dm.Query1.Parameters.ParamByName('emp').Value  := QFacturasEMP_CODIGO.Value;
-          dm.Query1.Parameters.ParamByName('tipo').Value := 41;
+          dm.Query1.Parameters.ParamByName('tipo').Value := tipoDGII;
           dm.Query1.Open;
           if not dm.Query1.Fields[0].IsNull then
             ncfNuevo := dm.Query1.FieldByName('NuevaSecuencia').AsString
@@ -2122,7 +2141,7 @@ end;
           dm.Query1.SQL.Add('UPDATE SecuenciaDGII SET Ultima_secuencia_DGII = Ultima_secuencia_DGII + 1 ');
           dm.Query1.SQL.Add('WHERE emp_codigo = :emp AND Tipo = :tipo');
           dm.Query1.Parameters.ParamByName('emp').Value      := QFacturasEMP_CODIGO.Value;
-          dm.Query1.Parameters.ParamByName('tipo').Value     := 41;
+          dm.Query1.Parameters.ParamByName('tipo').Value     := tipoDGII;
           dm.Query1.ExecSQL;
         end;
       end;
@@ -2146,7 +2165,7 @@ end;
                       IntToStr(QFacturascod_dgii.Value)
                     );
                           //   ShowMessage(resultado);
-                     // Solo muestra si contiene "ACEPTADO" (insensible a mayúsculas)
+                     // Solo muestra si contiene "ACEPTADO" (insensible a may?sculas)
     if Pos(UpperCase('ACEPTADO'), UpperCase(resultado)) > 0 then
     begin
       ShowMessage('Factura enviada correctamente.');

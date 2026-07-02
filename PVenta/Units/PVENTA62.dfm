@@ -1947,13 +1947,16 @@ object frmConsFacProvee: TfrmConsFacProvee
         'f.fac_retencion_isr, f.fac_servicios, fac_otrosimpuestos, fac_pr' +
         'oplegal, f.suc_codigo,'
       ' CASE '
-      '        WHEN prov.sup_tipo = '#39'I'#39' '
+      '        WHEN prov.sup_tipo IN ('#39'I'#39','#39'E'#39') '
       '            THEN f.eNCF'
       '        ELSE '
       '          f.NCF'
-      
-        '    END AS eNCF , f.Enviado_DGII, f.Error_DGII, e.emp_rnc, 41 AS' +
-        ' cod_dgii, f.AceptadoDGII,prov.sup_tipo'
+      '    END AS eNCF , f.Enviado_DGII, f.Error_DGII, e.emp_rnc,'
+      '    CASE'
+      '        WHEN prov.sup_tipo = '#39'I'#39' THEN 41'
+      '        WHEN prov.sup_tipo = '#39'E'#39' THEN 47'
+      '        ELSE NULL'
+      '    END AS cod_dgii, f.AceptadoDGII,prov.sup_tipo'
       'from'
       
         'provfacturas f inner join Proveedores prov on prov.sup_codigo=f.' +
