@@ -3274,7 +3274,9 @@ begin
   end
   else
   begin
-    if FormatoImp = 2 then
+    if FormatoImp = 1 then
+      Imp40ColumnasFac
+    else if FormatoImp = 2 then
     begin
       if not (DM.QParametrospar_formato_preimpreso.Value = 'Sarita & Asociados') then
       begin
@@ -4344,31 +4346,32 @@ begin
   end
   else
   begin
-    if FormatoImp = 2 then
+    if FormatoImp = 1 then
+      Imp40ColumnasFac
+    else if FormatoImp = 2 then
     begin
       if not (DM.QParametrospar_formato_preimpreso.Value = 'Sarita & Asociados') then begin
-      application.createform(tRFactura, RFactura);
-      RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
-      RFactura.QFactura.Parameters.ParamByName('tipo').Value   := qFacturasTFA_CODIGO.Value;
-      RFactura.QFactura.Parameters.ParamByName('forma').Value  := qFacturasFAC_FORMA.Value;
-      RFactura.QFactura.Parameters.ParamByName('numero').Value := qFacturasFAC_NUMERO.Value;
-      RFactura.QFactura.Parameters.ParamByName('suc').Value := qFacturasSUC_CODIGO.Value;
-      RFactura.QFactura.open;
-      RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
-      RFactura.QDetalle.open;
-      vl_clienteN := RFactura.QFacturaFAC_NOMBRE.Text;
-      vl_cliente  := RFactura.QFacturaCLI_CODIGO.Value;
-      vl_suc      := RFactura.QFacturaSUC_CODIGO.Value;
-      vl_factnum  := RFactura.QFacturaFAC_NUMERO.Text;
-      vl_adjunto1 := '.\Factura_No_'+vl_factnum+'.PDF';
-      RFactura.ExportToFilter(TQRPDFDocumentFilter.Create(vl_adjunto1));
-      vl_adjunto2 := '';
-      EnvioMail(RFactura,'Fac');
-      end;
-    end
-    else if FormatoImp = 3 then
-    begin
-      if MessageDlg('Desea imprimir en impresora grande?',mtConfirmation,[mbyes,mbno],0) = mryes then
+      if not (DM.QParametrosPAR_FACTOTALIZAPIE.Value = 'True') then
+      begin
+        application.createform(tRFacturaCorta, RFacturaCorta);
+        RFacturaCorta.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+        RFacturaCorta.QFactura.Parameters.ParamByName('tipo').Value   := qFacturasTFA_CODIGO.Value;
+        RFacturaCorta.QFactura.Parameters.ParamByName('forma').Value  := qFacturasFAC_FORMA.Value;
+        RFacturaCorta.QFactura.Parameters.ParamByName('numero').Value := qFacturasFAC_NUMERO.Value;
+        RFacturaCorta.QFactura.Parameters.ParamByName('suc').Value := qFacturasSUC_CODIGO.Value;
+        RFacturaCorta.QFactura.open;
+        RFacturaCorta.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+        RFacturaCorta.QDetalle.open;
+        vl_clienteN := RFacturaCorta.QFacturaFAC_NOMBRE.Text;
+        vl_cliente  := RFacturaCorta.QFacturaCLI_CODIGO.Value;
+        vl_suc      := RFacturaCorta.QFacturaSUC_CODIGO.Value;
+        vl_factnum  := RFacturaCorta.QFacturaFAC_NUMERO.Text;
+        vl_adjunto1 := '.\Factura_No_'+vl_factnum+'.PDF';
+        RFacturaCorta.ExportToFilter(TQRPDFDocumentFilter.Create(vl_adjunto1));
+        vl_adjunto2 := '';
+        EnvioMail(RFacturaCorta,'Fac');
+      end
+      else
       begin
         application.createform(tRFactura, RFactura);
         RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
@@ -4387,7 +4390,53 @@ begin
         RFactura.ExportToFilter(TQRPDFDocumentFilter.Create(vl_adjunto1));
         vl_adjunto2 := '';
         EnvioMail(RFactura,'Fac');
-
+      end;
+      end;
+    end
+    else if FormatoImp = 3 then
+    begin
+      if MessageDlg('Desea imprimir en impresora grande?',mtConfirmation,[mbyes,mbno],0) = mryes then
+      begin
+        if not (DM.QParametrosPAR_FACTOTALIZAPIE.Value = 'True') then
+        begin
+          application.createform(tRFacturaCorta, RFacturaCorta);
+          RFacturaCorta.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+          RFacturaCorta.QFactura.Parameters.ParamByName('tipo').Value   := qFacturasTFA_CODIGO.Value;
+          RFacturaCorta.QFactura.Parameters.ParamByName('forma').Value  := qFacturasFAC_FORMA.Value;
+          RFacturaCorta.QFactura.Parameters.ParamByName('numero').Value := qFacturasFAC_NUMERO.Value;
+          RFacturaCorta.QFactura.Parameters.ParamByName('suc').Value := qFacturasSUC_CODIGO.Value;
+          RFacturaCorta.QFactura.open;
+          RFacturaCorta.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+          RFacturaCorta.QDetalle.open;
+          vl_clienteN := RFacturaCorta.QFacturaFAC_NOMBRE.Text;
+          vl_cliente  := RFacturaCorta.QFacturaCLI_CODIGO.Value;
+          vl_suc      := RFacturaCorta.QFacturaSUC_CODIGO.Value;
+          vl_factnum  := RFacturaCorta.QFacturaFAC_NUMERO.Text;
+          vl_adjunto1 := '.\Factura_No_'+vl_factnum+'.PDF';
+          RFacturaCorta.ExportToFilter(TQRPDFDocumentFilter.Create(vl_adjunto1));
+          vl_adjunto2 := '';
+          EnvioMail(RFacturaCorta,'Fac');
+        end
+        else
+        begin
+          application.createform(tRFactura, RFactura);
+          RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+          RFactura.QFactura.Parameters.ParamByName('tipo').Value   := qFacturasTFA_CODIGO.Value;
+          RFactura.QFactura.Parameters.ParamByName('forma').Value  := qFacturasFAC_FORMA.Value;
+          RFactura.QFactura.Parameters.ParamByName('numero').Value := qFacturasFAC_NUMERO.Value;
+          RFactura.QFactura.Parameters.ParamByName('suc').Value := qFacturasSUC_CODIGO.Value;
+          RFactura.QFactura.open;
+          RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+          RFactura.QDetalle.open;
+          vl_clienteN := RFactura.QFacturaFAC_NOMBRE.Text;
+          vl_cliente  := RFactura.QFacturaCLI_CODIGO.Value;
+          vl_suc      := RFactura.QFacturaSUC_CODIGO.Value;
+          vl_factnum  := RFactura.QFacturaFAC_NUMERO.Text;
+          vl_adjunto1 := '.\Factura_No_'+vl_factnum+'.PDF';
+          RFactura.ExportToFilter(TQRPDFDocumentFilter.Create(vl_adjunto1));
+          vl_adjunto2 := '';
+          EnvioMail(RFactura,'Fac');
+        end;
       end
       else
         Imp40ColumnasFac;

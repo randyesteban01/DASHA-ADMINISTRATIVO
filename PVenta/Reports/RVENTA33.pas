@@ -187,7 +187,10 @@ end;
 
 procedure TRNotaCredito.QNotaCalcFields(DataSet: TDataSet);
 begin
-  QNotaDisp.Value := (QNotaNCR_MONTO.Value ) - QNotaNCR_MONTOUSADO.Value+ QNotancr_itbis.Value;
+  if Trim(dm.QEmpresasEMP_RNC.AsString) = '105081105' then
+    QNotaDisp.Value := QNotaNCR_MONTO.Value - QNotaNCR_MONTOUSADO.Value
+  else
+    QNotaDisp.Value := (QNotaNCR_MONTO.Value) - QNotaNCR_MONTOUSADO.Value + QNotancr_itbis.Value;
   if not QNotaNCF_Fijo.IsNull then
     QNotaNumeroCF.Value := 'NCF:'+ QNotaNCF_Fijo.Value+FormatFloat('00000000',QNotaNCF_Secuencia.Value)
   else
