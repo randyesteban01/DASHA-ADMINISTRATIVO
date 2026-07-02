@@ -1,6 +1,6 @@
 object frmFactura: TfrmFactura
-  Left = 796
-  Top = 266
+  Left = 334
+  Top = 176
   ActiveControl = edTipo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle

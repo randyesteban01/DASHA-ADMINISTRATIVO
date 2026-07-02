@@ -2724,8 +2724,8 @@ begin
   Search.AliasFields.clear;
   Search.AliasFields.Add('Nombre');
   Search.AliasFields.Add('Telefono');
-  Search.AliasFields.Add('C?dula/RNC');
-  Search.AliasFields.Add('C?digo');
+  Search.AliasFields.Add('Cedula/RNC');
+  Search.AliasFields.Add('Codigo');
   Search.Query.add('select substring(cli_nombre,1,50) as cli_nombre, cli_telefono, cli_cedula, cli_codigo, cli_referencia');
   if dm.QParametrosPAR_CODIGOCLIENTE.value = 'I' then
     Search.ResultField := 'cli_codigo'
