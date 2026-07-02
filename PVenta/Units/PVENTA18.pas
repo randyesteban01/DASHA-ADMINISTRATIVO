@@ -1136,7 +1136,7 @@ type
     procedure btBuscaVendPorcClick(Sender: TObject);
     procedure QParametrosAfterOpen(DataSet: TDataSet);
   private
-    vSer, DesactivarCargaProductos :Boolean;
+    vSer, DesactivarCargaProductos, FAsignandoCliente :Boolean;
     vSecuencia, vl_index, vl_index2:Integer;
     vSecFactura :Integer;
     vAlmacen : Integer;
@@ -1211,6 +1211,7 @@ type
       out ASiguienteCorrelativo: Int64
     ): Boolean;
     procedure AsegurarEdicionFactura;
+    procedure SincronizarCamposClientePantalla;
     
   end;
 
@@ -1270,6 +1271,21 @@ procedure TfrmFactura.AsegurarEdicionFactura;
 begin
   if not (QFactura.State in [dsEdit, dsInsert]) then
     QFactura.Edit;
+end;
+
+procedure TfrmFactura.SincronizarCamposClientePantalla;
+begin
+  if QFacturaFAC_RNC.AsString <> DBEdit14.Text then
+    DBEdit14.Text := QFacturaFAC_RNC.AsString;
+  if QFacturaFAC_NOMBRE.AsString <> DBEdit11.Text then
+    DBEdit11.Text := QFacturaFAC_NOMBRE.AsString;
+  if not QFacturaCPA_CODIGO.IsNull then
+  begin
+    if dbCondi.Text <> IntToStr(QFacturaCPA_CODIGO.AsInteger) then
+      dbCondi.Text := IntToStr(QFacturaCPA_CODIGO.AsInteger);
+  end
+  else if dbCondi.Text <> '' then
+    dbCondi.Text := '';
 end;
 
 // --- Copias tfa_copias ---
@@ -1440,9 +1456,10 @@ var
   D: TDatoRncConsulta;
   RncBuscar: string;
 begin
-  RncBuscar := Trim(DBEdit14.Text);
-  if RncBuscar = '' then
-    RncBuscar := Trim(QFacturafac_rnc.AsString);
+  if FAsignandoCliente then
+    Exit;
+
+  RncBuscar := Trim(QFacturafac_rnc.AsString);
   if RncBuscar = '' then
     Exit;
 
@@ -2550,6 +2567,8 @@ begin
       end
       else
       begin
+        FAsignandoCliente := True;
+        try
         AsegurarEdicionFactura;
 
         //edTipo.Enabled := False;
@@ -2594,6 +2613,8 @@ begin
         else
           QFacturaCPA_CODIGO.Clear;
 
+        SincronizarCamposClientePantalla;
+
         dm.Query1.Close;
         dm.Query1.SQL.Clear;
         dm.Query1.SQL.Add('select * from PR_BUSCA_VENCIDO (:emp, :cli, :fec)');
@@ -2607,6 +2628,9 @@ begin
 
         PageControl1.ActivePageIndex := 0;
         Grid.SetFocus;
+        finally
+          FAsignandoCliente := False;
+        end;
       end;
     end
     else
@@ -2804,6 +2828,8 @@ begin
     end
     else
     begin
+      FAsignandoCliente := True;
+      try
       AsegurarEdicionFactura;
 
       //edTipo.Enabled := False;
@@ -2850,14 +2876,20 @@ begin
       if not Query1.fieldbyname('ven_Codigo').IsNull then
         QFacturaVEN_CODIGO.Value     := Query1.fieldbyname('ven_Codigo').asinteger;
 
+      SincronizarCamposClientePantalla;
+
       totalizar;
 
       if actbalance = 'True' then
         if dbCondi.Enabled = True then
         begin
-          codCondi := StrToIntDef(dbCondi.Text, 0);
+          if not Query1.FieldByName('cpa_codigo').IsNull then
+            codCondi := Query1.FieldByName('cpa_codigo').AsInteger
+          else
+            codCondi := StrToIntDef(dbCondi.Text, 0);
           AsegurarEdicionFactura;
           QFacturaCPA_CODIGO.AsInteger := codCondi;
+          SincronizarCamposClientePantalla;
           dbCondi.SetFocus;
 
     // 2) Leer cpa_dias con un query r?pido
@@ -2900,11 +2932,13 @@ begin
     end;
 
         end
-
       else
       begin
         PageControl1.ActivePageIndex := 0;
         Grid.setfocus;
+      end;
+      finally
+        FAsignandoCliente := False;
       end;
     end;
   end;
@@ -15028,7 +15062,8 @@ end;
 
 procedure TfrmFactura.DBEdit14Exit(Sender: TObject);
 begin
-  QFacturafac_rncChange(QFacturafac_rnc);
+  if not FAsignandoCliente then
+    QFacturafac_rncChange(QFacturafac_rnc);
 end;
 
 procedure TfrmFactura.QSeriesBeforeOpen(DataSet: TDataSet);
