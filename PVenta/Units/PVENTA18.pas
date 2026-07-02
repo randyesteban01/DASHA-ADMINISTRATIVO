@@ -1457,6 +1457,9 @@ begin
   dm.Query1.Open;
   if dm.Query1.RecordCount > 0 then
   begin
+    if not (QFactura.State in [dsEdit, dsInsert]) then
+      QFactura.Edit;
+
     if dm.QParametrosPAR_CODIGOCLIENTE.Value = 'I' then
       edCliente.Text := dm.Query1.FieldByName('cli_codigo').AsString
     else
@@ -2454,10 +2457,6 @@ begin
       Precio := dm.Query1.FieldByName('tcl_precio').AsString;
     end;
 
-
-      if Query1.fieldbyname('tfa_codigo').AsInteger > 0 then
-        QFacturatip_codigo.Value := Query1.fieldbyname('tfa_codigo').AsInteger;
-
       if (not Query1.FieldByName('cli_cuenta').IsNull) and (actbalance = 'True') then
       begin
         if Trim(CtaCliente) <> '' then
@@ -2549,6 +2548,9 @@ begin
       end
       else
       begin
+        if not (QFactura.State in [dsEdit, dsInsert]) then
+          QFactura.Edit;
+
         //edTipo.Enabled := False;
         //btTipo.Enabled := False;
         if Precio = '' then
@@ -2558,6 +2560,9 @@ begin
           else
             Precio := 'Precio1';
         end;
+
+        if Query1.fieldbyname('tfa_codigo').AsInteger > 0 then
+          QFacturatip_codigo.Value := Query1.fieldbyname('tfa_codigo').AsInteger;
 
         FactPendiente                := Query1.fieldbyname('cli_facturarbce').asstring;
         FactVencida                  := Query1.fieldbyname('cli_facturarvencida').asstring;
@@ -2681,11 +2686,10 @@ begin
       Precio := dm.Query1.FieldByName('tcl_precio').AsString;
     end;
 
-    
-    if Query1.fieldbyname('tfa_codigo').AsInteger > 0 then
+    {if Query1.fieldbyname('tfa_codigo').AsInteger > 0 then
       QFacturatip_codigo.Value := Query1.fieldbyname('tfa_codigo').AsInteger;
 
-      {edTipo.Text := Query1.fieldbyname('tfa_codigo').AsString;
+      edTipo.Text := Query1.fieldbyname('tfa_codigo').AsString;
 
       dm.Query1.close;
       dm.Query1.sql.clear;
@@ -2797,6 +2801,9 @@ begin
     end
     else
     begin
+      if not (QFactura.State in [dsEdit, dsInsert]) then
+        QFactura.Edit;
+
       //edTipo.Enabled := False;
       //btTipo.Enabled := False;
       if Precio = '' then
@@ -2806,6 +2813,9 @@ begin
         else
           Precio := 'Precio1';
       end;
+
+      if Query1.fieldbyname('tfa_codigo').AsInteger > 0 then
+        QFacturatip_codigo.Value := Query1.fieldbyname('tfa_codigo').AsInteger;
 
       FactPendiente                := Query1.fieldbyname('cli_facturarbce').asstring;
       FactVencida                  := Query1.fieldbyname('cli_facturarvencida').asstring;
