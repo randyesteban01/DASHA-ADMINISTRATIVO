@@ -1288,7 +1288,7 @@ object frmConsFacturas: TfrmConsFacturas
             Expanded = False
             FieldName = 'PRO_NOMBRE'
             Title.Caption = 'Descripci'#243'n del Producto'
-            Width = 113
+            Width = 257
             Visible = True
           end
           item
@@ -2701,7 +2701,7 @@ object frmConsFacturas: TfrmConsFacturas
     object QDetallePRO_NOMBRE: TIBStringField
       FieldName = 'PRO_NOMBRE'
       Origin = 'DET_FACTURA.PRO_NOMBRE'
-      Size = 60
+      Size = 1000
     end
     object QDetallePRO_RFABRIC: TIBStringField
       FieldName = 'PRO_RFABRIC'
