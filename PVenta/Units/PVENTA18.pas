@@ -1881,7 +1881,7 @@ begin
   search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('C?digo');
+  search.AliasFields.add('Codigo');
   search.ResultField := 'tfa_codigo';
   search.Title := 'Tipos de factura';
   if search.execute then
@@ -1978,7 +1978,7 @@ var
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('C?digo');
+  Search.AliasFields.Add('Codigo');
 
   Search.Query.Clear;
   Search.Query.Add('select cpa_nombre, cpa_codigo'); // no necesitas cpa_dias aqu?
@@ -2044,7 +2044,7 @@ procedure TfrmFactura.btVendedorClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('C?digo');
+  Search.AliasFields.add('Codigo');
   Search.Query.clear;
   Search.Query.add('select ven_nombre, ven_codigo');
   Search.Query.add('from vendedores');
@@ -3243,7 +3243,7 @@ begin
     Grid.Columns[0].Width     := 30;
     Grid.Columns[0].Title.Caption := 'Cant.';
     Grid.Columns[2].Width     := 60;
-    Grid.Columns[2].Title.Caption := 'C?digo';
+    Grid.Columns[2].Title.Caption := 'Codigo';
     if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'I' then
        Grid.Columns[2].FieldName := 'PRO_CODIGO'
     else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'F' then
@@ -10124,9 +10124,9 @@ begin
   DBEdit13.enabled  := dsFactura.State = dsInsert;
 
   if dsFactura.State = dsedit then
-    frmFactura.Caption := 'Facturaci?n - Factura # '+QFacturaFAC_NUMERO.AsString
+    frmFactura.Caption := 'Facturacion - Factura # '+QFacturaFAC_NUMERO.AsString
   else
-    frmFactura.Caption := 'Facturaci?n';
+    frmFactura.Caption := 'Facturacion';
 end;
 
 // Imprime QR nativo ESC/POS (module 1..16, EC: 48=L,49=M,50=Q,51=H)
@@ -12854,7 +12854,7 @@ procedure TfrmFactura.btmonedaClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('C?digo');
+  Search.AliasFields.add('Codigo');
   Search.Query.clear;
   Search.Query.add('select mon_nombre, mon_codigo');
   Search.Query.add('from moneda');
@@ -13022,7 +13022,7 @@ procedure TfrmFactura.btcajaClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('C?digo');
+  Search.AliasFields.add('Codigo');
   Search.Query.clear;
   Search.Query.add('select caj_nombre, caj_codigo');
   Search.Query.add('from cajas');
@@ -13249,7 +13249,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and cat_movimiento = '+#39+'S'+#39);
-  Search.AliasFields.Add('Descripci?n');
+  Search.AliasFields.Add('Descripcion');
   Search.AliasFields.Add('Cuenta');
   Search.ResultField := 'cat_cuenta';
   Search.Title := 'Catalogo de Cuentas';
@@ -13561,7 +13561,7 @@ procedure TfrmFactura.Preventasdelproducto1Click(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('C?digo');
+  Search.AliasFields.add('Codigo');
   Search.Query.clear;
   Search.Query.add('select pre_nombre, pre_codigo');
   Search.Query.add('from Preventas');
@@ -13665,10 +13665,10 @@ begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Placa');
   Search.AliasFields.Add('Chofer');
-  Search.AliasFields.Add('Compa??a');
+  Search.AliasFields.Add('Compania');
   Search.AliasFields.Add('Marca');
   Search.AliasFields.Add('Modelo');
-  Search.AliasFields.Add('C?digo');
+  Search.AliasFields.Add('Codigo');
   Search.Query.add('select Placa, Chofer, Compania, Marca, Modelo, CamionID');
   Search.Query.add('from Camiones');
   Search.Title := 'Camiones';
@@ -14522,9 +14522,9 @@ end;
 procedure TfrmFactura.bttiponcfClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
-  Search.AliasFields.add('C?digo');
+  Search.AliasFields.add('Codigo');
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('C?digo DGII');
+  Search.AliasFields.add('Codigo DGII');
   Search.Query.Clear;
   Search.Query.Add('select tip_codigo, (nombre_dgii) as tip_nombre, cod_dgii');
  // Search.Query.Add('select tip_codigo, trim(tip_nombre) as tip_nombre');
@@ -15332,7 +15332,7 @@ procedure TfrmFactura.btnReservaClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('C?digo');
+  Search.AliasFields.Add('Codigo');
   Search.Query.clear;
   Search.Query.add('select Numero_Reserva, Reserva_nombre');
   Search.Query.add('from Hotel_Reservas');
@@ -17872,7 +17872,7 @@ begin
 
   {if (length(RFactura.QFacturaNumeroCF.AsString) < 19) then
   begin
-    Application.MessageBox('El n?mero de comprobante fiscal debe de tener 19 digitos','Error',MB_OK);
+    Application.MessageBox('El numero de comprobante fiscal debe de tener 19 digitos','Error',MB_OK);
 
     exit;
   end;}
@@ -18635,7 +18635,7 @@ end;
 
     procedure TfrmFactura.QFacturaAfterInsert(DataSet: TDataSet);
 begin
-frmFactura.Caption := 'Facturaci?n';
+frmFactura.Caption := 'Facturacion';
 end;
 
 procedure TfrmFactura.QFacturaTFA_CODIGOGetText(Sender: TField;

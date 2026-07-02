@@ -2402,7 +2402,7 @@ object frmFactura: TfrmFactura
             Expanded = False
             FieldName = 'facturada_sigma'
             Title.Alignment = taCenter
-            Title.Caption = 'Reportar?'
+            Title.Caption = 'Reportado'
             Visible = True
           end>
       end
