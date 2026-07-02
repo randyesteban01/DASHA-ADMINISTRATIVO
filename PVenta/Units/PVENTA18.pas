@@ -1409,119 +1409,6 @@ begin
   Result := AnsiChar(#29) + AnsiChar(b);
 end;
 
-procedure ImprimirLogoTicket(var F: TextFile);
-const
-  // Ancho util aproximado impresora termica 80mm (203 dpi)
-  MaxLogoWidth = 512;
-  MaxLogoHeight = 220;
-  MinLogoWidth = 384;
-var
-  Stream: TMemoryStream;
-  SrcBmp: TBitmap;
-  Jpg: TJPEGImage;
-  Bmp: TBitmap;
-  Scale, ScaleUp: Double;
-  LogoWidth, LogoHeight, WidthBytes: Integer;
-  x, y, Bit: Integer;
-  ByteValue: Byte;
-  ColorRef: DWORD;
-  Gray: Integer;
-  Data: AnsiString;
-begin
-  if Trim(dm.QParametrospar_imprime_logo.Value) <> 'True' then
-    Exit;
-  if DM.QEmpresasEMP_LOGO.IsNull then
-    Exit;
-
-  Stream := TMemoryStream.Create;
-  SrcBmp := TBitmap.Create;
-  Bmp := TBitmap.Create;
-  try
-    try
-      DM.QEmpresasEMP_LOGO.SaveToStream(Stream);
-      if Stream.Size = 0 then
-        Exit;
-
-      Stream.Position := 0;
-      try
-        SrcBmp.LoadFromStream(Stream);
-      except
-        Stream.Position := 0;
-        Jpg := TJPEGImage.Create;
-        try
-          Jpg.LoadFromStream(Stream);
-          SrcBmp.Assign(Jpg);
-        finally
-          Jpg.Free;
-        end;
-      end;
-
-      if (SrcBmp.Width = 0) or (SrcBmp.Height = 0) then
-        Exit;
-
-      Scale := 1;
-      if SrcBmp.Width > MaxLogoWidth then
-        Scale := MaxLogoWidth / SrcBmp.Width;
-      if (SrcBmp.Height * Scale) > MaxLogoHeight then
-        Scale := MaxLogoHeight / SrcBmp.Height;
-
-      // Ampliar logos guardados pequenos para que se vean mejor en ticket
-      if (SrcBmp.Width * Scale) < MinLogoWidth then
-      begin
-        ScaleUp := MinLogoWidth / SrcBmp.Width;
-        if (SrcBmp.Height * ScaleUp) <= MaxLogoHeight then
-          Scale := ScaleUp;
-      end;
-
-      LogoWidth := Round(SrcBmp.Width * Scale);
-      LogoHeight := Round(SrcBmp.Height * Scale);
-      if (LogoWidth <= 0) or (LogoHeight <= 0) then
-        Exit;
-
-      Bmp.PixelFormat := pf24bit;
-      Bmp.Width := LogoWidth;
-      Bmp.Height := LogoHeight;
-      Bmp.Canvas.Brush.Color := clWhite;
-      Bmp.Canvas.FillRect(Rect(0, 0, LogoWidth, LogoHeight));
-      Bmp.Canvas.StretchDraw(Rect(0, 0, LogoWidth, LogoHeight), SrcBmp);
-
-      WidthBytes := (LogoWidth + 7) div 8;
-      SetLength(Data, WidthBytes * LogoHeight);
-      for y := 0 to LogoHeight - 1 do
-      begin
-        for x := 0 to WidthBytes - 1 do
-        begin
-          ByteValue := 0;
-          for Bit := 0 to 7 do
-          begin
-            if (x * 8 + Bit) < LogoWidth then
-            begin
-              ColorRef := GetPixel(Bmp.Canvas.Handle, x * 8 + Bit, y);
-              Gray := (GetRValue(ColorRef) * 30 + GetGValue(ColorRef) * 59 + GetBValue(ColorRef) * 11) div 100;
-              if Gray < 160 then
-                ByteValue := ByteValue or (128 shr Bit);
-            end;
-          end;
-          Data[(y * WidthBytes) + x + 1] := AnsiChar(ByteValue);
-        end;
-      end;
-
-      Write(F, ESC($61) + AnsiChar(#1));
-      Write(F, GS($76) + AnsiChar(#48) + AnsiChar(#0) +
-        AnsiChar(WidthBytes and $FF) + AnsiChar(WidthBytes shr 8) +
-        AnsiChar(LogoHeight and $FF) + AnsiChar(LogoHeight shr 8) + Data);
-      Writeln(F);
-      Write(F, ESC($61) + AnsiChar(#0));
-    except
-      // If the saved logo is not supported, keep printing the ticket without it.
-    end;
-  finally
-    Bmp.Free;
-    SrcBmp.Free;
-    Stream.Free;
-  end;
-end;
-
 function IntToBinRec(valor,digitos:integer):string;
  begin
   if digitos=0 then
@@ -10194,7 +10081,6 @@ var
   qrW, qrH: Integer;
   qrURL, codSeg, fechaFirma, codDGII: string;
   aceptado: Boolean;
-  msg: string;
 
 begin
   codigoabre := Trim(DM.QParametrosPAR_CODIGO_ABRE_CAJA.Value);
@@ -10265,7 +10151,6 @@ end;
   // Inicializar impresora y codepage 850 (acentos y ?)
   Write(arch, ESC($40));                     // ESC @ (init)
   Write(arch, ESC($74) + AnsiChar(#2));      // ESC t 2 -> CP850
-  Writeln(arch);
   ImprimirLogoTicket(arch);
 
 
@@ -10762,39 +10647,12 @@ end;
     writeln(arch, 'Devuelta : '+s1+Devuelta);
   end;
 
-    msg := Trim(RFactura.QFacturaFAC_MENSAJE1.Value);
-  if msg <> '' then
-  begin
-    writeln(arch, ' '); // una l?nea en blanco antes del mensaje
+    ImprimirNotasFacturaTicket40(arch,
+      RFactura.QFacturaFAC_MENSAJE1.Value,
+      RFactura.QFacturaFAC_MENSAJE2.Value,
+      RFactura.QFacturaFAC_MENSAJE3.Value,
+      RFactura.QFacturaFAC_NOTA.Value);
 
-    if Length(copy(msg,1,39)) > 0 then
-      writeln(arch, copy(msg,1,39));
-    if Length(copy(msg,40,40)) > 0 then
-      writeln(arch, copy(msg,40,40));
-    if Length(copy(msg,81,40)) > 0 then
-      writeln(arch, copy(msg,81,40));
-    if Length(copy(msg,121,40)) > 0 then
-      writeln(arch, copy(msg,121,40));
-    if Length(copy(msg,161,40)) > 0 then
-      writeln(arch, copy(msg,161,40));
-  end;
-         
-
-  {writeln(arch, ' ');
-  IF Length(Trim(copy(RFactura.QFacturaFAC_MENSAJE1.Value,1,39))) <=40  THEN
-  writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE1.Value,1,39));
-  IF Length(Trim(copy(RFactura.QFacturaFAC_MENSAJE1.Value,40,80)))<=40 THEN
-  writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE1.Value,40,80));
-  IF Length(Trim(copy(RFactura.QFacturaFAC_MENSAJE1.Value,81,120)))<=40  THEN
-  writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE1.Value,81,120));
-  IF Length(Trim(copy(RFactura.QFacturaFAC_MENSAJE1.Value,121,160)))<=40  THEN
-  writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE1.Value,121,160));
-  IF Length(Trim(copy(RFactura.QFacturaFAC_MENSAJE1.Value,161,200)))<=40  THEN
-  writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE1.Value,161,200));}
-  //writeln(arch, ' ');
-  //writeln(arch, ' ');
-  //writeln(arch, ' ');
-  
   if Query1.FieldByName('fir').AsString = 'Si' then
   begin
     writeln(arch, dm.Centro('_________________________'));
@@ -15067,10 +14925,11 @@ begin
     writeln(arch, 'Cajero: '+copy(dm.Query1.FieldByName('caj_nombre').asstring,1,13));
   end;
 
-  writeln(arch, ' ');
-  writeln(arch, copy(QFacturaFAC_MENSAJE1.Value,1,40));
-  writeln(arch, copy(QFacturaFAC_MENSAJE2.Value,1,40));
-  writeln(arch, copy(QFacturaFAC_MENSAJE3.Value,1,40));
+  ImprimirNotasFacturaTicket40(arch,
+    QFacturaFAC_MENSAJE1.Value,
+    QFacturaFAC_MENSAJE2.Value,
+    QFacturaFAC_MENSAJE3.Value,
+    QFacturaFAC_NOTA.Value);
   writeln(arch, ' ');
   writeln(arch, ' ');
   writeln(arch, ' ');
@@ -15924,10 +15783,11 @@ writeln(arch, '');
     writeln(arch, 'Recibido : '+s+Recibido);
     writeln(arch, 'Devuelta : '+s1+Devuelta);
   end;
-  writeln(arch, ' ');
-  writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE1.Value,1,40));
-  writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE2.Value,1,40));
-  writeln(arch, copy(RFactura.QFacturaFAC_MENSAJE3.Value,1,40));
+  ImprimirNotasFacturaTicket40(arch,
+    RFactura.QFacturaFAC_MENSAJE1.Value,
+    RFactura.QFacturaFAC_MENSAJE2.Value,
+    RFactura.QFacturaFAC_MENSAJE3.Value,
+    RFactura.QFacturaFAC_NOTA.Value);
   writeln(arch, ' ');
   writeln(arch, ' ');
   writeln(arch, ' ');

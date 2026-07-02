@@ -490,6 +490,11 @@ type
 
   end;
 
+procedure ImprimirTextoTicket40(var F: TextFile; const ATexto: string);
+procedure ImprimirNotasFacturaTicket40(var F: TextFile;
+  const Msg1, Msg2, Msg3, Nota: string);
+procedure ImprimirLogoTicket(var F: TextFile);
+
 var
   DM: TDM;
   TerminaEjecucion:boolean = true;
@@ -499,10 +504,168 @@ var
   PCNombre,IP :String;
 implementation
 
-uses SIGMA04, StdCtrls, Printers, ComObj, Variants;
+uses SIGMA04, StdCtrls, Printers, ComObj, Variants, JPEG;
 
 {$R *.DFM}
 
+function TicketESC(const b: Byte): AnsiString;
+begin
+  Result := AnsiChar(#27) + AnsiChar(b);
+end;
+
+function TicketGS(const b: Byte): AnsiString;
+begin
+  Result := AnsiChar(#29) + AnsiChar(b);
+end;
+
+function RecortarMargenesLogo(Src: TBitmap): TBitmap;
+var
+  x, y, minX, minY, maxX, maxY, w, h: Integer;
+  ColorRef: DWORD;
+  Gray: Integer;
+  R: TRect;
+begin
+  Result := TBitmap.Create;
+  minX := Src.Width;
+  minY := Src.Height;
+  maxX := -1;
+  maxY := -1;
+  Src.PixelFormat := pf24bit;
+  for y := 0 to Src.Height - 1 do
+    for x := 0 to Src.Width - 1 do
+    begin
+      ColorRef := GetPixel(Src.Canvas.Handle, x, y);
+      Gray := (GetRValue(ColorRef) * 30 + GetGValue(ColorRef) * 59 + GetBValue(ColorRef) * 11) div 100;
+      if Gray < 245 then
+      begin
+        if x < minX then minX := x;
+        if y < minY then minY := y;
+        if x > maxX then maxX := x;
+        if y > maxY then maxY := y;
+      end;
+    end;
+
+  if maxX < minX then
+  begin
+    Result.Assign(Src);
+    Exit;
+  end;
+
+  w := maxX - minX + 1;
+  h := maxY - minY + 1;
+  Result.PixelFormat := pf24bit;
+  Result.Width := w;
+  Result.Height := h;
+  R := Rect(0, 0, w, h);
+  Result.Canvas.Brush.Color := clWhite;
+  Result.Canvas.FillRect(R);
+  Result.Canvas.CopyRect(R, Src.Canvas, Rect(minX, minY, minX + w, minY + h));
+end;
+
+procedure ImprimirLogoTicket(var F: TextFile);
+const
+  // Ancho util impresora termica 80mm a 203 dpi
+  MaxLogoWidth = 576;
+  MaxLogoHeight = 360;
+var
+  Stream: TMemoryStream;
+  SrcBmp, CroppedBmp, Bmp: TBitmap;
+  Jpg: TJPEGImage;
+  Scale: Double;
+  LogoWidth, LogoHeight, WidthBytes: Integer;
+  x, y, Bit: Integer;
+  ByteValue: Byte;
+  ColorRef: DWORD;
+  Gray: Integer;
+  Data: AnsiString;
+begin
+  if Trim(dm.QParametrospar_imprime_logo.Value) <> 'True' then
+    Exit;
+  if DM.QEmpresasEMP_LOGO.IsNull then
+    Exit;
+
+  Stream := TMemoryStream.Create;
+  SrcBmp := TBitmap.Create;
+  Bmp := TBitmap.Create;
+  CroppedBmp := nil;
+  try
+    try
+      DM.QEmpresasEMP_LOGO.SaveToStream(Stream);
+      if Stream.Size = 0 then
+        Exit;
+
+      Stream.Position := 0;
+      try
+        SrcBmp.LoadFromStream(Stream);
+      except
+        Stream.Position := 0;
+        Jpg := TJPEGImage.Create;
+        try
+          Jpg.LoadFromStream(Stream);
+          SrcBmp.Assign(Jpg);
+        finally
+          Jpg.Free;
+        end;
+      end;
+
+      if (SrcBmp.Width = 0) or (SrcBmp.Height = 0) then
+        Exit;
+
+      CroppedBmp := RecortarMargenesLogo(SrcBmp);
+
+      Scale := MaxLogoWidth / CroppedBmp.Width;
+      if (CroppedBmp.Height * Scale) > MaxLogoHeight then
+        Scale := MaxLogoHeight / CroppedBmp.Height;
+
+      LogoWidth := Round(CroppedBmp.Width * Scale);
+      LogoHeight := Round(CroppedBmp.Height * Scale);
+      if (LogoWidth <= 0) or (LogoHeight <= 0) then
+        Exit;
+
+      Bmp.PixelFormat := pf24bit;
+      Bmp.Width := LogoWidth;
+      Bmp.Height := LogoHeight;
+      Bmp.Canvas.Brush.Color := clWhite;
+      Bmp.Canvas.FillRect(Rect(0, 0, LogoWidth, LogoHeight));
+      Bmp.Canvas.StretchDraw(Rect(0, 0, LogoWidth, LogoHeight), CroppedBmp);
+
+      WidthBytes := (LogoWidth + 7) div 8;
+      SetLength(Data, WidthBytes * LogoHeight);
+      for y := 0 to LogoHeight - 1 do
+      begin
+        for x := 0 to WidthBytes - 1 do
+        begin
+          ByteValue := 0;
+          for Bit := 0 to 7 do
+          begin
+            if (x * 8 + Bit) < LogoWidth then
+            begin
+              ColorRef := GetPixel(Bmp.Canvas.Handle, x * 8 + Bit, y);
+              Gray := (GetRValue(ColorRef) * 30 + GetGValue(ColorRef) * 59 + GetBValue(ColorRef) * 11) div 100;
+              if Gray < 160 then
+                ByteValue := ByteValue or (128 shr Bit);
+            end;
+          end;
+          Data[(y * WidthBytes) + x + 1] := AnsiChar(ByteValue);
+        end;
+      end;
+
+      Write(F, TicketESC($61) + AnsiChar(#1));
+      Write(F, TicketGS($76) + AnsiChar(#48) + AnsiChar(#0) +
+        AnsiChar(WidthBytes and $FF) + AnsiChar(WidthBytes shr 8) +
+        AnsiChar(LogoHeight and $FF) + AnsiChar(LogoHeight shr 8) + Data);
+      Writeln(F);
+      Write(F, TicketESC($61) + AnsiChar(#0));
+    except
+      // Si el logo no es compatible, continuar sin el.
+    end;
+  finally
+    CroppedBmp.Free;
+    Bmp.Free;
+    SrcBmp.Free;
+    Stream.Free;
+  end;
+end;
 
 function tdm.getNombreUsuario(id:integer):String;
 begin
@@ -947,6 +1110,67 @@ ELSE IF (numero < 1) then
 
 resultado := resultado + resultado2;
 result := '* '+trim(resultado)+' *';
+end;
+
+const
+  TICKET_ANCHO = 40;
+
+procedure ImprimirTextoTicket40(var F: TextFile; const ATexto: string);
+var
+  Lineas: TStringList;
+  i, pos: Integer;
+  bloque, texto: string;
+begin
+  texto := Trim(ATexto);
+  if texto = '' then
+    Exit;
+
+  if (Pos(#13, texto) > 0) or (Pos(#10, texto) > 0) then
+  begin
+    Lineas := TStringList.Create;
+    try
+      Lineas.Text := StringReplace(StringReplace(texto, #13#10, #10, [rfReplaceAll]), #13, #10, [rfReplaceAll]);
+      for i := 0 to Lineas.Count - 1 do
+      begin
+        if Trim(Lineas[i]) = '' then
+          Writeln(F)
+        else
+        begin
+          bloque := Lineas[i];
+          pos := 1;
+          while pos <= Length(bloque) do
+          begin
+            Writeln(F, Copy(bloque, pos, TICKET_ANCHO));
+            Inc(pos, TICKET_ANCHO);
+          end;
+        end;
+      end;
+    finally
+      Lineas.Free;
+    end;
+  end
+  else
+  begin
+    pos := 1;
+    while pos <= Length(texto) do
+    begin
+      Writeln(F, Copy(texto, pos, TICKET_ANCHO));
+      Inc(pos, TICKET_ANCHO);
+    end;
+  end;
+end;
+
+procedure ImprimirNotasFacturaTicket40(var F: TextFile;
+  const Msg1, Msg2, Msg3, Nota: string);
+begin
+  if (Trim(Msg1) = '') and (Trim(Msg2) = '') and (Trim(Msg3) = '') and (Trim(Nota) = '') then
+    Exit;
+
+  Writeln(F);
+  ImprimirTextoTicket40(F, Msg1);
+  ImprimirTextoTicket40(F, Msg2);
+  ImprimirTextoTicket40(F, Msg3);
+  ImprimirTextoTicket40(F, Nota);
 end;
 
 function TDM.Centro(Texto: String): String;
