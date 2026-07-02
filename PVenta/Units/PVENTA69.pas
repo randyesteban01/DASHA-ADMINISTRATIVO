@@ -4203,7 +4203,7 @@ end;
   end;
   writeln(arch, ' ');
   // Mensaje final opcional
-  Writeln(arch, dm.Centro('�Gracias por su compra!'));
+  Writeln(arch, dm.Centro(AnsiChar(#$AD) + 'Gracias por su compra!'));
   writeln(arch, ' ');
   writeln(arch, ' ');
   writeln(arch, ' ');
