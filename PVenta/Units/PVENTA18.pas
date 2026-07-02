@@ -1210,6 +1210,7 @@ type
       out AMsg: string;
       out ASiguienteCorrelativo: Int64
     ): Boolean;
+    procedure AsegurarEdicionFactura;
     
   end;
 
@@ -1264,6 +1265,12 @@ uses PVENTA37, PVENTA33, PVENTA34, PVENTA36, PVENTA40, PVENTA42,
 
 {$R *.DFM}
 
+
+procedure TfrmFactura.AsegurarEdicionFactura;
+begin
+  if not (QFactura.State in [dsEdit, dsInsert]) then
+    QFactura.Edit;
+end;
 
 // --- Copias tfa_copias ---
 var
@@ -1457,8 +1464,7 @@ begin
   dm.Query1.Open;
   if dm.Query1.RecordCount > 0 then
   begin
-    if not (QFactura.State in [dsEdit, dsInsert]) then
-      QFactura.Edit;
+    AsegurarEdicionFactura;
 
     if dm.QParametrosPAR_CODIGOCLIENTE.Value = 'I' then
       edCliente.Text := dm.Query1.FieldByName('cli_codigo').AsString
@@ -1890,9 +1896,8 @@ begin
 
   if Search.Execute then
   begin
-    // 1) Guardar c?digo seleccionado
     codCondi := StrToIntDef(Search.ValueField, 0);
-    //QFactura.Edit;
+    AsegurarEdicionFactura;
     QFacturaCPA_CODIGO.AsInteger := codCondi;
     dbCondi.SetFocus;
 
@@ -1931,12 +1936,16 @@ begin
 
     // Si adem?s tienes un campo en QFactura para guardar la fecha l?mite:
     if QFactura.FindField('FechaLimitePago') <> nil then
+    begin
+      AsegurarEdicionFactura;
       QFactura.FieldByName('FechaLimitePago').AsDateTime := fechaLim;
+    end;
 
     if QFactura.FindField('fac_vence') <> nil then
+    begin
+      AsegurarEdicionFactura;
       QFactura.FieldByName('fac_vence').AsDateTime := fechaLim;
-
-  //  QFactura.Post;
+    end;
   end;
 end;
 
@@ -2032,14 +2041,6 @@ begin
       // 4) Asignar a tu TBEdit dtFechaLimite (o al campo de la tabla si est? ligado)
       // Si dtFechaLimite es un TEdit/TBEdit:
       dtFechaLimite.Text := FormatDateTime('dd/mm/yyyy', fechaLim);
-
-      // Si adem?s tienes un campo en QFactura para guardar la fecha l?mite:
-      if QFactura.FindField('FECHA_LIMITE') <> nil then
-      begin
-        QFactura.Edit;
-        QFactura.FieldByName('FECHA_LIMITE').AsDateTime := fechaLim;
-        QFactura.Post;
-      end;
 
     end;
   end
@@ -2411,6 +2412,7 @@ begin
   begin
     if trim(edCliente.text) <> '' then
     begin
+      AsegurarEdicionFactura;
       Query1.close;
       Query1.sql.clear;
       Query1.sql.add('select cli_referencia, cli_codigo, cli_nombre, cli_balance,');
@@ -2548,8 +2550,7 @@ begin
       end
       else
       begin
-        if not (QFactura.State in [dsEdit, dsInsert]) then
-          QFactura.Edit;
+        AsegurarEdicionFactura;
 
         //edTipo.Enabled := False;
         //btTipo.Enabled := False;
@@ -2639,8 +2640,10 @@ begin
   Search.Title := 'Listado de clientes';
   if Search.execute then
   begin
+    if not (QFactura.State in [dsEdit, dsInsert]) then
+      QFactura.Edit;
+
     edCliente.text := search.valuefield;
-    edCliente.setfocus;
     Query1.close;
     Query1.sql.clear;
     Query1.sql.add('select cli_codigo, cli_nombre, cli_balance, cli_referencia,');
@@ -2801,8 +2804,7 @@ begin
     end
     else
     begin
-      if not (QFactura.State in [dsEdit, dsInsert]) then
-        QFactura.Edit;
+      AsegurarEdicionFactura;
 
       //edTipo.Enabled := False;
       //btTipo.Enabled := False;
@@ -2853,10 +2855,8 @@ begin
       if actbalance = 'True' then
         if dbCondi.Enabled = True then
         begin
-             dbCondi.SetFocus;
-           // 1) Guardar c?digo seleccionado
           codCondi := StrToIntDef(dbCondi.Text, 0);
-          QFactura.Edit;
+          AsegurarEdicionFactura;
           QFacturaCPA_CODIGO.AsInteger := codCondi;
           dbCondi.SetFocus;
 
@@ -2893,11 +2893,11 @@ begin
     // Si dtFechaLimite es un TEdit/TBEdit:
     dtFechaLimite.Text := FormatDateTime('dd/mm/yyyy', fechaLim);
 
-    // Si adem?s tienes un campo en QFactura para guardar la fecha l?mite:
-    if QFactura.FindField('FECHA_LIMITE') <> nil then
-      QFactura.FieldByName('FECHA_LIMITE').AsDateTime := fechaLim;
-
-    QFactura.Post;
+    if QFactura.FindField('FechaLimitePago') <> nil then
+    begin
+      AsegurarEdicionFactura;
+      QFactura.FieldByName('FechaLimitePago').AsDateTime := fechaLim;
+    end;
 
         end
 
