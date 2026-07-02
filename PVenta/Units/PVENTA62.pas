@@ -383,18 +383,24 @@ uses RVENTA13, SIGMA00, SIGMA01, RVENTA76, PVENTA15, PVENTA138, SIGMA08,Facturac
 {$R *.dfm}
 
 function TipoDGIICompraProveedor(const ATipoProv: string): Integer;
+var
+  Tipo: string;
 begin
-  if ATipoProv = 'I' then
+  Tipo := UpperCase(Trim(ATipoProv));
+  if Tipo = 'I' then
     Result := 41
-  else if ATipoProv = 'E' then
+  else if Tipo = 'E' then
     Result := 47
   else
     Result := 0;
 end;
 
 function ProveedorEnviaCompraDGII(const ATipoProv: string): Boolean;
+var
+  Tipo: string;
 begin
-  Result := (ATipoProv = 'I') or (ATipoProv = 'E');
+  Tipo := UpperCase(Trim(ATipoProv));
+  Result := (Tipo = 'I') or (Tipo = 'E');
 end;
 
 function TfrmConsFacProvee.ValidarENCFDisponible(
@@ -2055,8 +2061,10 @@ begin
 
 if not ProveedorEnviaCompraDGII(QFacturassup_tipo.AsString) then
 begin
-      ShowMessage('Solo se deben enviar facturas a proveedores Informales o Extranjeros.');
-       Exit; // Salimos del procedimiento para no reenviar
+      ShowMessage('Solo se deben enviar facturas a proveedores Informales (I) o Extranjeros (E).' + sLineBreak +
+        'Tipo actual del proveedor: "' + Trim(QFacturassup_tipo.AsString) + '".' + sLineBreak +
+        'Verifique el tipo en el maestro de proveedores.');
+       Exit;
 end;
 
 tipoDGII := TipoDGIICompraProveedor(QFacturassup_tipo.AsString);

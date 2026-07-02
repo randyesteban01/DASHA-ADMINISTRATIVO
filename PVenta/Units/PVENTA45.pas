@@ -484,18 +484,24 @@ uses PVENTA33, SIGMA01, SIGMA00, PVENTA141, RVENTA76, PVENTA13, PVENTA214,
 {$R *.dfm}
 
 function TipoDGIICompraProveedor(const ATipoProv: string): Integer;
+var
+  Tipo: string;
 begin
-  if ATipoProv = 'I' then
+  Tipo := UpperCase(Trim(ATipoProv));
+  if Tipo = 'I' then
     Result := 41
-  else if ATipoProv = 'E' then
+  else if Tipo = 'E' then
     Result := 47
   else
     Result := 0;
 end;
 
 function ProveedorEnviaCompraDGII(const ATipoProv: string): Boolean;
+var
+  Tipo: string;
 begin
-  Result := (ATipoProv = 'I') or (ATipoProv = 'E');
+  Tipo := UpperCase(Trim(ATipoProv));
+  Result := (Tipo = 'I') or (Tipo = 'E');
 end;
 
 function TfrmFacProvee.ValidarENCFDisponible(
