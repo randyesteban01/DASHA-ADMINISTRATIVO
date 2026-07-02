@@ -1411,14 +1411,16 @@ end;
 
 procedure ImprimirLogoTicket(var F: TextFile);
 const
-  MaxLogoWidth = 300;
-  MaxLogoHeight = 140;
+  // Ancho util aproximado impresora termica 80mm (203 dpi)
+  MaxLogoWidth = 512;
+  MaxLogoHeight = 220;
+  MinLogoWidth = 384;
 var
   Stream: TMemoryStream;
   SrcBmp: TBitmap;
   Jpg: TJPEGImage;
   Bmp: TBitmap;
-  Scale: Double;
+  Scale, ScaleUp: Double;
   LogoWidth, LogoHeight, WidthBytes: Integer;
   x, y, Bit: Integer;
   ByteValue: Byte;
@@ -1462,6 +1464,14 @@ begin
         Scale := MaxLogoWidth / SrcBmp.Width;
       if (SrcBmp.Height * Scale) > MaxLogoHeight then
         Scale := MaxLogoHeight / SrcBmp.Height;
+
+      // Ampliar logos guardados pequenos para que se vean mejor en ticket
+      if (SrcBmp.Width * Scale) < MinLogoWidth then
+      begin
+        ScaleUp := MinLogoWidth / SrcBmp.Width;
+        if (SrcBmp.Height * ScaleUp) <= MaxLogoHeight then
+          Scale := ScaleUp;
+      end;
 
       LogoWidth := Round(SrcBmp.Width * Scale);
       LogoHeight := Round(SrcBmp.Height * Scale);
@@ -11107,6 +11117,7 @@ var
   a, Moneda : integer;
    PrecioReal:Double;
    vieneConDescuento:Boolean;
+   DescCotiza: Double;
 begin
   vieneConDescuento:= false;
   Search.AliasFields.clear;
@@ -11236,7 +11247,10 @@ begin
       else
         QFacturaFAC_RNC.Value := Query1.fieldbyname('cli_rnc').asstring;
 
-      descuento                    := Query1.fieldbyname('cli_descuento').asfloat;
+      DescCotiza := 0;
+      if Query1.FindField('cli_descuento') <> nil then
+        DescCotiza := Query1.FieldByName('cli_descuento').AsFloat;
+      descuento := DescCotiza;
       if actbalance = 'True' then
         QFacturaCPA_CODIGO.Value     := Query1.fieldbyname('cpa_codigo').asinteger
       else
@@ -11677,8 +11691,9 @@ begin
     begin
       dm.Query1.close;
       dm.Query1.sql.clear;
+      dm.Query1.Parameters.Clear;
       dm.Query1.sql.add('select cli_referencia, cli_codigo, cli_nombre, cli_balance,');
-      dm.Query1.sql.add('cli_limite, cli_precio, cli_descuento, cli_cuenta, cli_rnc,');
+      dm.Query1.sql.add('cli_limite, cli_precio, cli_cuenta, cli_rnc,');
       dm.Query1.sql.add('cli_direccion, cli_localidad, cli_telefono, cli_fax, cli_cedula');
       dm.Query1.sql.add('from clientes');
       dm.Query1.sql.add('where emp_codigo = :emp');
@@ -11695,9 +11710,8 @@ begin
       btBalance.caption := 'Bce:'+format('%n',[dm.Query1.fieldbyname('cli_balance').asfloat]);
       tLimite.text  := format('%n',[dm.Query1.fieldbyname('cli_limite').asfloat-
                                     dm.Query1.fieldbyname('cli_balance').asfloat]);
-      Limite        := StrToFloat(format('%10.2f',[dm.Query1.fieldbyname('cli_balance').asfloat]))-
-                       StrToFloat(format('%10.2f',[dm.Query1.fieldbyname('cli_limite').asfloat]));
-      //tDesc.text    := format('%n',[dm.Query1.fieldbyname('cli_descuento').asfloat]);
+      Limite        := StrToFloat(format('%10.2f',[dm.Query1.fieldbyname('cli_limite').asfloat]))-
+                       StrToFloat(format('%10.2f',[dm.Query1.fieldbyname('cli_balance').asfloat]));
       QFacturaFAC_DIRECCION.value := dm.Query1.fieldbyname('cli_direccion').asstring;
       QFacturaFAC_LOCALIDAD.value := dm.Query1.fieldbyname('cli_localidad').asstring;
       QFacturaFAC_TELEFONO.value  := dm.Query1.fieldbyname('cli_telefono').asstring;
@@ -11707,9 +11721,8 @@ begin
         QFacturaFAC_RNC.Value := dm.Query1.fieldbyname('cli_cedula').asstring
       else
         QFacturaFAC_RNC.Value := dm.Query1.fieldbyname('cli_rnc').asstring;
-
-      descuento := dm.Query1.fieldbyname('cli_descuento').asfloat;
       end;
+      descuento := DescCotiza;
        //Si tiene descuento aplicado a nivel de items - no permitir aplicar el descuento por cliente
       {  if ( vieneConDescuento and (descuento>0)) then
         begin
