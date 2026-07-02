@@ -1606,11 +1606,11 @@ begin
     descuento := dm.Query1.FieldByName('cli_descuento').AsFloat;
     if not dm.Query1.FieldByName('ven_codigo').IsNull then
       QFacturaVEN_CODIGO.Value := dm.Query1.FieldByName('ven_codigo').AsInteger;
-    if (actbalance = 'True') and (not dm.Query1.FieldByName('cpa_codigo').IsNull) then
+   { if ((actbalance = 'True') and (not (dm.Query1.FieldByName('cpa_codigo').IsNull))) then
       QFacturaCPA_CODIGO.Value := dm.Query1.FieldByName('cpa_codigo').AsInteger
     else
       QFacturaCPA_CODIGO.Clear;
-
+    }
     totalizar;
     Exit;
   end;
@@ -2752,7 +2752,7 @@ begin
     Query1.close;
     Query1.sql.clear;
     Query1.sql.add('select cli_codigo, cli_nombre, cli_balance, cli_referencia,');
-    Query1.sql.add('cli_limite, cli_precio, cli_descuento, ven_codigo, cpa_codigo,');
+    Query1.sql.add('cli_limite, cli_precio, isnull(cli_descuento,0) cli_descuento, ven_codigo, cpa_codigo,');
     Query1.sql.add('cli_direccion, cli_localidad, cli_telefono, cli_fax, cli_facturarbce,');
     Query1.sql.add('cli_facturarvencida, cli_precio, cli_cuenta, pro_codigo,');
     Query1.sql.add('cli_factura_debajo_costo, cli_factura_debajo_minimo, tcl_codigo,');
