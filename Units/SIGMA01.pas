@@ -1118,7 +1118,7 @@ const
 procedure ImprimirTextoTicket40(var F: TextFile; const ATexto: string);
 var
   Lineas: TStringList;
-  i, pos: Integer;
+  i, idx: Integer;
   bloque, texto: string;
 begin
   texto := Trim(ATexto);
@@ -1137,11 +1137,11 @@ begin
         else
         begin
           bloque := Lineas[i];
-          pos := 1;
-          while pos <= Length(bloque) do
+          idx := 1;
+          while idx <= Length(bloque) do
           begin
-            Writeln(F, Copy(bloque, pos, TICKET_ANCHO));
-            Inc(pos, TICKET_ANCHO);
+            Writeln(F, Copy(bloque, idx, TICKET_ANCHO));
+            Inc(idx, TICKET_ANCHO);
           end;
         end;
       end;
@@ -1151,11 +1151,11 @@ begin
   end
   else
   begin
-    pos := 1;
-    while pos <= Length(texto) do
+    idx := 1;
+    while idx <= Length(texto) do
     begin
-      Writeln(F, Copy(texto, pos, TICKET_ANCHO));
-      Inc(pos, TICKET_ANCHO);
+      Writeln(F, Copy(texto, idx, TICKET_ANCHO));
+      Inc(idx, TICKET_ANCHO);
     end;
   end;
 end;
