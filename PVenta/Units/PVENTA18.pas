@@ -11128,17 +11128,34 @@ begin
 
     Query1.close;
     Query1.sql.clear;
-    Query1.sql.add('select t.cli_codigo, t.cot_nombre, t.cli_referencia, c.cli_limite,');
-    Query1.sql.add('t.ven_codigo, t.cot_direccion, t.cot_localidad, t.cot_rnc,c.cli_balance,');
-    Query1.sql.add('t.cot_telefono, t.cot_fax, t.ven_codigo, t.cot_numero, t.mon_codigo, c.cli_cuenta,t.cot_proyecto');
-    Query1.SQL.Add(',cli_facturarbce, cli_facturarvencida, pro_codigo, c.cli_nombre, c.cli_direccion, c.cli_localidad, c.cli_telefono,');
-    Query1.SQL.Add('c.cli_fax, c.cli_rnc, c.cli_cedula, c.cli_descuento, c.cpa_Codigo');
+    Query1.sql.add('select t.cli_codigo, t.cot_nombre, t.cli_referencia,');
+    Query1.sql.add('ISNULL(c.cli_limite, 0) as cli_limite, t.ven_codigo, t.cot_direccion,');
+    Query1.sql.add('t.cot_localidad, t.cot_rnc, ISNULL(c.cli_balance, 0) as cli_balance,');
+    Query1.sql.add('t.cot_telefono, t.cot_fax, t.cot_numero, t.mon_codigo, c.cli_cuenta, t.cot_proyecto,');
+    Query1.sql.add('ISNULL(c.cli_facturarbce, ''S'') as cli_facturarbce,');
+    Query1.sql.add('ISNULL(c.cli_facturarvencida, ''S'') as cli_facturarvencida,');
+    Query1.sql.add('ISNULL(c.pro_codigo, 0) as pro_codigo,');
+    Query1.sql.add('ISNULL(c.cli_nombre, t.cot_nombre) as cli_nombre,');
+    Query1.sql.add('ISNULL(c.cli_direccion, t.cot_direccion) as cli_direccion,');
+    Query1.sql.add('ISNULL(c.cli_localidad, t.cot_localidad) as cli_localidad,');
+    Query1.sql.add('ISNULL(c.cli_telefono, t.cot_telefono) as cli_telefono,');
+    Query1.sql.add('ISNULL(c.cli_fax, t.cot_fax) as cli_fax,');
+    Query1.sql.add('ISNULL(c.cli_rnc, t.cot_rnc) as cli_rnc, c.cli_cedula,');
+    Query1.sql.add('ISNULL(c.cli_descuento, ISNULL(t.cot_descuento, 0)) as cli_descuento, c.cpa_codigo');
     Query1.sql.add('from cotizacion t left outer join clientes c on (t.emp_codigo = c.emp_codigo and t.cli_codigo = c.cli_codigo)');
     Query1.sql.add('where t.emp_codigo = :emp');
     Query1.sql.add('and t.cot_numero = :numero');
     Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
     Query1.Parameters.parambyname('numero').Value := strtoint(search.valuefield);
     Query1.open;
+
+    if Query1.IsEmpty then
+    begin
+      MessageDlg('No se encontro la cotizacion seleccionada.', mtError, [mbOK], 0);
+      QDetalle.EnableControls;
+      Buscando := False;
+      Exit;
+    end;
 
 
     if Query1.FieldByName('cli_codigo').Value > 0 then
@@ -11221,7 +11238,7 @@ begin
 
       descuento                    := Query1.fieldbyname('cli_descuento').asfloat;
       if actbalance = 'True' then
-        QFacturaCPA_CODIGO.Value     := Query1.fieldbyname('cpa_Codigo').asinteger
+        QFacturaCPA_CODIGO.Value     := Query1.fieldbyname('cpa_codigo').asinteger
       else
         QFacturaCPA_CODIGO.Clear;
       if not Query1.fieldbyname('ven_Codigo').IsNull then
@@ -11665,19 +11682,12 @@ begin
       dm.Query1.sql.add('cli_direccion, cli_localidad, cli_telefono, cli_fax, cli_cedula');
       dm.Query1.sql.add('from clientes');
       dm.Query1.sql.add('where emp_codigo = :emp');
-      dm.Query1.sql.add('and cli_Status = '+#39+'ACT'+#39);
-      if dm.QParametrosPAR_CODIGOCLIENTE.value = 'I' then
-      begin
-        dm.Query1.sql.add('and cli_codigo = :cli');
-        dm.Query1.Parameters.parambyname('cli').Value := strtoint(edCliente.text);
-      end
-      else
-      begin
-        dm.Query1.sql.add('and cli_referencia = :cli');
-        dm.Query1.Parameters.parambyname('cli').Value := edCliente.text;
-      end;
+      dm.Query1.sql.add('and cli_codigo = :cli');
       dm.Query1.Parameters.parambyname('emp').Value := dm.vp_cia;
+      dm.Query1.Parameters.parambyname('cli').Value := QFacturaCLI_CODIGO.Value;
       dm.Query1.open;
+      if not dm.Query1.IsEmpty then
+      begin
       CtaCliente := dm.Query1.fieldbyname('cli_cuenta').asstring;
       QFacturaFAC_NOMBRE.value := dm.Query1.fieldbyname('cli_nombre').asstring;
       QFacturaCLI_CODIGO.value := dm.Query1.fieldbyname('cli_Codigo').asinteger;
@@ -11699,6 +11709,7 @@ begin
         QFacturaFAC_RNC.Value := dm.Query1.fieldbyname('cli_rnc').asstring;
 
       descuento := dm.Query1.fieldbyname('cli_descuento').asfloat;
+      end;
        //Si tiene descuento aplicado a nivel de items - no permitir aplicar el descuento por cliente
       {  if ( vieneConDescuento and (descuento>0)) then
         begin
