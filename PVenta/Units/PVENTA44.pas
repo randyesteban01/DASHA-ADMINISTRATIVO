@@ -531,14 +531,15 @@ end;
 
 procedure ImprimirLogoTicket(var F: TextFile);
 const
-  MaxLogoWidth = 300;
-  MaxLogoHeight = 140;
+  MaxLogoWidth = 512;
+  MaxLogoHeight = 220;
+  MinLogoWidth = 384;
 var
   Stream: TMemoryStream;
   SrcBmp: TBitmap;
   Jpg: TJPEGImage;
   Bmp: TBitmap;
-  Scale: Double;
+  Scale, ScaleUp: Double;
   LogoWidth, LogoHeight, WidthBytes: Integer;
   x, y, Bit: Integer;
   ByteValue: Byte;
@@ -582,6 +583,13 @@ begin
         Scale := MaxLogoWidth / SrcBmp.Width;
       if (SrcBmp.Height * Scale) > MaxLogoHeight then
         Scale := MaxLogoHeight / SrcBmp.Height;
+
+      if (SrcBmp.Width * Scale) < MinLogoWidth then
+      begin
+        ScaleUp := MinLogoWidth / SrcBmp.Width;
+        if (SrcBmp.Height * ScaleUp) <= MaxLogoHeight then
+          Scale := ScaleUp;
+      end;
 
       LogoWidth := Round(SrcBmp.Width * Scale);
       LogoHeight := Round(SrcBmp.Height * Scale);
