@@ -1913,7 +1913,7 @@ object frmRecibos: TfrmRecibos
       'where emp_codigo = :emp'
       'and rec_numero = :numero'
       'and suc_codigo = :suc'
-      'order by  DET_FECHA')
+      'order by  EMP_CODIGO, suc_codigo, DET_NUMERO, MOV_CUOTA')
     Left = 176
     Top = 352
     object QDocDET_NUMERO: TIntegerField

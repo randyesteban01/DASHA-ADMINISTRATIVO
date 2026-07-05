@@ -2187,7 +2187,7 @@ begin
 
   qQuery.close;
   qQuery.sql.clear;
-  qQuery.sql.add('select distinct m.mov_tipo, m.fac_forma, m.tfa_codigo, m.mov_numero,');
+  qQuery.sql.add('select m.mov_tipo, m.fac_forma, m.tfa_codigo, m.mov_numero,');
   qQuery.sql.add('isnull(c.cli_balance,0) cli_balance, m.mov_monto, m.mov_abono, m.mov_fecha,');
   qQuery.sql.add('m.mov_secuencia, m.mov_cuota, c.cli_cuenta, m.mov_interes, m.mov_fechavence,');
   qQuery.SQL.Add('ISNULL(t.ticket, 0) AS ticket');
@@ -2201,7 +2201,7 @@ begin
   qQuery.sql.add('and m.cli_Codigo = :cli');
   qQuery.sql.add('and m.mov_status = '+#39+'PEN'+#39);
   qQuery.sql.add('and m.suc_codigo = :suc');
-  qQuery.sql.add('order by mov_tipo, mov_fecha asc');
+  qQuery.sql.add('ORDER BY m.EMP_CODIGO, m.SUC_CODIGO, m.MOV_NUMERO, m.MOV_SECUENCIA');
   qQuery.Parameters.parambyname('emp').Value := dm.vp_cia;
   qQuery.Parameters.parambyname('cli').Value := QRecibosCLI_CODIGO.value;
   qQuery.Parameters.parambyname('suc').Value := DBLookupComboBox2.KeyValue;
