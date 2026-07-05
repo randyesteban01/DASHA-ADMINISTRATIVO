@@ -8726,7 +8726,222 @@ end;
                     RFacturaContruccion.Destroy;
 
            end;
-           end;
+           end
+           else
+           begin
+    if FormatoImp = 1 then
+      Imp40Columnas
+    else if FormatoImp = 2 then
+    begin
+      if not (DM.QParametrospar_formato_preimpreso.Value = 'Sarita & Asociados') then
+      begin
+        if not (DM.QParametrosPAR_FACTOTALIZAPIE.Value = 'True') then
+        begin
+          application.createform(tRFacturaCorta, RFacturaCorta);
+          RFacturaCorta.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+          RFacturaCorta.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+          RFacturaCorta.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+          RFacturaCorta.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+          RFacturaCorta.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+          RFacturaCorta.QFactura.open;
+          RFacturaCorta.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+          RFacturaCorta.QDetalle.open;
+          RFacturaCorta.lbReimpresion.Enabled := True;
+
+          if RFacturaCorta.QDetalle.Locate('PRO_NOMBRE','SERVICIO DE ENVIO',[]) then
+            RFacturaCorta.ChildBand3.Enabled := True
+          else
+            RFacturaCorta.ChildBand3.Enabled := False;
+
+          RFacturaCorta.PrinterSetup;
+          RFacturaCorta.Preview;
+          RFacturaCorta.Destroy;
+        end
+        else
+        begin
+          if (DM.QParametrospar_formato_preimpreso.Value = 'Construccion') then
+          begin
+            application.createform(TRFacturaConstruccion, RFacturaContruccion);
+            RFacturaContruccion.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+            RFacturaContruccion.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+            RFacturaContruccion.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+            RFacturaContruccion.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+            RFacturaContruccion.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+            RFacturaContruccion.QFactura.open;
+            RFacturaContruccion.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+            RFacturaContruccion.QDetalle.open;
+            RFacturaContruccion.lbReimpresion.Enabled := False;
+            RFacturaContruccion.PrinterSetup;
+            RFacturaContruccion.Preview;
+            RFacturaContruccion.Destroy;
+          end
+          else
+          begin
+            application.createform(tRFactura, RFactura);
+            RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+            RFactura.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+            RFactura.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+            RFactura.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+            RFactura.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+            RFactura.QFactura.open;
+            RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+            RFactura.QDetalle.open;
+            RFactura.lbReimpresion.Enabled := True;
+
+            if RFactura.QDetalle.Locate('PRO_NOMBRE','SERVICIO DE ENVIO',[]) then
+              RFactura.ChildBand3.Enabled := True
+            else
+              RFactura.ChildBand3.Enabled := False;
+
+            RFactura.PrinterSetup;
+            RFactura.Preview;
+            RFactura.Destroy;
+          end;
+        end;
+      end;
+    end
+    else if FormatoImp = 3 then
+    begin
+      if MessageDlg('Desea imprimir en impresora grande?',mtConfirmation,[mbyes,mbno],0) = mryes then
+      begin
+        if not (DM.QParametrosPAR_FACTOTALIZAPIE.Value = 'True') then
+        begin
+          application.createform(tRFacturaCorta, RFacturaCorta);
+          RFacturaCorta.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+          RFacturaCorta.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+          RFacturaCorta.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+          RFacturaCorta.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+          RFacturaCorta.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+          RFacturaCorta.QFactura.open;
+          RFacturaCorta.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+          RFacturaCorta.QDetalle.open;
+          RFacturaCorta.lbReimpresion.Enabled := True;
+
+          if RFacturaCorta.QDetalle.Locate('PRO_NOMBRE','SERVICIO DE ENVIO',[]) then
+            RFacturaCorta.ChildBand3.Enabled := True
+          else
+            RFacturaCorta.ChildBand3.Enabled := False;
+
+          RFacturaCorta.PrinterSetup;
+          RFacturaCorta.Preview;
+          RFacturaCorta.Destroy;
+        end
+        else
+        begin
+          application.createform(tRFactura, RFactura);
+          RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+          RFactura.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+          RFactura.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+          RFactura.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+          RFactura.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+          RFactura.QFactura.open;
+          RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+          RFactura.QDetalle.open;
+          RFactura.lbReimpresion.Enabled := True;
+          RFactura.PrinterSetup;
+          RFactura.Preview;
+          RFactura.Destroy;
+        end;
+      end
+      else
+        Imp40Columnas;
+    end
+    else if FormatoImp = 4 then
+    begin
+      application.createform(tRFacturaElegante, RFacturaElegante);
+      RFacturaElegante.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+      RFacturaElegante.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+      RFacturaElegante.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+      RFacturaElegante.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+      RFacturaElegante.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+      RFacturaElegante.QFactura.open;
+      RFacturaElegante.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+      RFacturaElegante.QDetalle.open;
+      RFacturaElegante.lbReimpresion.Enabled := True;
+      RFacturaElegante.PrinterSetup;
+      RFacturaElegante.Preview;
+      RFacturaElegante.Destroy;
+    end
+    else if FormatoImp = 5 then
+    begin
+      application.createform(tRFactura2Columnas, RFactura2Columnas);
+      RFactura2Columnas.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+      RFactura2Columnas.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+      RFactura2Columnas.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+      RFactura2Columnas.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+      RFactura2Columnas.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+      RFactura2Columnas.QFactura.open;
+      RFactura2Columnas.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+      RFactura2Columnas.QDetalle.open;
+      RFactura2Columnas.lbReimpresion.Enabled := True;
+      RFactura2Columnas.PrinterSetup;
+      RFactura2Columnas.Preview;
+      RFactura2Columnas.Destroy;
+    end;
+  end;          {
+  if DM.QParametrospar_formato_preimpreso.Value = 'Sarita & Asociados' then begin
+      application.createform(TRFacturaSarita, RFacturaSarita);
+      RFacturaSarita.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+      RFacturaSarita.QFactura.Parameters.ParamByName('tipo').Value   := QFacturasTFA_CODIGO.Value;
+      RFacturaSarita.QFactura.Parameters.ParamByName('forma').Value  := QFacturasFAC_FORMA.Value;
+      RFacturaSarita.QFactura.Parameters.ParamByName('numero').Value := QFacturasFAC_NUMERO.Value;
+      RFacturaSarita.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+      RFacturaSarita.QFactura.open;
+      RFacturaSarita.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+      RFacturaSarita.QDetalle.open;
+      RFacturaSarita.lbReimpresion.Enabled := True;
+      RFacturaSarita.PrinterSetup;
+      RFacturaSarita.Preview;
+      RFacturaSarita.Destroy;
+      end;     }
+
+      if ((DM.QParametrospar_formato_preimpreso.Value = 'SteelTec')) then begin
+      application.createform(TRFacturaSteelTec, RFacturaSteelTec);
+      RFacturaSteelTec.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+      RFacturaSteelTec.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+      RFacturaSteelTec.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+      RFacturaSteelTec.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+      RFacturaSteelTec.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+      RFacturaSteelTec.QFactura.open;
+      RFacturaSteelTec.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+      RFacturaSteelTec.QDetalle.open;
+      RFacturaSteelTec.lbReimpresion.Enabled := False;
+      RFacturaSteelTec.PrinterSetup;
+      RFacturaSteelTec.Preview;
+      RFacturaSteelTec.Destroy;
+      end;
+
+       if ( (dm.QParametrospar_formato_preimpreso.Value = 'Construccion')) then begin
+      application.createform(TRFacturaConstruccion, RFacturaContruccion);
+      RFacturaContruccion.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+      RFacturaContruccion.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+      RFacturaContruccion.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.Value;
+      RFacturaContruccion.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.Value;
+      RFacturaContruccion.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+      RFacturaContruccion.QFactura.open;
+      RFacturaContruccion.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+      RFacturaContruccion.QDetalle.open;
+      RFacturaContruccion.lbReimpresion.Enabled := False;
+      RFacturaContruccion.PrinterSetup;
+      RFacturaContruccion.Preview;
+      RFacturaContruccion.Destroy;
+      end;
+
+      if dm.QParametrospar_formato_preimpreso.Value = 'Caceres&Equipos' then
+      begin
+      application.createform(TRFacturaCaceresEquipos, RFacturaCaceresEquipos);
+      RFacturaCaceresEquipos.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+      RFacturaCaceresEquipos.QFactura.Parameters.ParamByName('tipo').Value   := QFacturaTFA_CODIGO.Value;
+      RFacturaCaceresEquipos.QFactura.Parameters.ParamByName('forma').Value  := QFacturaFAC_FORMA.value;
+      RFacturaCaceresEquipos.QFactura.Parameters.ParamByName('numero').Value := QFacturaFAC_NUMERO.value;
+      RFacturaCaceresEquipos.QFactura.Parameters.ParamByName('suc').Value    := QFacturaSUC_CODIGO.Value;
+      RFacturaCaceresEquipos.QFactura.open;
+      RFacturaCaceresEquipos.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+      RFacturaCaceresEquipos.QDetalle.open;
+      RFacturaCaceresEquipos.PrinterSetup;
+      RFacturaCaceresEquipos.Preview;
+      RFacturaCaceresEquipos.Destroy;
+      end;
          end;
          end;
          END;

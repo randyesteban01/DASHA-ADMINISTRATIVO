@@ -230,7 +230,7 @@ uses RVENTA02, RVENTA00, RVENTA01, RVENTA03, RVENTA32, RVENTA33,
   SIGMA01, RVENTA64, RVENTA65, RVENTA67, RVENTA68, SIGMA00, RVENTA71,
   RVENTA72, RSERV00, RVENTA79, RVENTA85, RVENTA88, RVENTA100, RVENTA115,
   RVENTA122, RVENTA126, RVENTA127, RVENTA128, RVENTA130, RVENTA134, RVENTA137,
-  JPEG;
+  JPEG, RVENTA136;
 
 {$R *.dfm}
 // --- Helpers ESC/POS ---
@@ -1012,6 +1012,22 @@ begin
             EnvioMail(RFactura,'Factura');
             end;
             end;
+            end
+            else
+            begin
+            application.createform(tRFactura, RFactura);
+            RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+            RFactura.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
+            RFactura.QFactura.Parameters.ParamByName('forma').Value  := Trim(edGrupo.Text);
+            RFactura.QFactura.Parameters.ParamByName('numero').Value := StrToInt(Trim(edNumero.Text));
+            RFactura.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+            RFactura.QFactura.open;
+            RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+            RFactura.QDetalle.open;
+            RFactura.lbReimpresion.Enabled := True;
+            RFactura.PrinterSetup;
+            RFactura.Preview;
+            RFactura.Destroy;
             end;
 
 
@@ -1122,7 +1138,25 @@ begin
             end;
             end;
 
-      end;
+      end
+      else
+      begin
+      application.createform(tRFacturaElegante, RFacturaElegante);
+      RFacturaElegante.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
+      RFacturaElegante.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
+      RFacturaElegante.QFactura.Parameters.ParamByName('forma').Value  := Trim(edGrupo.Text);
+      RFacturaElegante.QFactura.Parameters.ParamByName('numero').Value := StrToInt(Trim(edNumero.Text));
+      RFacturaElegante.QFactura.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
+      RFacturaElegante.QFactura.open;
+      RFacturaElegante.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
+      RFacturaElegante.QDetalle.open;
+      RFacturaElegante.lbReimpresion.Enabled := True;
+      RFacturaElegante.PrinterSetup;
+      RFacturaElegante.Preview;
+      RFacturaElegante.Destroy;
+    end;
+
+
       end;
       end;
       end;

@@ -1,6 +1,6 @@
 object RFacturaPreImpresa: TRFacturaPreImpresa
-  Left = -7
-  Top = 3
+  Left = 593
+  Top = 264
   Width = 1020
   Height = 592
   VertScrollBar.Position = 308
