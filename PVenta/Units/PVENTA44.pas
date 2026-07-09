@@ -298,6 +298,7 @@ type
     btcodificar: TBitBtn;
     Splitter1: TSplitter;
     Cambiarelvendedor1: TMenuItem;
+    Cambiarfechafactura1: TMenuItem;
     BitBtn1: TBitBtn;
     Query1: TADOQuery;
     CambiarRNC1: TMenuItem;
@@ -468,6 +469,8 @@ type
     procedure PageControl1Change(Sender: TObject);
     procedure btcodificarClick(Sender: TObject);
     procedure Cambiarelvendedor1Click(Sender: TObject);
+    procedure Cambiarfechafactura1Click(Sender: TObject);
+    procedure PopupMenu1Popup(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure CambiarRNC1Click(Sender: TObject);
     procedure SpeedButton5Click(Sender: TObject);
@@ -515,7 +518,8 @@ implementation
 
 uses RVENTA04, SIGMA01, SIGMA00, RVENTA71, RVENTA02, RVENTA64, RVENTA79,
   PVENTA83, RVENTA115, RVENTA122, RVENTA126, RVENTA128, RVENTA130,
-  RVENTA134,FacturacionElectronicaDGII_TLB, RVENTA136, RVENTA137, JPEG;
+  RVENTA134,FacturacionElectronicaDGII_TLB, RVENTA136, RVENTA137, JPEG,
+  PVENTA209, DIMime;
 
 {$R *.dfm}
 
@@ -3005,16 +3009,213 @@ begin
   end;
 end;
 
+procedure TfrmConsFacturas.PopupMenu1Popup(Sender: TObject);
+var
+  Permite: Boolean;
+  Enviada, Aceptada: Boolean;
+begin
+  Permite := False;
+  if (dm.QParametros.FindField('par_cambia_fecha_consulta') <> nil) then
+    Permite := SameText(Trim(dm.QParametros.FieldByName('par_cambia_fecha_consulta').AsString), 'True');
+
+  Enviada := False;
+  Aceptada := False;
+  if not QFacturas.IsEmpty then
+  begin
+    if not QFacturasEnviado_DGII.IsNull then
+      Enviada := QFacturasEnviado_DGII.AsBoolean;
+    if not QFacturasAceptadoDGII.IsNull then
+      Aceptada := QFacturasAceptadoDGII.AsBoolean;
+  end;
+
+  Cambiarfechafactura1.Visible := Permite;
+  Cambiarfechafactura1.Enabled := Permite and (not QFacturas.IsEmpty) and
+    (not Enviada) and (not Aceptada) and
+    (UpperCase(Trim(QFacturasFAC_STATUS.AsString)) <> 'ANU');
+
+  Cambiarelvendedor1.Enabled := not QFacturas.IsEmpty;
+end;
+
+function UsuarioAutorizadoModificaFactura: Boolean;
+begin
+  Result := False;
+  if dm.QUsuarios.Active and
+     SameText(Trim(dm.QUsuariosusu_modifica_factura.AsString), 'True') then
+  begin
+    Result := True;
+    Exit;
+  end;
+
+  Application.CreateForm(TfrmPideClave, frmPideClave);
+  try
+    frmPideClave.ShowModal;
+    if frmPideClave.acepto = 1 then
+    begin
+      dm.Query1.Close;
+      dm.Query1.SQL.Clear;
+      dm.Query1.SQL.Add('select usu_modifica_factura from usuarios');
+      dm.Query1.SQL.Add('where usu_clave = :cla');
+      dm.Query1.SQL.Add('and usu_status = '+QuotedStr('ACT'));
+      dm.Query1.Parameters.ParamByName('cla').Value := MimeEncodeString(frmPideClave.edclave.Text);
+      dm.Query1.Open;
+      Result := (dm.Query1.RecordCount > 0) and
+                SameText(Trim(dm.Query1.FieldByName('usu_modifica_factura').AsString), 'True');
+      if not Result then
+        MessageDlg('NO TIENE ACCESO PARA CAMBIAR EL VENDEDOR DE LA FACTURA.', mtError, [mbOk], 0);
+    end;
+  finally
+    frmPideClave.Release;
+  end;
+end;
+
+procedure TfrmConsFacturas.Cambiarfechafactura1Click(Sender: TObject);
+var
+  sFecha: string;
+  FechaNueva, FechaVieja, FechaVenceNueva: TDateTime;
+  DiasDiff: Integer;
+  ActBalance: string;
+  punt: TBookmark;
+  Enviada, Aceptada: Boolean;
+begin
+  if QFacturas.IsEmpty then
+    Exit;
+
+  if (dm.QParametros.FindField('par_cambia_fecha_consulta') = nil) or
+     (not SameText(Trim(dm.QParametros.FieldByName('par_cambia_fecha_consulta').AsString), 'True')) then
+  begin
+    MessageDlg('No tiene permiso para cambiar la fecha de factura desde consulta.', mtError, [mbOk], 0);
+    Exit;
+  end;
+
+  Enviada := False;
+  Aceptada := False;
+  if not QFacturasEnviado_DGII.IsNull then
+    Enviada := QFacturasEnviado_DGII.AsBoolean;
+  if not QFacturasAceptadoDGII.IsNull then
+    Aceptada := QFacturasAceptadoDGII.AsBoolean;
+
+  if Enviada or Aceptada then
+  begin
+    MessageDlg('No se puede cambiar la fecha: la factura ya fue enviada o aceptada en DGII.', mtError, [mbOk], 0);
+    Exit;
+  end;
+
+  if UpperCase(Trim(QFacturasFAC_STATUS.AsString)) = 'ANU' then
+  begin
+    MessageDlg('No se puede cambiar la fecha de una factura anulada.', mtError, [mbOk], 0);
+    Exit;
+  end;
+
+  FechaVieja := Trunc(QFacturasFAC_FECHA.AsDateTime);
+  sFecha := InputBox('Cambiar fecha de factura',
+    'Nueva fecha (dd/mm/aaaa):', FormatDateTime('dd/mm/yyyy', FechaVieja));
+  if Trim(sFecha) = '' then
+    Exit;
+
+  try
+    FechaNueva := Trunc(StrToDate(Trim(sFecha)));
+  except
+    MessageDlg('Fecha invalida. Use el formato dd/mm/aaaa.', mtError, [mbOk], 0);
+    Exit;
+  end;
+
+  if FechaNueva = FechaVieja then
+  begin
+    MessageDlg('La fecha indicada es la misma de la factura.', mtInformation, [mbOk], 0);
+    Exit;
+  end;
+
+  if MessageDlg('Esta seguro que desea cambiar la fecha de la factura ' +
+                FormatFloat('0000000000', QFacturasFAC_NUMERO.AsInteger) +
+                ' de ' + FormatDateTime('dd/mm/yyyy', FechaVieja) +
+                ' a ' + FormatDateTime('dd/mm/yyyy', FechaNueva) + '?',
+                mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    Exit;
+
+  Screen.Cursor := crHourGlass;
+  try
+    DiasDiff := Trunc(FechaNueva) - Trunc(FechaVieja);
+
+    if not QFacturasFAC_VENCE.IsNull then
+      FechaVenceNueva := Trunc(QFacturasFAC_VENCE.AsDateTime) + DiasDiff
+    else
+      FechaVenceNueva := FechaNueva;
+
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('select TFA_ACTBALANCE from TIPOSFACTURA');
+    dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa');
+    dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
+    dm.Query1.Open;
+    ActBalance := dm.Query1.FieldByName('TFA_ACTBALANCE').AsString;
+
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('update facturas set');
+    dm.Query1.SQL.Add('  fac_fecha = :fec,');
+    dm.Query1.SQL.Add('  fac_vence = :vence,');
+    dm.Query1.SQL.Add('  FechaLimitePago = :vence2,');
+    dm.Query1.SQL.Add('  fac_ano = :ano,');
+    dm.Query1.SQL.Add('  fac_mes = :mes');
+    dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa and fac_forma = :for');
+    dm.Query1.SQL.Add('and fac_numero = :num and suc_codigo = :suc');
+    dm.Query1.Parameters.ParamByName('fec').Value := FechaNueva;
+    dm.Query1.Parameters.ParamByName('vence').Value := FechaVenceNueva;
+    dm.Query1.Parameters.ParamByName('vence2').Value := FechaVenceNueva;
+    dm.Query1.Parameters.ParamByName('ano').Value := YearOf(FechaNueva);
+    dm.Query1.Parameters.ParamByName('mes').Value := MonthOf(FechaNueva);
+    dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
+    dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
+    dm.Query1.Parameters.ParamByName('num').Value := QFacturasFAC_NUMERO.Value;
+    dm.Query1.Parameters.ParamByName('suc').Value := QFacturassuc_codigo.Value;
+    dm.Query1.ExecSQL;
+
+    if SameText(Trim(ActBalance), 'True') then
+    begin
+      // Desplaza fechas de movimientos (incluye cuotas) manteniendo el intervalo
+      dm.Query1.Close;
+      dm.Query1.SQL.Clear;
+      dm.Query1.SQL.Add('update movimientos set');
+      dm.Query1.SQL.Add('  mov_fecha = DATEADD(day, :dias, mov_fecha),');
+      dm.Query1.SQL.Add('  mov_fechavence = DATEADD(day, :dias2, mov_fechavence)');
+      dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa and fac_forma = :for');
+      dm.Query1.SQL.Add('and mov_numero = :num and suc_codigo = :suc');
+      dm.Query1.Parameters.ParamByName('dias').Value := DiasDiff;
+      dm.Query1.Parameters.ParamByName('dias2').Value := DiasDiff;
+      dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+      dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
+      dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
+      dm.Query1.Parameters.ParamByName('num').Value := QFacturasFAC_NUMERO.Value;
+      dm.Query1.Parameters.ParamByName('suc').Value := QFacturassuc_codigo.Value;
+      dm.Query1.ExecSQL;
+    end;
+
+    punt := QFacturas.GetBookmark;
+    QFacturas.Close;
+    QFacturas.Open;
+    QFacturas.GotoBookmark(punt);
+
+    MessageDlg('Fecha de factura actualizada correctamente.', mtInformation, [mbOk], 0);
+  finally
+    Screen.Cursor := crDefault;
+  end;
+end;
+
 procedure TfrmConsFacturas.Cambiarelvendedor1Click(Sender: TObject);
 var
   Ven : integer;
   punt : tbookmark;
 begin
+  if not UsuarioAutorizadoModificaFactura then
+    Exit;
+
   if MessageDlg('Esta seguro que desea cambiar el vendedor?',mtConfirmation,[mbyes,mbno],0) = mryes then
   begin
     search.AliasFields.clear;
     search.AliasFields.add('Nombre');
-    search.AliasFields.add('C�digo');
+    search.AliasFields.add('Codigo');
     Search.Query.clear;
     Search.Query.add('select ven_nombre, ven_codigo');
     Search.Query.add('from vendedores');

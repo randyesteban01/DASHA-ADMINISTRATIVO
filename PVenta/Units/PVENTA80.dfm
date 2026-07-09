@@ -7397,51 +7397,63 @@ object frmParametros: TfrmParametros
       ValueChecked = 'True'
       ValueUnchecked = 'False'
     end
-    object DBCheckBox40: TDBCheckBox
+    object DBCheckBoxCambiaFechaConsulta: TDBCheckBox
       Left = 16
       Top = 149
-      Width = 137
+      Width = 241
       Height = 17
-      Caption = 'El cajero puede cuadrar'
-      DataField = 'par_usuario_cuadra'
+      Caption = 'Cambiar fecha desde consulta facturas'
+      DataField = 'par_cambia_fecha_consulta'
       DataSource = dsParametros
       TabOrder = 16
       ValueChecked = 'True'
       ValueUnchecked = 'False'
     end
-    object DBCheckBox42: TDBCheckBox
+    object DBCheckBox40: TDBCheckBox
       Left = 16
       Top = 165
-      Width = 209
+      Width = 137
       Height = 17
-      Caption = 'Visualizar % de descuento'
-      DataField = 'par_visualizadesc'
+      Caption = 'El cajero puede cuadrar'
+      DataField = 'par_usuario_cuadra'
       DataSource = dsParametros
       TabOrder = 17
       ValueChecked = 'True'
       ValueUnchecked = 'False'
     end
-    object DBCheckBox43: TDBCheckBox
+    object DBCheckBox42: TDBCheckBox
       Left = 16
       Top = 181
       Width = 209
       Height = 17
-      Caption = 'Visualizar monto selectivo en la factura'
-      DataField = 'par_visualiza_selectivo'
+      Caption = 'Visualizar % de descuento'
+      DataField = 'par_visualizadesc'
       DataSource = dsParametros
       TabOrder = 18
       ValueChecked = 'True'
       ValueUnchecked = 'False'
     end
-    object DBCheckBox44: TDBCheckBox
+    object DBCheckBox43: TDBCheckBox
       Left = 16
       Top = 197
+      Width = 209
+      Height = 17
+      Caption = 'Visualizar monto selectivo en la factura'
+      DataField = 'par_visualiza_selectivo'
+      DataSource = dsParametros
+      TabOrder = 19
+      ValueChecked = 'True'
+      ValueUnchecked = 'False'
+    end
+    object DBCheckBox44: TDBCheckBox
+      Left = 16
+      Top = 213
       Width = 209
       Height = 17
       Caption = 'Colocar cantidad primero, para facturar'
       DataField = 'par_cantidad_primero'
       DataSource = dsParametros
-      TabOrder = 19
+      TabOrder = 20
       ValueChecked = 'True'
       ValueUnchecked = 'False'
     end
@@ -12047,6 +12059,10 @@ object frmParametros: TfrmParametros
     end
     object QParametrospar_modifica_fecha_factura: TStringField
       FieldName = 'par_modifica_fecha_factura'
+      Size = 5
+    end
+    object QParametrospar_cambia_fecha_consulta: TStringField
+      FieldName = 'par_cambia_fecha_consulta'
       Size = 5
     end
     object QParametrospar_pago_mayor_balance: TStringField

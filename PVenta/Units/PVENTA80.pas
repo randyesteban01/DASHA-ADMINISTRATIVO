@@ -448,6 +448,7 @@ type
     QRecibeColectoremp_codigo: TIntegerField;
     QRecibeColectorcampo: TStringField;
     QParametrospar_modifica_fecha_factura: TStringField;
+    QParametrospar_cambia_fecha_consulta: TStringField;
     QParametrospar_pago_mayor_balance: TStringField;
     QParametrospar_nota_orden_servicio: TMemoField;
     pnServicio: TPanel;
@@ -864,6 +865,7 @@ type
     DBEdit73: TDBEdit;
     DBCheckBox35: TDBCheckBox;
     DBCheckBox38: TDBCheckBox;
+    DBCheckBoxCambiaFechaConsulta: TDBCheckBox;
     DBCheckBox40: TDBCheckBox;
     DBCheckBox42: TDBCheckBox;
     DBCheckBox43: TDBCheckBox;
@@ -1870,7 +1872,7 @@ begin
          if not QAntigProv.Active then QAntigProv.Open;
 
          //Clientes
-         GridAntigCli.Cells[0,0] := 'Descripción';
+         GridAntigCli.Cells[0,0] := 'Descripci?n';
          GridAntigCli.Cells[1,0] := 'Desde';
          GridAntigCli.Cells[2,0] := 'Hasta';
 
@@ -1890,7 +1892,7 @@ begin
          GridAntigCli.Cells[2,4] := QAntigCliPAR_DIA4HASTA.AsString;
 
          //Proveedores
-         GridAntigProv.Cells[0,0] := 'Descripción';
+         GridAntigProv.Cells[0,0] := 'Descripci?n';
          GridAntigProv.Cells[1,0] := 'Desde';
          GridAntigProv.Cells[2,0] := 'Hasta';
 
@@ -2050,7 +2052,7 @@ begin
     DM.Query1.Close;
     end;
 
-    //Formatos de Impresión
+    //Formatos de Impresi?n
     QTipo.open;
     QTipo.Edit;
     QConfigImp.Open;
@@ -2369,6 +2371,7 @@ begin
   QParametrospar_pago_mayor_balance.Value := 'False';
   QParametrospar_controlar.Value          := 'False';
   QParametrospar_modifica_fecha_factura.Value  := 'False';
+  QParametrospar_cambia_fecha_consulta.Value   := 'False';
   QParametrospar_inv_compra_centro_costo.Value := 'False';
   QParametrospar_nombre_familia.Value := 'Familia';
   QParametrospar_nombre_depto.Value   := 'Departamento';
@@ -3215,7 +3218,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and cat_tipo = '+#39+'AC'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabPAR_CTAINVENT.Value := Search.ValueField;
@@ -3333,7 +3336,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabPAR_CTADESC.Value := Search.ValueField;
@@ -3348,7 +3351,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabPAR_CTADESCCOMP.Value := Search.ValueField;
@@ -3583,7 +3586,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabPAR_CTAPRODPROCESO.Value := Search.ValueField;
@@ -3598,7 +3601,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabPAR_CTAMATERIAPRIMA.Value := Search.ValueField;
@@ -3613,7 +3616,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabPAR_CTALABORDIRECTA.Value := Search.ValueField;
@@ -3628,7 +3631,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabPAR_CTACOSTOSINDIRECTOS.Value := Search.ValueField;
@@ -3643,7 +3646,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabPAR_CTAPRODTERMINADOS.Value := Search.ValueField;
@@ -3881,7 +3884,7 @@ end;
 
 procedure TfrmParametros.btdeleteNCFClick(Sender: TObject);
 begin
-  if MessageDlg('Está seguro?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+  if MessageDlg('Est? seguro?', mtConfirmation, [mbyes, mbno], 0) = mryes then
   begin
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
@@ -3971,7 +3974,7 @@ end;
 
 procedure TfrmParametros.BitBtn4Click(Sender: TObject);
 begin
-  if MessageDlg('Está seguro?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+  if MessageDlg('Est? seguro?', mtConfirmation, [mbyes, mbno], 0) = mryes then
   begin
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
@@ -4037,7 +4040,7 @@ end;
 
 procedure TfrmParametros.BitBtn6Click(Sender: TObject);
 begin
-  if MessageDlg('Está seguro?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+  if MessageDlg('Est? seguro?', mtConfirmation, [mbyes, mbno], 0) = mryes then
   begin
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
@@ -4066,7 +4069,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabPAR_CTA_SELECTIVO_AD.Value := Search.ValueField;
@@ -4081,7 +4084,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabPAR_CTA_SELECTIVO_CON.Value := Search.ValueField;
@@ -4231,7 +4234,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_cta_prima.Value := Search.ValueField;
@@ -4246,7 +4249,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_cta_ingreso_cambio.Value := Search.ValueField;
@@ -4262,7 +4265,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and cat_tipo = '+#39+'IN'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_cta_gasto_cambio.Value := Search.ValueField;
@@ -4420,7 +4423,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_ctasueldopagar.Value := Search.ValueField;
@@ -4458,7 +4461,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_provision_regalia.Value := Search.ValueField;
@@ -4521,7 +4524,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_cta_mercancia_transito.Value := Search.ValueField;
@@ -4990,7 +4993,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and cat_tipo = '+#39+'IN'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_cta_intereses.Value := Search.ValueField;
@@ -5006,7 +5009,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and '+'cat_movimiento = '+#39+'S'+#39+ 'AND cat_tipo = '+#39+'PA'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_cta_retencion_itbis.Value := Search.ValueField;
@@ -5022,7 +5025,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and '+'cat_movimiento = '+#39+'S'+#39+ 'AND cat_tipo = '+#39+'PA'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_cta_retencion_isr.Value := Search.ValueField;
@@ -5194,7 +5197,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and cat_tipo = '+#39+'GA'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_provision_regalia.Value := Search.ValueField;
@@ -5209,7 +5212,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_cta_mercancia_transito.Value := Search.ValueField;
@@ -5295,7 +5298,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and '+'cat_movimiento = '+#39+'S'+#39+ 'AND cat_tipo = '+#39+'PA'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_ctaproplegvent.Value := Search.ValueField;
@@ -5311,7 +5314,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and '+'cat_movimiento = '+#39+'S'+#39+ 'AND cat_tipo = '+#39+'AC'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_ctaotrosimp.Value := Search.ValueField;
@@ -5350,7 +5353,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and '+'cat_movimiento = '+#39+'S'+#39+ 'AND cat_tipo = '+#39+'AC'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_ctafletecomp.Value := Search.ValueField;
@@ -5366,7 +5369,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and '+'cat_movimiento = '+#39+'S'+#39+ 'AND cat_tipo = '+#39+'AC'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_ctaproplegcomp.Value := Search.ValueField;
@@ -5770,7 +5773,7 @@ begin
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and '+'cat_movimiento = '+#39+'S'+#39+ 'AND cat_tipo = '+#39+'PA'+#39);
   Search.ResultField := 'cat_cuenta';
-  Search.Title := 'Catálogo de Cuentas';
+  Search.Title := 'Cat?logo de Cuentas';
   if Search.execute then
   begin
     QContabpar_ctadevventas.Value := Search.ValueField;

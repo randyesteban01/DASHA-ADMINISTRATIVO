@@ -3552,6 +3552,7 @@ object frmConsFacturas: TfrmConsFacturas
     Top = 216
   end
   object PopupMenu1: TPopupMenu
+    OnPopup = PopupMenu1Popup
     Left = 160
     Top = 280
     object Cambiarelcliente1: TMenuItem
@@ -3561,6 +3562,10 @@ object frmConsFacturas: TfrmConsFacturas
     object Cambiarelvendedor1: TMenuItem
       Caption = 'Cambiar el vendedor'
       OnClick = Cambiarelvendedor1Click
+    end
+    object Cambiarfechafactura1: TMenuItem
+      Caption = 'Cambiar fecha de factura'
+      OnClick = Cambiarfechafactura1Click
     end
     object CambiarRNC1: TMenuItem
       Caption = 'Cambiar RNC'

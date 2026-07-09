@@ -211,6 +211,7 @@ type
     QParametrospar_delimitador_envia: TStringField;
     QParametrospar_delimitador_recibe: TStringField;
     QParametrospar_modifica_fecha_factura: TStringField;
+    QParametrospar_cambia_fecha_consulta: TStringField;
     QParametrospar_pago_mayor_balance: TStringField;
     ImgMant: TImageList;
     QParametrospar_nota_orden_servicio: TMemoField;
@@ -521,7 +522,7 @@ end;
 function RecortarMargenesLogo(Src: TBitmap): TBitmap;
 var
   x, y, minX, minY, maxX, maxY, w, h: Integer;
-  ColorRef: DWORD;
+  Line: PByteArray;
   Gray: Integer;
   R: TRect;
 begin
@@ -532,11 +533,13 @@ begin
   maxY := -1;
   Src.PixelFormat := pf24bit;
   for y := 0 to Src.Height - 1 do
+  begin
+    Line := Src.ScanLine[y];
     for x := 0 to Src.Width - 1 do
     begin
-      ColorRef := GetPixel(Src.Canvas.Handle, x, y);
-      Gray := (GetRValue(ColorRef) * 30 + GetGValue(ColorRef) * 59 + GetBValue(ColorRef) * 11) div 100;
-      if Gray < 245 then
+      // pf24bit: BGR
+      Gray := (Line[x * 3 + 2] * 30 + Line[x * 3 + 1] * 59 + Line[x * 3] * 11) div 100;
+      if Gray < 250 then
       begin
         if x < minX then minX := x;
         if y < minY then minY := y;
@@ -544,6 +547,7 @@ begin
         if y > maxY then maxY := y;
       end;
     end;
+  end;
 
   if maxX < minX then
   begin
@@ -565,17 +569,18 @@ end;
 procedure ImprimirLogoTicket(var F: TextFile);
 const
   // Ancho util impresora termica 80mm a 203 dpi
+  PrinterWidth = 576;
   MaxLogoWidth = 576;
-  MaxLogoHeight = 360;
+  MaxLogoHeight = 220;
 var
   Stream: TMemoryStream;
   SrcBmp, CroppedBmp, Bmp: TBitmap;
   Jpg: TJPEGImage;
   Scale: Double;
-  LogoWidth, LogoHeight, WidthBytes: Integer;
-  x, y, Bit: Integer;
+  LogoWidth, LogoHeight, WidthBytes, OffsetX: Integer;
+  x, y, Bit, Px: Integer;
   ByteValue: Byte;
-  ColorRef: DWORD;
+  Line: PByteArray;
   Gray: Integer;
   Data: AnsiString;
 begin
@@ -611,37 +616,46 @@ begin
       if (SrcBmp.Width = 0) or (SrcBmp.Height = 0) then
         Exit;
 
+      // Quita margenes blancos (incluye espacio arriba del logo en la imagen)
       CroppedBmp := RecortarMargenesLogo(SrcBmp);
 
-      Scale := MaxLogoWidth / CroppedBmp.Width;
-      if (CroppedBmp.Height * Scale) > MaxLogoHeight then
-        Scale := MaxLogoHeight / CroppedBmp.Height;
+      // Prioriza altura para que el logo se vea mas grande en el ticket
+      Scale := MaxLogoHeight / CroppedBmp.Height;
+      if (CroppedBmp.Width * Scale) > MaxLogoWidth then
+        Scale := MaxLogoWidth / CroppedBmp.Width;
 
       LogoWidth := Round(CroppedBmp.Width * Scale);
       LogoHeight := Round(CroppedBmp.Height * Scale);
       if (LogoWidth <= 0) or (LogoHeight <= 0) then
         Exit;
 
+      // Muchas termicas ignoran ESC a en imagenes GS v;
+      // se centra dibujando el logo en un bitmap del ancho completo.
+      OffsetX := (PrinterWidth - LogoWidth) div 2;
+      if OffsetX < 0 then
+        OffsetX := 0;
+
       Bmp.PixelFormat := pf24bit;
-      Bmp.Width := LogoWidth;
+      Bmp.Width := PrinterWidth;
       Bmp.Height := LogoHeight;
       Bmp.Canvas.Brush.Color := clWhite;
-      Bmp.Canvas.FillRect(Rect(0, 0, LogoWidth, LogoHeight));
-      Bmp.Canvas.StretchDraw(Rect(0, 0, LogoWidth, LogoHeight), CroppedBmp);
+      Bmp.Canvas.FillRect(Rect(0, 0, PrinterWidth, LogoHeight));
+      Bmp.Canvas.StretchDraw(Rect(OffsetX, 0, OffsetX + LogoWidth, LogoHeight), CroppedBmp);
 
-      WidthBytes := (LogoWidth + 7) div 8;
+      WidthBytes := (PrinterWidth + 7) div 8;
       SetLength(Data, WidthBytes * LogoHeight);
       for y := 0 to LogoHeight - 1 do
       begin
+        Line := Bmp.ScanLine[y];
         for x := 0 to WidthBytes - 1 do
         begin
           ByteValue := 0;
           for Bit := 0 to 7 do
           begin
-            if (x * 8 + Bit) < LogoWidth then
+            Px := x * 8 + Bit;
+            if Px < PrinterWidth then
             begin
-              ColorRef := GetPixel(Bmp.Canvas.Handle, x * 8 + Bit, y);
-              Gray := (GetRValue(ColorRef) * 30 + GetGValue(ColorRef) * 59 + GetBValue(ColorRef) * 11) div 100;
+              Gray := (Line[Px * 3 + 2] * 30 + Line[Px * 3 + 1] * 59 + Line[Px * 3] * 11) div 100;
               if Gray < 160 then
                 ByteValue := ByteValue or (128 shr Bit);
             end;
@@ -654,7 +668,6 @@ begin
       Write(F, TicketGS($76) + AnsiChar(#48) + AnsiChar(#0) +
         AnsiChar(WidthBytes and $FF) + AnsiChar(WidthBytes shr 8) +
         AnsiChar(LogoHeight and $FF) + AnsiChar(LogoHeight shr 8) + Data);
-      Writeln(F);
       Write(F, TicketESC($61) + AnsiChar(#0));
     except
       // Si el logo no es compatible, continuar sin el.

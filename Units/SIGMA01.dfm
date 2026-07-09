@@ -676,6 +676,10 @@ object DM: TDM
       FieldName = 'par_modifica_fecha_factura'
       Size = 5
     end
+    object QParametrospar_cambia_fecha_consulta: TStringField
+      FieldName = 'par_cambia_fecha_consulta'
+      Size = 5
+    end
     object QParametrospar_pago_mayor_balance: TStringField
       FieldName = 'par_pago_mayor_balance'
       Size = 5
