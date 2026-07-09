@@ -3173,11 +3173,6 @@ begin
   try
     DiasDiff := Trunc(FechaNueva) - Trunc(FechaVieja);
 
-    if not QFacturasFAC_VENCE.IsNull then
-      FechaVenceNueva := Trunc(QFacturasFAC_VENCE.AsDateTime) + DiasDiff
-    else
-      FechaVenceNueva := FechaNueva;
-
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
     dm.Query1.SQL.Add('select TFA_ACTBALANCE from TIPOSFACTURA');
@@ -3189,28 +3184,34 @@ begin
 
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
-    dm.Query1.SQL.Add('update facturas set');
-    dm.Query1.SQL.Add('  fac_fecha = :fec,');
-    dm.Query1.SQL.Add('  fac_vence = :vence,');
-    dm.Query1.SQL.Add('  FechaLimitePago = :vence2,');
-    dm.Query1.SQL.Add('  fac_ano = :ano,');
-    dm.Query1.SQL.Add('  fac_mes = :mes');
-    dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa and fac_forma = :for');
-    dm.Query1.SQL.Add('and fac_numero = :num and suc_codigo = :suc');
-    dm.Query1.Parameters.ParamByName('fec').Value := FechaNueva;
-    dm.Query1.Parameters.ParamByName('vence').Value := FechaVenceNueva;
-    dm.Query1.Parameters.ParamByName('vence2').Value := FechaVenceNueva;
-    dm.Query1.Parameters.ParamByName('ano').Value := YearOf(FechaNueva);
-    dm.Query1.Parameters.ParamByName('mes').Value := MonthOf(FechaNueva);
-    dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
-    dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
-    dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
-    dm.Query1.Parameters.ParamByName('num').Value := QFacturasFAC_NUMERO.Value;
-    dm.Query1.Parameters.ParamByName('suc').Value := QFacturassuc_codigo.Value;
-    dm.Query1.ExecSQL;
-
     if SameText(Trim(ActBalance), 'True') then
     begin
+      // Credito: actualiza fecha y vencimiento
+      if not QFacturasFAC_VENCE.IsNull then
+        FechaVenceNueva := Trunc(QFacturasFAC_VENCE.AsDateTime) + DiasDiff
+      else
+        FechaVenceNueva := FechaNueva;
+
+      dm.Query1.SQL.Add('update facturas set');
+      dm.Query1.SQL.Add('  fac_fecha = :fec,');
+      dm.Query1.SQL.Add('  fac_vence = :vence,');
+      dm.Query1.SQL.Add('  FechaLimitePago = :vence2,');
+      dm.Query1.SQL.Add('  fac_ano = :ano,');
+      dm.Query1.SQL.Add('  fac_mes = :mes');
+      dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa and fac_forma = :for');
+      dm.Query1.SQL.Add('and fac_numero = :num and suc_codigo = :suc');
+      dm.Query1.Parameters.ParamByName('fec').Value := FechaNueva;
+      dm.Query1.Parameters.ParamByName('vence').Value := FechaVenceNueva;
+      dm.Query1.Parameters.ParamByName('vence2').Value := FechaVenceNueva;
+      dm.Query1.Parameters.ParamByName('ano').Value := YearOf(FechaNueva);
+      dm.Query1.Parameters.ParamByName('mes').Value := MonthOf(FechaNueva);
+      dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+      dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
+      dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
+      dm.Query1.Parameters.ParamByName('num').Value := QFacturasFAC_NUMERO.Value;
+      dm.Query1.Parameters.ParamByName('suc').Value := QFacturassuc_codigo.Value;
+      dm.Query1.ExecSQL;
+
       // Desplaza fechas de movimientos (incluye cuotas) manteniendo el intervalo
       dm.Query1.Close;
       dm.Query1.SQL.Clear;
@@ -3221,6 +3222,25 @@ begin
       dm.Query1.SQL.Add('and mov_numero = :num and suc_codigo = :suc');
       dm.Query1.Parameters.ParamByName('dias').Value := DiasDiff;
       dm.Query1.Parameters.ParamByName('dias2').Value := DiasDiff;
+      dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+      dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
+      dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
+      dm.Query1.Parameters.ParamByName('num').Value := QFacturasFAC_NUMERO.Value;
+      dm.Query1.Parameters.ParamByName('suc').Value := QFacturassuc_codigo.Value;
+      dm.Query1.ExecSQL;
+    end
+    else
+    begin
+      // Contado: solo cambia la fecha de la factura (no vencimiento)
+      dm.Query1.SQL.Add('update facturas set');
+      dm.Query1.SQL.Add('  fac_fecha = :fec,');
+      dm.Query1.SQL.Add('  fac_ano = :ano,');
+      dm.Query1.SQL.Add('  fac_mes = :mes');
+      dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa and fac_forma = :for');
+      dm.Query1.SQL.Add('and fac_numero = :num and suc_codigo = :suc');
+      dm.Query1.Parameters.ParamByName('fec').Value := FechaNueva;
+      dm.Query1.Parameters.ParamByName('ano').Value := YearOf(FechaNueva);
+      dm.Query1.Parameters.ParamByName('mes').Value := MonthOf(FechaNueva);
       dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
       dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
       dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
