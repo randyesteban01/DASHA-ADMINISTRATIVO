@@ -3011,26 +3011,19 @@ end;
 
 procedure TfrmConsFacturas.PopupMenu1Popup(Sender: TObject);
 var
-  Permite: Boolean;
-  Enviada, Aceptada: Boolean;
+  Permite, Aceptada: Boolean;
 begin
   Permite := False;
   if (dm.QParametros.FindField('par_cambia_fecha_consulta') <> nil) then
     Permite := SameText(Trim(dm.QParametros.FieldByName('par_cambia_fecha_consulta').AsString), 'True');
 
-  Enviada := False;
   Aceptada := False;
-  if not QFacturas.IsEmpty then
-  begin
-    if not QFacturasEnviado_DGII.IsNull then
-      Enviada := QFacturasEnviado_DGII.AsBoolean;
-    if not QFacturasAceptadoDGII.IsNull then
-      Aceptada := QFacturasAceptadoDGII.AsBoolean;
-  end;
+  if (not QFacturas.IsEmpty) and (not QFacturasAceptadoDGII.IsNull) then
+    Aceptada := QFacturasAceptadoDGII.AsBoolean;
 
   Cambiarfechafactura1.Visible := Permite;
   Cambiarfechafactura1.Enabled := Permite and (not QFacturas.IsEmpty) and
-    (not Enviada) and (not Aceptada) and
+    (not Aceptada) and
     (UpperCase(Trim(QFacturasFAC_STATUS.AsString)) <> 'ANU');
 
   Cambiarelvendedor1.Enabled := not QFacturas.IsEmpty;
@@ -3038,14 +3031,8 @@ end;
 
 function UsuarioAutorizadoModificaFactura: Boolean;
 begin
+  // Siempre pide clave de un usuario autorizado (usu_modifica_factura).
   Result := False;
-  if dm.QUsuarios.Active and
-     SameText(Trim(dm.QUsuariosusu_modifica_factura.AsString), 'True') then
-  begin
-    Result := True;
-    Exit;
-  end;
-
   Application.CreateForm(TfrmPideClave, frmPideClave);
   try
     frmPideClave.ShowModal;
@@ -3075,7 +3062,7 @@ var
   DiasDiff: Integer;
   ActBalance: string;
   punt: TBookmark;
-  Enviada, Aceptada: Boolean;
+  Aceptada: Boolean;
 begin
   if QFacturas.IsEmpty then
     Exit;
@@ -3087,16 +3074,14 @@ begin
     Exit;
   end;
 
-  Enviada := False;
   Aceptada := False;
-  if not QFacturasEnviado_DGII.IsNull then
-    Enviada := QFacturasEnviado_DGII.AsBoolean;
   if not QFacturasAceptadoDGII.IsNull then
     Aceptada := QFacturasAceptadoDGII.AsBoolean;
 
-  if Enviada or Aceptada then
+  // Solo bloquea si ya fue aceptada por DGII
+  if Aceptada then
   begin
-    MessageDlg('No se puede cambiar la fecha: la factura ya fue enviada o aceptada en DGII.', mtError, [mbOk], 0);
+    MessageDlg('No se puede cambiar la fecha: la factura ya fue aceptada en DGII.', mtError, [mbOk], 0);
     Exit;
   end;
 
