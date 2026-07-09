@@ -3055,9 +3055,70 @@ begin
   end;
 end;
 
+function PedirFechaFactura(FechaActual: TDateTime; out FechaNueva: TDateTime): Boolean;
+var
+  Frm: TForm;
+  Lbl: TLabel;
+  Dtp: TDateTimePicker;
+  BtnOk, BtnCancel: TButton;
+begin
+  Result := False;
+  FechaNueva := Trunc(FechaActual);
+
+  Frm := TForm.Create(nil);
+  try
+    Frm.BorderStyle := bsDialog;
+    Frm.Caption := 'Cambiar fecha de factura';
+    Frm.Position := poScreenCenter;
+    Frm.ClientWidth := 280;
+    Frm.ClientHeight := 120;
+    Frm.Font.Name := 'Tahoma';
+    Frm.Font.Size := 8;
+
+    Lbl := TLabel.Create(Frm);
+    Lbl.Parent := Frm;
+    Lbl.Left := 16;
+    Lbl.Top := 16;
+    Lbl.Caption := 'Nueva fecha:';
+
+    Dtp := TDateTimePicker.Create(Frm);
+    Dtp.Parent := Frm;
+    Dtp.Left := 100;
+    Dtp.Top := 12;
+    Dtp.Width := 150;
+    Dtp.Date := Trunc(FechaActual);
+    Dtp.Kind := dtkDate;
+
+    BtnOk := TButton.Create(Frm);
+    BtnOk.Parent := Frm;
+    BtnOk.Left := 100;
+    BtnOk.Top := 70;
+    BtnOk.Width := 75;
+    BtnOk.Caption := 'Aceptar';
+    BtnOk.ModalResult := mrOk;
+    BtnOk.Default := True;
+
+    BtnCancel := TButton.Create(Frm);
+    BtnCancel.Parent := Frm;
+    BtnCancel.Left := 185;
+    BtnCancel.Top := 70;
+    BtnCancel.Width := 75;
+    BtnCancel.Caption := 'Cancelar';
+    BtnCancel.ModalResult := mrCancel;
+    BtnCancel.Cancel := True;
+
+    if Frm.ShowModal = mrOk then
+    begin
+      FechaNueva := Trunc(Dtp.Date);
+      Result := True;
+    end;
+  finally
+    Frm.Free;
+  end;
+end;
+
 procedure TfrmConsFacturas.Cambiarfechafactura1Click(Sender: TObject);
 var
-  sFecha: string;
   FechaNueva, FechaVieja, FechaVenceNueva: TDateTime;
   DiasDiff: Integer;
   ActBalance: string;
@@ -3092,17 +3153,8 @@ begin
   end;
 
   FechaVieja := Trunc(QFacturasFAC_FECHA.AsDateTime);
-  sFecha := InputBox('Cambiar fecha de factura',
-    'Nueva fecha (dd/mm/aaaa):', FormatDateTime('dd/mm/yyyy', FechaVieja));
-  if Trim(sFecha) = '' then
+  if not PedirFechaFactura(FechaVieja, FechaNueva) then
     Exit;
-
-  try
-    FechaNueva := Trunc(StrToDate(Trim(sFecha)));
-  except
-    MessageDlg('Fecha invalida. Use el formato dd/mm/aaaa.', mtError, [mbOk], 0);
-    Exit;
-  end;
 
   if FechaNueva = FechaVieja then
   begin
