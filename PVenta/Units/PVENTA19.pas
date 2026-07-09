@@ -1395,6 +1395,8 @@ begin
   Search.Query.add('and ped_tipo = '+#39+'C'+#39);
   Search.Query.add('and ped_status = '+#39+'EMI'+#39);
   Search.Query.add('and suc_codigo = '+IntToStr(Suc));
+  Search.Query.add('and ped_numero NOT IN');
+  Search.Query.add('(SELECT isnull(PED_NUMERO,0) FROM FACTURAS)');
   Search.ResultField := 'ped_numero';
   Search.Title := 'Pedidos de clientes';
   if Search.execute then
