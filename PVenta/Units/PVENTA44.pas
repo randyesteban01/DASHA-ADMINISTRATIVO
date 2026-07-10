@@ -3216,12 +3216,10 @@ begin
       dm.Query1.Close;
       dm.Query1.SQL.Clear;
       dm.Query1.SQL.Add('update movimientos set');
-      dm.Query1.SQL.Add('  mov_fecha = DATEADD(day, :dias, mov_fecha),');
-      dm.Query1.SQL.Add('  mov_fechavence = DATEADD(day, :dias2, mov_fechavence)');
+      dm.Query1.SQL.Add('  mov_fecha = DATEADD(day, ' + IntToStr(DiasDiff) + ', mov_fecha),');
+      dm.Query1.SQL.Add('  mov_fechavence = DATEADD(day, ' + IntToStr(DiasDiff) + ', mov_fechavence)');
       dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa and fac_forma = :for');
       dm.Query1.SQL.Add('and mov_numero = :num and suc_codigo = :suc');
-      dm.Query1.Parameters.ParamByName('dias').Value := DiasDiff;
-      dm.Query1.Parameters.ParamByName('dias2').Value := DiasDiff;
       dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
       dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
       dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
