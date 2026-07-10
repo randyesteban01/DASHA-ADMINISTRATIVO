@@ -3119,7 +3119,7 @@ end;
 
 procedure TfrmConsFacturas.Cambiarfechafactura1Click(Sender: TObject);
 var
-  FechaNueva, FechaVieja, FechaVenceNueva: TDateTime;
+  FechaNueva, FechaVieja, FechaVenceNueva, FechaMovVieja: TDateTime;
   DiasDiff: Integer;
   ActBalance: string;
   punt: TBookmark;
@@ -3156,7 +3156,37 @@ begin
   if not PedirFechaFactura(FechaVieja, FechaNueva) then
     Exit;
 
-  if FechaNueva = FechaVieja then
+  dm.Query1.Close;
+  dm.Query1.SQL.Clear;
+  dm.Query1.SQL.Add('select TFA_ACTBALANCE from TIPOSFACTURA');
+  dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa');
+  dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+  dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
+  dm.Query1.Open;
+  ActBalance := dm.Query1.FieldByName('TFA_ACTBALANCE').AsString;
+
+  FechaMovVieja := FechaVieja;
+  if SameText(Trim(ActBalance), 'True') then
+  begin
+    // Usa la fecha actual del movimiento CxC (por si la factura ya se actualizo antes)
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('select top 1 mov_fecha, mov_fechavence from movimientos');
+    dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa and fac_forma = :for');
+    dm.Query1.SQL.Add('and mov_numero = :num and suc_codigo = :suc');
+    dm.Query1.SQL.Add('and (mov_cuota = '+QuotedStr('False')+' or mov_cuota is null)');
+    dm.Query1.SQL.Add('order by mov_secuencia');
+    dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+    dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
+    dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
+    dm.Query1.Parameters.ParamByName('num').Value := QFacturasFAC_NUMERO.Value;
+    dm.Query1.Parameters.ParamByName('suc').Value := QFacturassuc_codigo.Value;
+    dm.Query1.Open;
+    if not dm.Query1.IsEmpty then
+      FechaMovVieja := Trunc(dm.Query1.FieldByName('mov_fecha').AsDateTime);
+  end;
+
+  if (FechaNueva = FechaVieja) and (FechaNueva = FechaMovVieja) then
   begin
     MessageDlg('La fecha indicada es la misma de la factura.', mtInformation, [mbOk], 0);
     Exit;
@@ -3171,16 +3201,8 @@ begin
 
   Screen.Cursor := crHourGlass;
   try
-    DiasDiff := Trunc(FechaNueva) - Trunc(FechaVieja);
-
-    dm.Query1.Close;
-    dm.Query1.SQL.Clear;
-    dm.Query1.SQL.Add('select TFA_ACTBALANCE from TIPOSFACTURA');
-    dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa');
-    dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
-    dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
-    dm.Query1.Open;
-    ActBalance := dm.Query1.FieldByName('TFA_ACTBALANCE').AsString;
+    // Diferencia basada en CxC para sincronizar movimientos aunque la factura ya tenga la fecha nueva
+    DiasDiff := Trunc(FechaNueva) - Trunc(FechaMovVieja);
 
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
@@ -3188,10 +3210,32 @@ begin
     begin
       // Credito: actualiza fecha y vencimiento
       if not QFacturasFAC_VENCE.IsNull then
-        FechaVenceNueva := Trunc(QFacturasFAC_VENCE.AsDateTime) + DiasDiff
+        FechaVenceNueva := Trunc(QFacturasFAC_VENCE.AsDateTime) + (Trunc(FechaNueva) - Trunc(FechaVieja))
       else
         FechaVenceNueva := FechaNueva;
 
+      // Si la factura ya tenia la fecha nueva, recalcula vencimiento desde el movimiento
+      if FechaVieja = FechaNueva then
+      begin
+        dm.Query1.Close;
+        dm.Query1.SQL.Clear;
+        dm.Query1.SQL.Add('select top 1 mov_fechavence from movimientos');
+        dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa and fac_forma = :for');
+        dm.Query1.SQL.Add('and mov_numero = :num and suc_codigo = :suc');
+        dm.Query1.SQL.Add('and (mov_cuota = '+QuotedStr('False')+' or mov_cuota is null)');
+        dm.Query1.SQL.Add('order by mov_secuencia');
+        dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+        dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
+        dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
+        dm.Query1.Parameters.ParamByName('num').Value := QFacturasFAC_NUMERO.Value;
+        dm.Query1.Parameters.ParamByName('suc').Value := QFacturassuc_codigo.Value;
+        dm.Query1.Open;
+        if not dm.Query1.IsEmpty and (not dm.Query1.FieldByName('mov_fechavence').IsNull) then
+          FechaVenceNueva := Trunc(dm.Query1.FieldByName('mov_fechavence').AsDateTime) + DiasDiff;
+      end;
+
+      dm.Query1.Close;
+      dm.Query1.SQL.Clear;
       dm.Query1.SQL.Add('update facturas set');
       dm.Query1.SQL.Add('  fac_fecha = :fec,');
       dm.Query1.SQL.Add('  fac_vence = :vence,');
@@ -3212,20 +3256,42 @@ begin
       dm.Query1.Parameters.ParamByName('suc').Value := QFacturassuc_codigo.Value;
       dm.Query1.ExecSQL;
 
-      // Desplaza fechas de movimientos (incluye cuotas) manteniendo el intervalo
+      // Actualiza documento principal de CxC con fechas absolutas
       dm.Query1.Close;
       dm.Query1.SQL.Clear;
       dm.Query1.SQL.Add('update movimientos set');
-      dm.Query1.SQL.Add('  mov_fecha = DATEADD(day, ' + IntToStr(DiasDiff) + ', mov_fecha),');
-      dm.Query1.SQL.Add('  mov_fechavence = DATEADD(day, ' + IntToStr(DiasDiff) + ', mov_fechavence)');
+      dm.Query1.SQL.Add('  mov_fecha = :fec,');
+      dm.Query1.SQL.Add('  mov_fechavence = :vence');
       dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa and fac_forma = :for');
       dm.Query1.SQL.Add('and mov_numero = :num and suc_codigo = :suc');
+      dm.Query1.SQL.Add('and (mov_cuota = '+QuotedStr('False')+' or mov_cuota is null)');
+      dm.Query1.Parameters.ParamByName('fec').Value := FechaNueva;
+      dm.Query1.Parameters.ParamByName('vence').Value := FechaVenceNueva;
       dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
       dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
       dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
       dm.Query1.Parameters.ParamByName('num').Value := QFacturasFAC_NUMERO.Value;
       dm.Query1.Parameters.ParamByName('suc').Value := QFacturassuc_codigo.Value;
       dm.Query1.ExecSQL;
+
+      // Desplaza cuotas manteniendo el intervalo
+      if DiasDiff <> 0 then
+      begin
+        dm.Query1.Close;
+        dm.Query1.SQL.Clear;
+        dm.Query1.SQL.Add('update movimientos set');
+        dm.Query1.SQL.Add('  mov_fecha = DATEADD(day, ' + IntToStr(DiasDiff) + ', mov_fecha),');
+        dm.Query1.SQL.Add('  mov_fechavence = DATEADD(day, ' + IntToStr(DiasDiff) + ', mov_fechavence)');
+        dm.Query1.SQL.Add('where emp_codigo = :emp and tfa_codigo = :tfa and fac_forma = :for');
+        dm.Query1.SQL.Add('and mov_numero = :num and suc_codigo = :suc');
+        dm.Query1.SQL.Add('and mov_cuota = '+QuotedStr('True'));
+        dm.Query1.Parameters.ParamByName('emp').Value := dm.vp_cia;
+        dm.Query1.Parameters.ParamByName('tfa').Value := QFacturasTFA_CODIGO.Value;
+        dm.Query1.Parameters.ParamByName('for').Value := QFacturasFAC_FORMA.Value;
+        dm.Query1.Parameters.ParamByName('num').Value := QFacturasFAC_NUMERO.Value;
+        dm.Query1.Parameters.ParamByName('suc').Value := QFacturassuc_codigo.Value;
+        dm.Query1.ExecSQL;
+      end;
     end
     else
     begin
