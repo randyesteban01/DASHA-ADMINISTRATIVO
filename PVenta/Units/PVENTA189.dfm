@@ -1,6 +1,6 @@
 object frmAnalisisCompra_Venta: TfrmAnalisisCompra_Venta
-  Left = 221
-  Top = 151
+  Left = 276
+  Top = 189
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'An'#225'lisis de Compra y Venta'

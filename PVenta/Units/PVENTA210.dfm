@@ -1,6 +1,6 @@
 object frmResumenVentaProducto: TfrmResumenVentaProducto
-  Left = 616
-  Top = 324
+  Left = 418
+  Top = 216
   ActiveControl = spAno
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle

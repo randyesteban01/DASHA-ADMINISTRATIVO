@@ -661,10 +661,13 @@ var
   Venta, NumItbis : Double;
   a : integer;
 begin
-  QDetalleFacTotalCosto.Value := QDetalleFacdet_costo.Value * QDetalleFacdet_cantidad.Value;
+ QDetalleFacTotalCosto.Value := QDetalleFacdet_costo.Value * QDetalleFacdet_cantidad.Value;
   if QDetalleFacDET_CONITBIS.value = 'S' then
   begin
     NumItbis := strtofloat(format('%10.2f',[(QDetalleFacdet_itbis.asfloat/100)+1]));
+
+    if NumItbis = 0 then
+    NumItbis := 1;
 
     if dm.QParametrospar_itbisincluido.Value = 'True' then
     begin
@@ -728,6 +731,7 @@ begin
   QDetalleFacBeneficio.Value := QDetalleFacValor.Value - (QDetalleFacTotalCosto.Value +
                                                           (QDetalleFaccomision.Value)+
                                                           (QDetalleFacCalcItbis.Value * QDetalleFacdet_cantidad.Value));
+
 end;
 
 procedure TfrmConsBeneficio.QFacturasAfterOpen(DataSet: TDataSet);
@@ -739,12 +743,14 @@ procedure TfrmConsBeneficio.QBeneficioProdCalcFields(DataSet: TDataSet);
 begin
 if ((QBeneficioProdbeneficio.value > 0) AND (QBeneficioProdcosto.value > 0)) then
     QBeneficioProdPorciento.Value := (QBeneficioProdbeneficio.Value /QBeneficioProdcosto.value)*100;
+
 end;
 
 procedure TfrmConsBeneficio.QBeneficioFamCalcFields(DataSet: TDataSet);
 begin
 if ((QBeneficioFambeneficio.value > 0) AND (QBeneficioFamcosto.value > 0)) then
     QBeneficioFamPorciento.Value := (QBeneficioFambeneficio.Value /QBeneficioFamcosto.value)*100;
+
 end;
 
 procedure TfrmConsBeneficio.edVendedorChange(Sender: TObject);

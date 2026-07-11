@@ -1,6 +1,6 @@
 object frmReimpresion: TfrmReimpresion
-  Left = 864
-  Top = 511
+  Left = 700
+  Top = 369
   ActiveControl = edGrupo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle

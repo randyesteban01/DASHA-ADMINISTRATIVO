@@ -1,11 +1,11 @@
 object frmConsBeneficio: TfrmConsBeneficio
-  Left = 755
-  Top = 216
+  Left = 330
+  Top = 169
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Beneficios en venta'
-  ClientHeight = 560
-  ClientWidth = 909
+  ClientHeight = 520
+  ClientWidth = 844
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -24,42 +24,42 @@ object frmConsBeneficio: TfrmConsBeneficio
   OnKeyPress = FormKeyPress
   OnPaint = FormPaint
   PixelsPerInch = 96
-  TextHeight = 14
+  TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 909
-    Height = 61
+    Width = 844
+    Height = 57
     Align = alTop
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 0
     object Label6: TLabel
-      Left = 9
-      Top = 34
+      Left = 8
+      Top = 32
       Width = 30
-      Height = 14
+      Height = 13
       Caption = 'Fecha'
     end
     object Label8: TLabel
-      Left = 9
-      Top = 9
-      Width = 43
-      Height = 14
+      Left = 8
+      Top = 8
+      Width = 41
+      Height = 13
       Caption = 'Sucursal'
     end
     object Label1: TLabel
-      Left = 339
-      Top = 13
+      Left = 315
+      Top = 12
       Width = 65
-      Height = 14
+      Height = 13
       Caption = 'Caja contable'
     end
     object btcaja: TSpeedButton
-      Left = 457
-      Top = 9
-      Width = 24
-      Height = 23
+      Left = 424
+      Top = 8
+      Width = 23
+      Height = 22
       Flat = True
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -76,17 +76,17 @@ object frmConsBeneficio: TfrmConsBeneficio
       OnClick = btcajaClick
     end
     object Label2: TLabel
-      Left = 344
-      Top = 39
-      Width = 47
-      Height = 14
+      Left = 319
+      Top = 36
+      Width = 46
+      Height = 13
       Caption = 'Vendedor'
     end
     object btnVendedor: TSpeedButton
-      Left = 457
-      Top = 34
-      Width = 24
-      Height = 24
+      Left = 424
+      Top = 32
+      Width = 23
+      Height = 22
       Flat = True
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -103,40 +103,40 @@ object frmConsBeneficio: TfrmConsBeneficio
       OnClick = btnVendedorClick
     end
     object Fecha1: TDateTimePicker
-      Left = 60
-      Top = 34
-      Width = 85
-      Height = 22
+      Left = 56
+      Top = 32
+      Width = 79
+      Height = 21
       Date = 37506.000000000000000000
       Time = 37506.000000000000000000
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 0
     end
     object Fecha2: TDateTimePicker
-      Left = 146
-      Top = 34
-      Width = 86
-      Height = 22
+      Left = 136
+      Top = 32
+      Width = 79
+      Height = 21
       Date = 37506.000000000000000000
       Time = 37506.000000000000000000
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 1
     end
     object cbGrupo: TRadioGroup
-      Left = 862
+      Left = 800
       Top = 2
-      Width = 45
-      Height = 57
+      Width = 42
+      Height = 53
       Align = alRight
       Caption = 'Grupo'
       Columns = 2
@@ -150,14 +150,14 @@ object frmConsBeneficio: TfrmConsBeneficio
       OnClick = btRefreshClick
     end
     object DBLookupComboBox2: TDBLookupComboBox
-      Left = 60
-      Top = 9
-      Width = 266
-      Height = 22
+      Left = 56
+      Top = 8
+      Width = 247
+      Height = 21
       DropDownRows = 20
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       KeyField = 'suc_codigo'
@@ -167,16 +167,16 @@ object frmConsBeneficio: TfrmConsBeneficio
       TabOrder = 3
     end
     object edCaja: TEdit
-      Left = 414
-      Top = 9
-      Width = 40
-      Height = 22
+      Left = 384
+      Top = 8
+      Width = 38
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       CharCase = ecUpperCase
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
@@ -185,33 +185,33 @@ object frmConsBeneficio: TfrmConsBeneficio
       OnKeyDown = edCajaKeyDown
     end
     object tcaja: TEdit
-      Left = 482
-      Top = 9
-      Width = 200
-      Height = 22
+      Left = 448
+      Top = 8
+      Width = 185
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 5
     end
     object edVendedor: TEdit
-      Left = 414
-      Top = 34
-      Width = 40
-      Height = 23
+      Left = 384
+      Top = 32
+      Width = 38
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       CharCase = ecUpperCase
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
@@ -220,17 +220,17 @@ object frmConsBeneficio: TfrmConsBeneficio
       OnKeyDown = edVendedorKeyDown
     end
     object edtVendedorN: TEdit
-      Left = 482
-      Top = 34
-      Width = 200
-      Height = 23
+      Left = 448
+      Top = 32
+      Width = 185
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
@@ -239,21 +239,21 @@ object frmConsBeneficio: TfrmConsBeneficio
   end
   object Panel2: TPanel
     Left = 0
-    Top = 517
-    Width = 909
-    Height = 43
+    Top = 480
+    Width = 844
+    Height = 40
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 1
     DesignSize = (
-      909
-      43)
+      844
+      40)
     object BitBtn2: TBitBtn
-      Left = 732
-      Top = 9
-      Width = 81
-      Height = 27
+      Left = 680
+      Top = 8
+      Width = 75
+      Height = 25
       Anchors = [akTop, akRight]
       Caption = 'Imprimir'
       TabOrder = 0
@@ -269,20 +269,20 @@ object frmConsBeneficio: TfrmConsBeneficio
         03333333333333333333}
     end
     object btRefresh: TBitBtn
-      Left = 646
-      Top = 9
-      Width = 81
-      Height = 27
+      Left = 600
+      Top = 8
+      Width = 75
+      Height = 25
       Anchors = [akTop, akRight]
       Caption = 'Refrescar >>'
       TabOrder = 1
       OnClick = btRefreshClick
     end
     object btClose: TBitBtn
-      Left = 818
-      Top = 9
-      Width = 81
-      Height = 27
+      Left = 760
+      Top = 8
+      Width = 75
+      Height = 25
       Anchors = [akTop, akRight]
       Caption = '&Salir'
       TabOrder = 2
@@ -304,10 +304,10 @@ object frmConsBeneficio: TfrmConsBeneficio
     end
   end
   object Memo1: TMemo
-    Left = 17
-    Top = 103
-    Width = 544
-    Height = 45
+    Left = 16
+    Top = 96
+    Width = 505
+    Height = 41
     Lines.Strings = (
       'Memo1')
     TabOrder = 2
@@ -315,9 +315,9 @@ object frmConsBeneficio: TfrmConsBeneficio
   end
   object PageControl1: TPageControl
     Left = 0
-    Top = 61
-    Width = 909
-    Height = 456
+    Top = 57
+    Width = 844
+    Height = 423
     ActivePage = TabSheet2
     Align = alClient
     TabOrder = 3
@@ -325,24 +325,24 @@ object frmConsBeneficio: TfrmConsBeneficio
       Caption = 'General'
       object Splitter1: TSplitter
         Left = 0
-        Top = 156
-        Width = 901
-        Height = 8
+        Top = 145
+        Width = 836
+        Height = 7
         Cursor = crVSplit
         Align = alTop
       end
       object DBGrid1: TDBGrid
         Left = 0
         Top = 0
-        Width = 901
-        Height = 156
+        Width = 836
+        Height = 145
         Align = alTop
         Color = clInfoBk
         Ctl3D = False
         DataSource = dsFacturas
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
@@ -460,9 +460,9 @@ object frmConsBeneficio: TfrmConsBeneficio
       end
       object PageControl2: TPageControl
         Left = 0
-        Top = 164
-        Width = 901
-        Height = 263
+        Top = 152
+        Width = 836
+        Height = 243
         ActivePage = TabSheet5
         Align = alClient
         TabOrder = 1
@@ -471,8 +471,8 @@ object frmConsBeneficio: TfrmConsBeneficio
           object DBChart1: TDBChart
             Left = 0
             Top = 0
-            Width = 892
-            Height = 232
+            Width = 828
+            Height = 215
             BackWall.Brush.Color = clWhite
             BackWall.Brush.Style = bsClear
             Title.Text.Strings = (
@@ -506,15 +506,15 @@ object frmConsBeneficio: TfrmConsBeneficio
           object Grid: TDBGrid
             Left = 0
             Top = 0
-            Width = 892
-            Height = 232
+            Width = 828
+            Height = 215
             Align = alClient
             Color = clInfoBk
             Ctl3D = False
             DataSource = dsDetalleFac
             Font.Charset = ANSI_CHARSET
             Font.Color = clWindowText
-            Font.Height = -12
+            Font.Height = -11
             Font.Name = 'Tahoma'
             Font.Style = []
             Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgCancelOnExit]
@@ -607,8 +607,8 @@ object frmConsBeneficio: TfrmConsBeneficio
       ImageIndex = 3
       object Splitter2: TSplitter
         Left = 0
-        Top = 122
-        Width = 901
+        Top = 113
+        Width = 837
         Height = 8
         Cursor = crVSplit
         Align = alTop
@@ -616,15 +616,15 @@ object frmConsBeneficio: TfrmConsBeneficio
       object DBGrid4: TDBGrid
         Left = 0
         Top = 0
-        Width = 901
-        Height = 122
+        Width = 837
+        Height = 113
         Align = alTop
         Color = clInfoBk
         Ctl3D = False
         DataSource = dsBeneficioFam
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgCancelOnExit]
@@ -712,9 +712,9 @@ object frmConsBeneficio: TfrmConsBeneficio
       end
       object DBChart2: TDBChart
         Left = 0
-        Top = 130
-        Width = 901
-        Height = 297
+        Top = 121
+        Width = 837
+        Height = 276
         BackWall.Brush.Color = clWhite
         BackWall.Brush.Style = bsClear
         Title.Text.Strings = (
@@ -766,15 +766,15 @@ object frmConsBeneficio: TfrmConsBeneficio
       object DBGrid2: TDBGrid
         Left = 0
         Top = 0
-        Width = 901
-        Height = 427
+        Width = 836
+        Height = 395
         Align = alClient
         Color = clInfoBk
         Ctl3D = False
         DataSource = dsBeneficioProd
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgCancelOnExit]
@@ -867,15 +867,15 @@ object frmConsBeneficio: TfrmConsBeneficio
       object DBGrid3: TDBGrid
         Left = 0
         Top = 0
-        Width = 901
-        Height = 427
+        Width = 837
+        Height = 397
         Align = alClient
         Color = clInfoBk
         Ctl3D = False
         DataSource = dsTickets
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
