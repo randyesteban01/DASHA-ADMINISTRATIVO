@@ -444,9 +444,12 @@ end;
 
 procedure TfrmConsBeneficio.QFacturasCalcFields(DataSet: TDataSet);
 begin
+ if  QFacturasCOSTO.value = 0 then
+ QFacturasBeneficio.value := QFacturasPRECIO.value-(QFacturasITBIS.Value) else 
   QFacturasBeneficio.value := QFacturasPRECIO.value-(QFacturasCOSTO.value+QFacturasITBIS.Value+QFacturasCOMISION.Value);
   if ((QFacturasPRECIO.value > 0) AND (QFacturasCOSTO.value > 0)) then
-    QFacturasPorciento.Value := (QFacturasBeneficio.Value/QFacturasCOSTO.value )*100;
+    QFacturasPorciento.Value := (QFacturasBeneficio.Value/QFacturasCOSTO.value )*100 else
+    QFacturasPorciento.Value := 100;
 end;
 
 procedure TfrmConsBeneficio.BitBtn2Click(Sender: TObject);
@@ -469,7 +472,7 @@ begin
     else
       RConsBeneficio.QFacturas.Parameters.parambyname('caja').Value := StrToInt(Trim(edCaja.Text));
 
-   if Trim(edCaja.Text) = '' then
+   if Trim(edVendedor.Text) = '' then
       RConsBeneficio.QFacturas.Parameters.parambyname('VENDEDOR').Value := 0
     else
       RConsBeneficio.QFacturas.Parameters.parambyname('VENDEDOR').Value := StrToInt(Trim(edVendedor.Text));
@@ -513,6 +516,12 @@ begin
       RConsBeneficioFamilia.QBeneficioFam.Parameters.parambyname('caja').Value := 0
     else
       RConsBeneficioFamilia.QBeneficioFam.Parameters.parambyname('caja').Value := StrToInt(Trim(edCaja.Text));
+
+     if Trim(edVendedor.Text) = '' then
+      RConsBeneficioFamilia.QBeneficioFam.Parameters.parambyname('VENDEDOR').Value := 0
+    else
+      RConsBeneficioFamilia.QBeneficioFam.Parameters.parambyname('VENDEDOR').Value := StrToInt(Trim(edVendedor.Text));
+
     RConsBeneficioFamilia.QBeneficioFam.Open;
     screen.Cursor := crDefault;
     RConsBeneficioFamilia.PrinterSetup;
@@ -651,6 +660,8 @@ end;
 
 procedure TfrmConsBeneficio.QTicketsCalcFields(DataSet: TDataSet);
 begin
+  if QTicketsCosto.Value = 0 then
+    QTicketsBeneficio.Value := QTicketstotal.Value - (QTicketsItbis.Value) else 
   QTicketsBeneficio.Value := QTicketstotal.Value - (QTicketsCosto.Value + QTicketsItbis.Value + QTicketsdescuento.Value);
   if QTicketstotal.value > 0 then
     QTicketsPorciento.Value := (QTicketsBeneficio.Value /QTicketsCosto.value)*100;
@@ -742,14 +753,16 @@ end;
 procedure TfrmConsBeneficio.QBeneficioProdCalcFields(DataSet: TDataSet);
 begin
 if ((QBeneficioProdbeneficio.value > 0) AND (QBeneficioProdcosto.value > 0)) then
-    QBeneficioProdPorciento.Value := (QBeneficioProdbeneficio.Value /QBeneficioProdcosto.value)*100;
+    QBeneficioProdPorciento.Value := (QBeneficioProdbeneficio.Value /QBeneficioProdcosto.value)*100 else
+    QBeneficioProdPorciento.Value := 100;
 
 end;
 
 procedure TfrmConsBeneficio.QBeneficioFamCalcFields(DataSet: TDataSet);
 begin
 if ((QBeneficioFambeneficio.value > 0) AND (QBeneficioFamcosto.value > 0)) then
-    QBeneficioFamPorciento.Value := (QBeneficioFambeneficio.Value /QBeneficioFamcosto.value)*100;
+    QBeneficioFamPorciento.Value := (QBeneficioFambeneficio.Value /QBeneficioFamcosto.value)*100 else
+    QBeneficioFamPorciento.Value := 100;
 
 end;
 

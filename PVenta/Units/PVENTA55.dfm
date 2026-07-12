@@ -318,7 +318,7 @@ object frmConsBeneficio: TfrmConsBeneficio
     Top = 57
     Width = 844
     Height = 423
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 3
     object TabSheet1: TTabSheet
@@ -608,7 +608,7 @@ object frmConsBeneficio: TfrmConsBeneficio
       object Splitter2: TSplitter
         Left = 0
         Top = 113
-        Width = 837
+        Width = 836
         Height = 8
         Cursor = crVSplit
         Align = alTop
@@ -616,7 +616,7 @@ object frmConsBeneficio: TfrmConsBeneficio
       object DBGrid4: TDBGrid
         Left = 0
         Top = 0
-        Width = 837
+        Width = 836
         Height = 113
         Align = alTop
         Color = clInfoBk
@@ -713,8 +713,8 @@ object frmConsBeneficio: TfrmConsBeneficio
       object DBChart2: TDBChart
         Left = 0
         Top = 121
-        Width = 837
-        Height = 276
+        Width = 836
+        Height = 274
         BackWall.Brush.Color = clWhite
         BackWall.Brush.Style = bsClear
         Title.Text.Strings = (
