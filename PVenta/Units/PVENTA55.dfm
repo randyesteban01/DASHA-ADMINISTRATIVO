@@ -1025,7 +1025,7 @@ object frmConsBeneficio: TfrmConsBeneficio
       end>
     SQL.Strings = (
       'SELECT '
-      '(((comision/(precio-itbis)))*precio) COMISION_BRUTA, *'
+      '(((comision/(precio-itbis)))*precio) COMISION_BRUTA, * '
       'FROM '
       'PR_BENEFICIO_VENTA '
       '(:EMP, :SUC, :FEC1,:FEC2,:FOR1,:FOR2, :CAJA, :VENDEDOR)')
@@ -1618,7 +1618,7 @@ object frmConsBeneficio: TfrmConsBeneficio
       end>
     SQL.Strings = (
       'SELECT '
-      'sum(costo) as Costo, sum(precio) as Precio,'
+      'sum(costo) as Costo, sum(precio-itbis) as Precio,'
       'sum(precio-itbis-costo-comision) as Beneficio'
       'FROM '
       'PR_BENEFICIO_VENTA '
@@ -1797,7 +1797,7 @@ object frmConsBeneficio: TfrmConsBeneficio
       end>
     SQL.Strings = (
       'select'
-      'pro_codigo, pro_roriginal, pro_nombre, det_precio, det_costo,'
+      'pro_codigo, pro_roriginal, pro_nombre,  det_precio, det_costo,'
       
         'det_conitbis, det_itbis, det_cantidad, det_medida, det_descuento' +
         ','
