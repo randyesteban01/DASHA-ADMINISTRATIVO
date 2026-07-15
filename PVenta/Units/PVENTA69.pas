@@ -3168,7 +3168,28 @@ try
     writeln(arch, 'Cajero: '+copy(dm.Query1.FieldByName('caj_nombre').asstring,1,13)+s+'Hora: '+RFactura.QFacturaFAC_HORA.AsString);
   end;
 
-  if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
+  if Trim(RFactura.QFacturaeNCF.Value) <> '' then
+  begin
+    writeln(arch, ' ');
+    writeln(arch, 'eNCF: '+RFactura.QFacturaeNCF.Value);
+    with QDatos do begin
+      Close;
+      sql.Clear;
+      SQL.Add('SELECT TOP 1');
+      SQL.Add('    FechaVencimientoSecuenciaDGII');
+      SQL.Add('FROM SecuenciaDGII');
+      SQL.Add('WHERE FechaVencimientoSecuenciaDGII IS NOT NULL');
+      SQL.Add('  AND emp_codigo = :emp_codigo');
+      SQL.Add('  AND tipo       = :tipo');
+      SQL.Add('ORDER BY FechaVencimientoSecuenciaDGII');
+      Parameters.ParamByName('emp_codigo').Value := RFactura.QFacturaEMP_CODIGO.Value;
+      Parameters.ParamByName('tipo').Value := RFactura.QFacturacod_dgii.Value;
+      Open;
+      if not IsEmpty then
+        Writeln(arch, 'Fecha Venc.: ' + FieldByName('FechaVencimientoSecuenciaDGII').AsString);
+    end;
+  end
+  else if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
   begin
     writeln(arch, ' ');
     writeln(arch, 'NCF: '+RFactura.QFacturaNumeroCF.Value);
@@ -4865,7 +4886,8 @@ end;
       end;
       end;
 
-  if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
+  if (Trim(RFactura.QFacturaeNCF.Value) <> '') or
+     (Trim(RFactura.QFacturaNumeroCF.Value) <> '') then
   begin
     if RFactura.QFacturaFAC_RNC.Value <> '' then
       writeln(arch, 'RNC: '+RFactura.QFacturaFAC_RNC.Value);
@@ -5527,12 +5549,35 @@ begin
     fillchar(s, 15-length(copy(dm.Query1.FieldByName('caj_nombre').asstring,1,13)),' ');
     writeln(arch, 'Cajero: '+formatfloat('000',RFactura.QFacturacaj_codigo.AsInteger)+' '+copy(dm.Query1.FieldByName('caj_nombre').asstring,1,13));
   end;
-  if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
+  if Trim(RFactura.QFacturaeNCF.Value) <> '' then
+  begin
+    writeln(arch, ' ');
+    writeln(arch, 'eNCF: '+RFactura.QFacturaeNCF.Value);
+    with QDatos do
+    begin
+      Close;
+      SQL.Clear;
+      SQL.Add('SELECT TOP 1');
+      SQL.Add('    FechaVencimientoSecuenciaDGII');
+      SQL.Add('FROM SecuenciaDGII');
+      SQL.Add('WHERE FechaVencimientoSecuenciaDGII IS NOT NULL');
+      SQL.Add('  AND emp_codigo = :emp_codigo');
+      SQL.Add('  AND tipo       = :tipo');
+      SQL.Add('ORDER BY FechaVencimientoSecuenciaDGII');
+      Parameters.ParamByName('emp_codigo').Value := RFactura.QFacturaEMP_CODIGO.Value;
+      Parameters.ParamByName('tipo').Value := RFactura.QFacturacod_dgii.Value;
+      Open;
+      if not IsEmpty then
+        Writeln(arch, 'Fecha Venc.: ' + FieldByName('FechaVencimientoSecuenciaDGII').AsString);
+    end;
+  end
+  else if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
   begin
     writeln(arch, ' ');
     writeln(arch, 'NCF: '+RFactura.QFacturaNumeroCF.Value);
   end;
-  if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
+  if (Trim(RFactura.QFacturaeNCF.Value) <> '') or
+     (Trim(RFactura.QFacturaNumeroCF.Value) <> '') then
   begin
     if RFactura.QFacturaFAC_RNC.Value <> '' then
       writeln(arch, 'RNC: '+RFactura.QFacturaFAC_RNC.Value);

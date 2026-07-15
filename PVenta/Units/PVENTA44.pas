@@ -4408,12 +4408,18 @@ begin
     fillchar(s, 15-length(copy(dm.Query1.FieldByName('caj_nombre').asstring,1,13)),' ');
     writeln(arch, 'Cajero: '+formatfloat('000',RFactura.QFacturacaj_codigo.AsInteger)+' '+copy(dm.Query1.FieldByName('caj_nombre').asstring,1,13));
   end;
-  if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
+  if Trim(RFactura.QFacturaeNCF.Value) <> '' then
+  begin
+    writeln(arch, ' ');
+    writeln(arch, 'eNCF: '+RFactura.QFacturaeNCF.Value);
+  end
+  else if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
   begin
     writeln(arch, ' ');
     writeln(arch, 'NCF: '+RFactura.QFacturaNumeroCF.Value);
   end;
-  if Trim(RFactura.QFacturaNumeroCF.Value) <> '' then
+  if (Trim(RFactura.QFacturaeNCF.Value) <> '') or
+     (Trim(RFactura.QFacturaNumeroCF.Value) <> '') then
   begin
     if RFactura.QFacturaFAC_RNC.Value <> '' then
       writeln(arch, 'RNC: '+RFactura.QFacturaFAC_RNC.Value);
