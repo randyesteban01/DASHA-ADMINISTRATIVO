@@ -244,6 +244,23 @@ begin
   Result := AnsiChar(#29) + AnsiChar(b);
 end;
 
+{ Evita "A component named RFactura already exists" al reimprimir. }
+procedure LiberarRFactura;
+var
+  C: TComponent;
+begin
+  C := Application.FindComponent('RFactura');
+  if C <> nil then
+    C.Free;
+  RFactura := nil;
+end;
+
+procedure CrearRFactura;
+begin
+  LiberarRFactura;
+  Application.CreateForm(TRFactura, RFactura);
+end;
+
 procedure TfrmReimpresion.btTipoClick(Sender: TObject);
 begin
   search.Query.clear;
@@ -252,7 +269,7 @@ begin
   search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Cï¿½digo');
+  search.AliasFields.add('C?digo');
   search.ResultField := 'tfa_codigo';
   search.Title := 'Tipos de factura';
   if search.execute then
@@ -312,7 +329,10 @@ begin
   mtconfirmation, [mbyes,mbno],0) = mrno then
     abort
   else
+  begin
+    LiberarRFactura;
     action := cafree;
+  end;
 end;
 
 procedure TfrmReimpresion.btCloseClick(Sender: TObject);
@@ -629,7 +649,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QRBelkis.PrinterSetup;
@@ -682,7 +702,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QRSoloAutos.print;
@@ -709,7 +729,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.lbReimpresion.Enabled := True;
@@ -751,7 +771,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QFactura.Close;
@@ -805,7 +825,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QRMadeco.PrinterSetup;
@@ -831,7 +851,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QRMSConsulting.PrinterSetup;
@@ -856,7 +876,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaPreImpresa.QRImpresosDuran.PrinterSetup;
@@ -875,7 +895,7 @@ begin
           end
           else if dm.QParametrospar_formato_preimpreso.Value = 'QClinico' then
           begin
-            application.createform(tRFactura, RFactura);
+            CrearRFactura;
             RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
             RFactura.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
             RFactura.QFactura.Parameters.ParamByName('forma').Value   := Trim(edGrupo.Text);
@@ -888,17 +908,17 @@ begin
             0:begin
             RFactura.lbReimpresion.Enabled := True;
             RFactura.Preview;
-            RFactura.Destroy;
+            LiberarRFactura;
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFactura.lbReimpresion.Enabled := True;
             RFactura.PrinterSetup;
             RFactura.Print;
-            RFactura.Destroy;
+            LiberarRFactura;
             end;
             end;
             2:begin
@@ -927,7 +947,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaClinico.PrinterSetup;
@@ -958,7 +978,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaGrabadoExento.PrinterSetup;
@@ -980,7 +1000,7 @@ begin
           if FormatoImp = 2 then
           begin
             if (DM.QParametrospar_fac_preimpresa.Value = 'False')  then begin
-            application.createform(tRFactura, RFactura);
+            CrearRFactura;
             RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
             RFactura.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
             RFactura.QFactura.Parameters.ParamByName('forma').Value   := Trim(edGrupo.Text);
@@ -993,16 +1013,16 @@ begin
             case cbDestino.ItemIndex of
             0:begin
             RFactura.Preview;
-            RFactura.Destroy;
+            LiberarRFactura;
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFactura.PrinterSetup;
             RFactura.Print;
-            RFactura.Destroy;
+            LiberarRFactura;
             end;
             end;
             2:begin
@@ -1015,7 +1035,7 @@ begin
             end
             else
             begin
-            application.createform(tRFactura, RFactura);
+            CrearRFactura;
             RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
             RFactura.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
             RFactura.QFactura.Parameters.ParamByName('forma').Value  := Trim(edGrupo.Text);
@@ -1027,14 +1047,14 @@ begin
             RFactura.lbReimpresion.Enabled := True;
             RFactura.PrinterSetup;
             RFactura.Preview;
-            RFactura.Destroy;
+            LiberarRFactura;
             end;
 
 
           end
           else if FormatoImp = 3 then
           begin
-            application.createform(tRFactura, RFactura);
+            CrearRFactura;
             RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
             RFactura.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
             RFactura.QFactura.Parameters.ParamByName('forma').Value   := Trim(edGrupo.Text);
@@ -1049,16 +1069,16 @@ begin
           case cbDestino.ItemIndex of
             0:begin
             RFactura.Preview;
-            RFactura.Destroy;
+            LiberarRFactura;
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFactura.PrinterSetup;
             RFactura.Print;
-            RFactura.Destroy;
+            LiberarRFactura;
             end;
             end;
             2:begin
@@ -1092,7 +1112,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFacturaElegante.PrinterSetup;
@@ -1128,7 +1148,7 @@ begin
             end;
             1:begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
-             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEï¿½A?',mtConfirmation,
+             if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,
              [mbyes,mbno],0) = mryes then
              Imp40ColumnasFac else begin
             RFactura2Columnas.PrinterSetup;
@@ -1162,6 +1182,7 @@ begin
       end; }
 
   0 : begin // Facturas
+  LiberarRFactura;
   if edtHasta.Visible = False then
   begin
     i := StrToInt(edNumero.Text);
@@ -1525,7 +1546,7 @@ begin
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                 Imp40ColumnasFac
               else
               begin
@@ -1589,7 +1610,7 @@ begin
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                 Imp40ColumnasFac
               else
               begin
@@ -1625,7 +1646,7 @@ begin
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                 Imp40ColumnasFac
               else
               begin
@@ -1676,7 +1697,7 @@ begin
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                 Imp40ColumnasFac
               else
               begin
@@ -1752,7 +1773,7 @@ begin
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                 Imp40ColumnasFac
               else
               begin
@@ -1787,7 +1808,7 @@ begin
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                 Imp40ColumnasFac
               else
               begin
@@ -1822,7 +1843,7 @@ begin
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                 Imp40ColumnasFac
               else
               begin
@@ -1853,7 +1874,7 @@ begin
       // -----------------------------------------------------------------
       else if dm.QParametrospar_formato_preimpreso.Value = 'Emtraba' then
       begin
-        application.createform(tRFactura, RFactura);
+        CrearRFactura;
         RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
         RFactura.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
         RFactura.QFactura.Parameters.ParamByName('forma').Value  := Trim(edGrupo.Text);
@@ -1871,48 +1892,48 @@ begin
             // (destino Pantalla) antes de mostrar el preview.
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
               begin
                 // Liberar RFactura ANTES de llamar Imp40ColumnasFac, ya que
                 // esa rutina crea su propio RFactura por dentro y truena
                 // con "A component named RFactura already exists" si el
                 // que creamos aqui arriba sigue vivo.
-                RFactura.Destroy;
+                LiberarRFactura;
                 Imp40ColumnasFac;
               end
               else
               begin
                 RFactura.Preview;
-                RFactura.Destroy;
+                LiberarRFactura;
               end;
             end
             else
             begin
               RFactura.Preview;
-              RFactura.Destroy;
+              LiberarRFactura;
             end;
           end;
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
               begin
                 // Mismo motivo que en el case 0 de arriba.
-                RFactura.Destroy;
+                LiberarRFactura;
                 Imp40ColumnasFac;
               end
               else
               begin
                 RFactura.PrinterSetup;
                 RFactura.Print;
-                RFactura.Destroy;
+                LiberarRFactura;
               end;
             end
             else
             begin
               RFactura.PrinterSetup;
               RFactura.Print;
-              RFactura.Destroy;
+              LiberarRFactura;
             end;
           end;
           2: begin
@@ -1926,7 +1947,7 @@ begin
 
       else if dm.QParametrospar_formato_preimpreso.Value = 'QClinico' then
       begin
-        application.createform(tRFactura, RFactura);
+        CrearRFactura;
         RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
         RFactura.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
         RFactura.QFactura.Parameters.ParamByName('forma').Value  := Trim(edGrupo.Text);
@@ -1940,19 +1961,19 @@ begin
           0: begin
             RFactura.lbReimpresion.Enabled := True;
             RFactura.Preview;
-            RFactura.Destroy;
+            LiberarRFactura;
           end;
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                 Imp40ColumnasFac
               else
               begin
                 RFactura.lbReimpresion.Enabled := True;
                 RFactura.PrinterSetup;
                 RFactura.Print;
-                RFactura.Destroy;
+                LiberarRFactura;
               end;
             end
             else
@@ -1960,7 +1981,7 @@ begin
               RFactura.lbReimpresion.Enabled := True;
               RFactura.PrinterSetup;
               RFactura.Print;
-              RFactura.Destroy;
+              LiberarRFactura;
             end;
           end;
           2: begin
@@ -1992,7 +2013,7 @@ begin
             1: begin
               if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
               begin
-                if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+                if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                   Imp40ColumnasFac
                 else
                 begin
@@ -2036,7 +2057,7 @@ begin
         1: begin
           if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
           begin
-            if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+            if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
               Imp40ColumnasFac
             else
             begin
@@ -2071,7 +2092,7 @@ begin
       begin
         if (DM.QParametrospar_fac_preimpresa.Value = 'False') then
         begin
-          application.createform(tRFactura, RFactura);
+          CrearRFactura;
           RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
           RFactura.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
           RFactura.QFactura.Parameters.ParamByName('forma').Value  := Trim(edGrupo.Text);
@@ -2085,25 +2106,25 @@ begin
           case cbDestino.ItemIndex of
             0: begin
               RFactura.Preview;
-              RFactura.Destroy;
+              LiberarRFactura;
             end;
             1: begin
               if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
               begin
-                if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+                if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                   Imp40ColumnasFac
                 else
                 begin
                   RFactura.PrinterSetup;
                   RFactura.Print;
-                  RFactura.Destroy;
+                  LiberarRFactura;
                 end;
               end
               else
               begin
                 RFactura.PrinterSetup;
                 RFactura.Print;
-                RFactura.Destroy;
+                LiberarRFactura;
               end;
             end;
             2: begin
@@ -2116,7 +2137,7 @@ begin
         end
         else
         begin
-          application.createform(tRFactura, RFactura);
+          CrearRFactura;
           RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
           RFactura.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
           RFactura.QFactura.Parameters.ParamByName('forma').Value  := Trim(edGrupo.Text);
@@ -2128,13 +2149,13 @@ begin
           RFactura.lbReimpresion.Enabled := True;
           RFactura.PrinterSetup;
           RFactura.Preview;
-          RFactura.Destroy;
+          LiberarRFactura;
         end;
       end
 
       else if FormatoImp = 3 then
       begin
-        application.createform(tRFactura, RFactura);
+        CrearRFactura;
         RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
         RFactura.QFactura.Parameters.ParamByName('tipo').Value   := StrToInt(Trim(edTipo.Text));
         RFactura.QFactura.Parameters.ParamByName('forma').Value  := Trim(edGrupo.Text);
@@ -2150,25 +2171,25 @@ begin
           case cbDestino.ItemIndex of
             0: begin
               RFactura.Preview;
-              RFactura.Destroy;
+              LiberarRFactura;
             end;
             1: begin
               if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
               begin
-                if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+                if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                   Imp40ColumnasFac
                 else
                 begin
                   RFactura.PrinterSetup;
                   RFactura.Print;
-                  RFactura.Destroy;
+                  LiberarRFactura;
                 end;
               end
               else
               begin
                 RFactura.PrinterSetup;
                 RFactura.Print;
-                RFactura.Destroy;
+                LiberarRFactura;
               end;
             end;
             2: begin
@@ -2204,7 +2225,7 @@ begin
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                 Imp40ColumnasFac
               else
               begin
@@ -2250,7 +2271,7 @@ begin
           1: begin
             if dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True' then
             begin
-              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?', mtConfirmation, [mbyes, mbno], 0) = mryes then
+              if MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?', mtConfirmation, [mbyes, mbno], 0) = mryes then
                 Imp40ColumnasFac
               else
               begin
@@ -2851,7 +2872,7 @@ end; // 0: Facturas
         dm.Query1.Parameters.ParamByName('suc').Value := DBLookupComboBox2.KeyValue;
         dm.Query1.Open;
         if dm.Query1.FieldByName('con_status').AsString = 'ANU' then
-          MessageDlg('Este conduce estï¿½ anulado',mtError,[mbok],0)
+          MessageDlg('Este conduce est? anulado',mtError,[mbok],0)
         else
         begin
         if (DM.QParametrospar_fac_preimpresa.Value = 'False') then begin
@@ -3063,7 +3084,7 @@ try
   closefile(arch);
 
   tfac := 0;
-//  application.CreateForm(tRFactura, RFactura);
+//  CrearRFactura;
   RFactura.QFactura.Close;
   RFactura.QFactura.Parameters.ParamByName('emp').Value     := DM.vp_cia;
   RFactura.QFactura.Parameters.ParamByName('tipo').Value    := edTipo.Text;
@@ -3616,9 +3637,9 @@ IF copias > 1 THEN begin
 //      winexec('.\imp.bat',0);
       a := a + 1;
     end;}
-    RFactura.Destroy;
+    LiberarRFactura;
 except
-  RFactura.Destroy;
+  LiberarRFactura;
   end;
 
 end;
@@ -4409,7 +4430,7 @@ end;
 //Orden de Compra
 2:begin
 end;
-//Nota de crï¿½dito
+//Nota de cr?dito
 3:begin
 vl_cliente  := GetCliente('NotasCredito','ncr_numero');
 vl_destino  := GetDestino('NotasCredito','ncr_numero');
@@ -4425,7 +4446,7 @@ vl_concepto := GetConcepto('NotasCredito','ncr_concepto','ncr_numero');
   mmo1.Lines.Add(DBLookupComboBox2.Text);
 
 end;
-//Nota de dï¿½bito
+//Nota de d?bito
 4:begin
 vl_cliente  := GetCliente('NotasDebito','nde_numero');
 vl_destino  := GetDestino('NotasDebito','nde_numero');
@@ -4441,7 +4462,7 @@ vl_concepto := GetConcepto('NotasDebito','nde_concepto','nde_numero');
   mmo1.Lines.Add(DBLookupComboBox2.Text);
 
 end;
-//Devoluciï¿½n
+//Devoluci?n
 5:begin
 end;
 //Recibo
@@ -4463,7 +4484,7 @@ end;
 //Desembolso
 7:begin
 end;
-//Cotizaciï¿½n
+//Cotizaci?n
 8:begin
 vl_cliente  := GetCliente('Cotizacion','cot_numero');
 vl_destino  := GetDestino('Cotizacion','cot_numero');
@@ -4477,7 +4498,7 @@ vl_destino  := GetDestino('Cotizacion','cot_numero');
   mmo1.Lines.Add(DBLookupComboBox2.Text);
 
 end;
-//Entrada de almacï¿½n
+//Entrada de almac?n
 9:begin
 end;
 //Conduce / Salida
@@ -4486,7 +4507,7 @@ end;
 //Transferencia
 11:begin
 end;
-//Cotizaciï¿½n mï¿½ltiple
+//Cotizaci?n m?ltiple
 12:begin
 end;
 //Liquidacion de Mercancia
@@ -4495,7 +4516,7 @@ end;
 //Orden de Servicio
 14:begin
 end;
-//Devoluciï¿½n en Compra
+//Devoluci?n en Compra
 15:begin
 end;
 end;
@@ -4604,9 +4625,9 @@ begin
 
   // modelo
   Write(F, GS($28) + 'k' + #04#00 + #49#65#50#00); // GS ( k 4 0 1 41 2 0
-  // tamaï¿½o de mï¿½dulo
+  // tama?o de m?dulo
   Write(F, GS($28) + 'k' + #03#00 + #49#67 + AnsiChar(ModuleSize));
-  // nivel de correcciï¿½n
+  // nivel de correcci?n
   Write(F, GS($28) + 'k' + #03#00 + #49#69 + AnsiChar(ECLevel));
 
   // almacenar datos
@@ -4735,7 +4756,7 @@ end;
 
  { tfac := 0;
   TDesc := 0;
-  //application.CreateForm(tRFactura, RFactura);
+  //CrearRFactura;
   RFactura.QFactura.Parameters.ParamByName('emp').Value     := DM.vp_cia;
   RFactura.QFactura.Parameters.ParamByName('tipo').Value    := StrToInt(edTipo.Text);
   RFactura.QFactura.Parameters.ParamByName('forma').Value   := edGrupo.Text;
@@ -5348,27 +5369,27 @@ end;
 
      qrData := AnsiString(Trim(qrURL));
     {qrData := AnsiString(
-      // Usa tu funciï¿½n/campo que arma la URL del timbre:
+      // Usa tu funci?n/campo que arma la URL del timbre:
       // Ejemplo:
       'https://timbre.dgii.gov.do/consulta?encf=' + RFactura.QFacturaNumeroCF.AsString +
       '&rn=' + QSucursalsuc_rnc.AsString
     );  }
- {   WriteQR(arch, qrData, 6, 48);   // mï¿½dulo 6, nivel L (rï¿½pido y legible)
+ {   WriteQR(arch, qrData, 6, 48);   // m?dulo 6, nivel L (r?pido y legible)
     Writeln(arch, 'Fecha firma: ' + fechaFirma);
     Writeln(arch, 'Cod. seguridad: ' + codSeg);
     
      {
     qrData := AnsiString(qrURL);
-    WriteQR(arch, qrData, 6, 48);  // mï¿½dulo 6, nivel L
+    WriteQR(arch, qrData, 6, 48);  // m?dulo 6, nivel L
     Writeln(arch, 'Fecha firma: ' + fechaFirma);
     Writeln(arch, 'Cod. seguridad: ' + codSeg);   
-    Writeln(arch); // lï¿½nea en blanco antes del corte
+    Writeln(arch); // l?nea en blanco antes del corte
     }
 {  end
   else
   begin
     // No imprimas QR ni datos; si quieres, puedes mostrar un aviso:
-    // Writeln(arch, 'Documento pendiente de aceptaciï¿½n DGII');
+    // Writeln(arch, 'Documento pendiente de aceptaci?n DGII');
   end;
   writeln(arch, ' ');
   // Mensaje final opcional
@@ -5407,7 +5428,7 @@ end;
 //      winexec('.\imp.bat',0);
       a := a + 1;
     end;}
-{    RFactura.Destroy;
+{    LiberarRFactura;
 end;  }
 
 
@@ -5437,7 +5458,7 @@ begin
   closefile(arch);
 
   tfac := 0;
-  application.CreateForm(tRFactura, RFactura);
+  CrearRFactura;
   RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;
   RFactura.QFactura.Parameters.ParamByName('tipo').Value   := edTipo.Text;
   RFactura.QFactura.Parameters.ParamByName('forma').Value   := edGrupo.Text;
@@ -5814,7 +5835,7 @@ begin
       winexec('.\imp.bat', 0);
   end;
 
-  RFactura.Destroy;
+  LiberarRFactura;
 end;
 
 end.
