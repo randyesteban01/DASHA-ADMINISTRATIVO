@@ -1187,6 +1187,14 @@ begin
     Abort;
   end;
 
+    if Trim(edTipo.Text) = '' then
+  begin
+    ShowMessage('Debes indicar el tipo de Factura...');
+    edTipo.SetFocus;
+    Abort;
+  end;
+
+
   for i := i to maxivo do
   begin
     dm.Query1.close;
