@@ -8359,7 +8359,7 @@ end;
                        RFacturaCorta.QFactura.open;
                        RFacturaCorta.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
                        RFacturaCorta.QDetalle.open;
-                       RFacturaCorta.lbReimpresion.Enabled := True;
+                       RFacturaCorta.lbReimpresion.Enabled := False;
 
                        if RFacturaCorta.QDetalle.Locate('PRO_NOMBRE','SERVICIO DE ENVIO',[]) then
                          RFacturaCorta.ChildBand3.Enabled := True
@@ -8399,7 +8399,7 @@ end;
                          RFactura.QFactura.open;
                          RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
                          RFactura.QDetalle.open;
-                         RFactura.lbReimpresion.Enabled := True;
+                         RFactura.lbReimpresion.Enabled := False;
 
                          if RFactura.QDetalle.Locate('PRO_NOMBRE','SERVICIO DE ENVIO',[]) then
                            RFactura.ChildBand3.Enabled := True
@@ -8746,7 +8746,7 @@ end;
           RFacturaCorta.QFactura.open;
           RFacturaCorta.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
           RFacturaCorta.QDetalle.open;
-          RFacturaCorta.lbReimpresion.Enabled := True;
+          RFacturaCorta.lbReimpresion.Enabled := False;
 
           if RFacturaCorta.QDetalle.Locate('PRO_NOMBRE','SERVICIO DE ENVIO',[]) then
             RFacturaCorta.ChildBand3.Enabled := True
@@ -8786,7 +8786,7 @@ end;
             RFactura.QFactura.open;
             RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
             RFactura.QDetalle.open;
-            RFactura.lbReimpresion.Enabled := True;
+            RFactura.lbReimpresion.Enabled := False;
 
             if RFactura.QDetalle.Locate('PRO_NOMBRE','SERVICIO DE ENVIO',[]) then
               RFactura.ChildBand3.Enabled := True
@@ -8815,7 +8815,7 @@ end;
           RFacturaCorta.QFactura.open;
           RFacturaCorta.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
           RFacturaCorta.QDetalle.open;
-          RFacturaCorta.lbReimpresion.Enabled := True;
+          RFacturaCorta.lbReimpresion.Enabled := False;
 
           if RFacturaCorta.QDetalle.Locate('PRO_NOMBRE','SERVICIO DE ENVIO',[]) then
             RFacturaCorta.ChildBand3.Enabled := True
@@ -8837,7 +8837,7 @@ end;
           RFactura.QFactura.open;
           RFactura.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
           RFactura.QDetalle.open;
-          RFactura.lbReimpresion.Enabled := True;
+          RFactura.lbReimpresion.Enabled := False;
           RFactura.PrinterSetup;
           RFactura.Preview;
           RFactura.Destroy;
@@ -8857,7 +8857,7 @@ end;
       RFacturaElegante.QFactura.open;
       RFacturaElegante.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
       RFacturaElegante.QDetalle.open;
-      RFacturaElegante.lbReimpresion.Enabled := True;
+      RFacturaElegante.lbReimpresion.Enabled := False;
       RFacturaElegante.PrinterSetup;
       RFacturaElegante.Preview;
       RFacturaElegante.Destroy;
@@ -8873,7 +8873,7 @@ end;
       RFactura2Columnas.QFactura.open;
       RFactura2Columnas.QDetalle.Parameters.ParamByName('par_invempresa').Value := dm.QParametrosPAR_INVEMPRESA.Value;
       RFactura2Columnas.QDetalle.open;
-      RFactura2Columnas.lbReimpresion.Enabled := True;
+      RFactura2Columnas.lbReimpresion.Enabled := False;
       RFactura2Columnas.PrinterSetup;
       RFactura2Columnas.Preview;
       RFactura2Columnas.Destroy;
