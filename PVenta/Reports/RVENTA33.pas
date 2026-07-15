@@ -150,8 +150,8 @@ begin
     QRCode.Data := Texto;
     QRCode.QuietZone := 4;
 
-    // Calculamos el tamaÒo basado en mÛdulos
-    ModuleSize := 5; // Cada mÛdulo mide 5 pÌxeles (puedes ajustar)
+    // Calculamos el tamaùo basado en mùdulos
+    ModuleSize := 5; // Cada mùdulo mide 5 pùxeles (puedes ajustar)
     QRSize := (QRCode.Rows + QRCode.QuietZone * 2) * ModuleSize;
 
     Bitmap := TBitmap.Create;
@@ -173,7 +173,7 @@ begin
               (i + QRCode.QuietZone + 1) * ModuleSize
             ));
 
-      // Escalar para llenar el tamaÒo del QRImage
+      // Escalar para llenar el tamaùo del QRImage
       Imagen.Picture.Bitmap.Width := Imagen.Width;
       Imagen.Picture.Bitmap.Height := Imagen.Height;
       Imagen.Picture.Bitmap.Canvas.StretchDraw(Rect(0, 0, Imagen.Width, Imagen.Height), Bitmap);
@@ -187,10 +187,7 @@ end;
 
 procedure TRNotaCredito.QNotaCalcFields(DataSet: TDataSet);
 begin
-  if Trim(dm.QEmpresasEMP_RNC.AsString) = '105081105' then
-    QNotaDisp.Value := QNotaNCR_MONTO.Value - QNotaNCR_MONTOUSADO.Value
-  else
-    QNotaDisp.Value := (QNotaNCR_MONTO.Value) - QNotaNCR_MONTOUSADO.Value + QNotancr_itbis.Value;
+  QNotaDisp.Value := QNotaNCR_MONTO.Value - QNotaNCR_MONTOUSADO.Value;
   if not QNotaNCF_Fijo.IsNull then
     QNotaNumeroCF.Value := 'NCF:'+ QNotaNCF_Fijo.Value+FormatFloat('00000000',QNotaNCF_Secuencia.Value)
   else
