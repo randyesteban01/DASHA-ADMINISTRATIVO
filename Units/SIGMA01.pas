@@ -439,6 +439,7 @@ type
     QParametrosPAR_FE_DetenerFacturacion: TBooleanField;
     ADOQuery1: TADOQuery;
     qEjecutar: TADOQuery;
+    QParametrosPAR_Buscar_CODIGOCLIENTE: TIntegerField;
     procedure IBDatabaseAfterConnect(Sender: TObject);
     procedure QEmpresasCalcFields(DataSet: TDataSet);
     procedure DataModuleCreate(Sender: TObject);

@@ -660,9 +660,11 @@ begin
   Search.Query.Add('and emp_codigo = '+IntToStr(dm.vp_cia));
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
+  Search.AliasFields.Add('Telefono');
+  Search.AliasFields.Add('Cedula/RNC');
+  Search.AliasFields.Add('Codigo');
+  if DM.QParametrosPAR_Buscar_CODIGOCLIENTE.Value = 2 then
   Search.AliasFields.Add('Referencia');
-  Search.AliasFields.Add('Código');
-  Search.ResultField := 'cli_codigo';
   Search.Title := 'Clientes con Cuentas por Cobrar';
   if Search.execute then
     QCliente.Locate('cli_codigo', Search.ValueField, []);

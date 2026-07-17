@@ -1,8 +1,8 @@
 object DM: TDM
   OldCreateOrder = False
   OnCreate = DataModuleCreate
-  Left = 917
-  Top = 468
+  Left = 1146
+  Top = 585
   Height = 356
   Width = 619
   object dsEmpresas: TDataSource
@@ -1039,6 +1039,9 @@ object DM: TDM
     end
     object QParametrosPAR_FE_DetenerFacturacion: TBooleanField
       FieldName = 'PAR_FE_DetenerFacturacion'
+    end
+    object QParametrosPAR_Buscar_CODIGOCLIENTE: TIntegerField
+      FieldName = 'PAR_Buscar_CODIGOCLIENTE'
     end
   end
   object QContab: TADOQuery

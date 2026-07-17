@@ -246,9 +246,12 @@ end;
 procedure TfrmEstadoCtaCli.SpeedButton1Click(Sender: TObject);
 begin
   search.AliasFields.clear;
-  search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
-  search.AliasFields.add('Referencia');
+  Search.AliasFields.Add('Nombre');
+  Search.AliasFields.Add('Telefono');
+  Search.AliasFields.Add('Cedula/RNC');
+  Search.AliasFields.Add('Codigo');
+  if DM.QParametrosPAR_Buscar_CODIGOCLIENTE.Value = 2 then
+  Search.AliasFields.Add('Referencia');
   Search.Query.clear;
   Search.Query.add('select cli_nombre, cli_codigo, cli_referencia');
   Search.Query.add('from clientes');

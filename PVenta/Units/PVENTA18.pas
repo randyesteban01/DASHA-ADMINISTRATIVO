@@ -972,6 +972,7 @@ type
     QDetalleporc_vendedor: TCurrencyField;
     btBuscaVendPorc: TBitBtn;
     QParametrospar_comision_vend: TBooleanField;
+    QParametrosPAR_Buscar_CODIGOCLIENTE: TIntegerField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -2653,6 +2654,8 @@ begin
   Search.AliasFields.Add('Telefono');
   Search.AliasFields.Add('Cedula/RNC');
   Search.AliasFields.Add('Codigo');
+  if dm.QParametrosPAR_Buscar_CODIGOCLIENTE.Value = 2 then
+  Search.AliasFields.Add('Referencia');
   Search.Query.add('select substring(cli_nombre,1,50) as cli_nombre, cli_telefono, cli_cedula, cli_codigo, cli_referencia');
   if dm.QParametrosPAR_CODIGOCLIENTE.value = 'I' then
     Search.ResultField := 'cli_codigo'

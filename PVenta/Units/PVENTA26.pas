@@ -1134,9 +1134,13 @@ end;
 procedure TfrmCotizacion.SpeedButton2Click(Sender: TObject);
 begin
   Search.AliasFields.Clear;
+  Search.AliasFields.clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('RNC');
-  Search.AliasFields.Add('C�digo');
+  Search.AliasFields.Add('Telefono');
+  Search.AliasFields.Add('Cedula/RNC');
+  Search.AliasFields.Add('Codigo');
+  if dm.QParametrosPAR_Buscar_CODIGOCLIENTE.Value = 2 then
+  Search.AliasFields.Add('Referencia');
   Search.Query.clear;
   if dm.QParametrosPAR_CODIGOCLIENTE.value = 'I' then
   begin

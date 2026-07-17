@@ -365,6 +365,7 @@ type
     qEjecutar: TADOQuery;
     lbVendedor: TLabel;
     qBuscVend: TADOQuery;
+    QParametrosPAR_Buscar_CODIGOCLIENTE: TIntegerField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -642,6 +643,14 @@ end;
 procedure TfrmPedidosCli.btClienteClick(Sender: TObject);
 begin
   Search.Query.clear;
+  Search.AliasFields.clear;
+  Search.AliasFields.Add('Nombre');
+  Search.AliasFields.Add('Telefono');
+  Search.AliasFields.Add('Cedula/RNC');
+  Search.AliasFields.Add('Codigo');
+  if DM.QParametrosPAR_Buscar_CODIGOCLIENTE.Value = 2 then
+  Search.AliasFields.Add('Referencia');
+  
   if dm.QParametrosPAR_CODIGOCLIENTE.value = 'I' then
   begin
     Search.Query.add('select substring(cli_nombre,1,50) as cli_nombre, cli_codigo');

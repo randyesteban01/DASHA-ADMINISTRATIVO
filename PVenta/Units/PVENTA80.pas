@@ -1413,6 +1413,8 @@ type
     QParametrospar_ImprimirCopiaRestBar: TBooleanField;
     DBCheckBox78: TDBCheckBox;
     QParametrospar_usa_huella_supervisor: TBooleanField;
+    dbrgrpPAR_Busar_CODIGOCLIENTE: TDBRadioGroup;
+    QParametrosPAR_Buscar_CODIGOCLIENTE: TIntegerField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure tvOpcionesChange(Sender: TObject; Node: TTreeNode);

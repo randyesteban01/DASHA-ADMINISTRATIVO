@@ -1809,126 +1809,7 @@ object frmPedidosCli: TfrmPedidosCli
         Value = Null
       end>
     SQL.Strings = (
-      'select '
-      
-        'EMP_CODIGO, PAR_ALMACENVENTA, PAR_CODIGOCLIENTE, PAR_CODIGOPRODU' +
-        'CTO,'
-      
-        'PAR_FACFORMA, PAR_FORMATODES, PAR_FORMATODEV, PAR_FORMATONC, PAR' +
-        '_FORMATOND,'
-      
-        'PAR_FORMATORC, PAR_FORMATORI, PAR_ITBIS, PAR_MOVNDE, PAR_TFACODI' +
-        'GO,'
-      
-        'PAR_TIPOPRECIO, PAR_CONTROLAMAXIMO, PAR_CONTROLAMINIMO, PAR_DEBA' +
-        'JOCOSTO,'
-      
-        'PAR_COMBOCOTIZACION, PAR_COMBOIMPDETALLE, PAR_COMBOREBAJA, PAR_V' +
-        'ENDIGITOSLOTE,'
-      
-        'PAR_VENPERMITIR, PAR_VENVERIFICA, PAR_CONTEOLIMPIA, PAR_PREDESCG' +
-        'LOBAL,'
-      
-        'PAR_PREDESCRIP1, PAR_PREDESCRIP2, PAR_PREDESCRIP3, PAR_PREDESCRI' +
-        'P4, PAR_FACANULA,'
-      
-        'PAR_FACDIASANULA, PAR_FACDIASMODIFICA, PAR_FACDISPONIBLE, PAR_FA' +
-        'CMODIFICA,'
-      
-        'PAR_FACSELPRECIO, PAR_FACTEMPORAL, PAR_DEVDIAS, PAR_DEVEFECTIVO,' +
-        ' PAR_FORMATOCUADRE,'
-      
-        'PAR_AHORA1, PAR_AHORA2, PAR_BHORA1, PAR_BHORA2, PAR_FACMODPRECIO' +
-        ', PAR_FORMATOCON,'
-      
-        'PAR_CAJA, PAR_IMPCODIGOBARRA, CPA_CODIGOCLIENTE, PAR_LIMITEINICI' +
-        'AL, PAR_MOVCK,'
-      
-        'PAR_MOVCARGO, PAR_PRECIOLETRA_0, PAR_PRECIOLETRA_1, PAR_PRECIOLE' +
-        'TRA_2, PAR_PRECIOLETRA_3,'
-      
-        'PAR_PRECIOLETRA_4, PAR_PRECIOLETRA_5, PAR_PRECIOLETRA_6, PAR_PRE' +
-        'CIOLETRA_7,'
-      
-        'PAR_PRECIOLETRA_8, PAR_PRECIOLETRA_9, PAR_NUEVOUSADO, PAR_TEXTOB' +
-        'ARRA1,'
-      
-        'PAR_TEXTOBARRA2, PAR_TEXTOBARRA3, PAR_TEXTOBARRA4, PAR_TEXTOBARR' +
-        'A5,'
-      
-        'PAR_OPC5TALINEA, PAR_TEXTOBARRA6, PAR_OPC1RALINEA, PAR_PREGUNTAP' +
-        'EQ,'
-      
-        'PAR_IGUALAREF, PAR_ITBISDEFECTO, PAR_FPADESEM, PAR_FACBAJARLINEA' +
-        ', PAR_FACTOTALIZAPIE,'
-      
-        'PAR_FACREPITEPROD, PAR_DEBAJOPRECIO, PAR_FACCONITBIS, PAR_FACESC' +
-        'ALA, PAR_FACMEDIDA,'
-      
-        'PAR_PRECIOEMP, PAR_PRECIOUND, PAR_FISICOSOLOLLENO, PAR_DEVFORMA,' +
-        ' PAR_FORMATOCOT,'
-      
-        'PAR_INVMOSTRARVENCE, PAR_VERIMAGEN, PAR_TKMENSAJE1, PAR_TKMENSAJ' +
-        'E2,'
-      
-        'PAR_TKMENSAJE3, PAR_TKMENSAJE4, PAR_TKCLAVEDELETE, PAR_TKCLAVEMO' +
-        'DIFICA,'
-      
-        'PAR_COMBINAORIGINAL, PAR_COMBINAFABRIC, PAR_TKCLAVECREDITO, PAR_' +
-        'TKCLAVECANCELA,'
-      'PAR_INVEMPRESA, PAR_INVALMACEN, MON_CODIGO, PAR_SOLGENERACHEQUE,'
-      'par_invprecioconduce, par_mailservidor, par_mailcorreo,'
-      
-        'par_mailusuario, par_mailclave, par_mailpuerto, par_itbisincluid' +
-        'o,'
-      
-        'caj_codigo, par_domicilio, par_monto_domicilio, par_copias_domic' +
-        'ilio,'
-      'par_beneficio, par_tkclavereimprime, par_igualartelefonocliente,'
-      'par_valor_punto, par_punto_principal, par_punto_depen,'
-      'par_redondeo, par_barra_header, par_fac_preimpresa,'
-      'par_fac_oferta, par_preciound_m, par_precioemp_m,'
-      
-        'par_nombre_familia, par_nombre_depto, par_nombre_color, par_nomb' +
-        're_marca,'
-      'par_inv_compra_centro_costo, par_imprime_logo,'
-      'par_arch_copiar_colector, par_arch_recibe_colector,'
-      
-        'par_delimitador_envia, par_delimitador_recibe, par_modifica_fech' +
-        'a_factura,'
-      'par_pago_mayor_balance, par_nota_orden_servicio, par_controlar,'
-      'par_formato_preimpreso, par_usuario_cuadra,'
-      'par_inv_entrada_modifica_precio, par_movtk, par_visualizadesc,'
-      'par_visualiza_selectivo, par_cantidad_primero,'
-      'par_busqueda_porciento, par_busqueda_cxp,'
-      'par_moneda_local, par_envio, par_nota_cotizacion,'
-      'par_almacendevolucion, par_boletos_monto, par_boletos_cantidad,'
-      
-        'par_ticket_itbis, par_ftp_site, par_ftp_usuario, par_ftp_passwor' +
-        'd,'
-      'par_ftp_ruta, par_modifica_precio_automatico,'
-      'par_inv_forma_inventario, par_visualizar_cant_empaque,'
-      'par_imprimir_calculo_empaque, par_inv_transferencia_auto,'
-      
-        'par_boletos_monto_patrocinador, par_boletos_cantidad_patrocinado' +
-        'r,'
-      
-        'par_movdc, par_busqueda_dejar_ultimo, par_compras_visualiza_dife' +
-        'rencia,'
-      'par_genera_puntos_credito, par_inv_unidad_medida,'
-      'par_numerofactura_tipo, par_facturarcero, par_textobarra7,'
-      
-        'par_opc6talinea, par_opc7malinea, Idioma, par_compras_valores_au' +
-        't,'
-      'par_inv_imprime_comentario,'
-      'par_aplica_desc_por_rango_venta,'
-      
-        'par_periodo_caducidad,par_cantidad_caducidad, par_imprimir_sin_d' +
-        'etalle_RI,'
-      
-        'cot_dias_valides,par_validar_serie_en_inventario,PAR_FORMATOENVI' +
-        'OCON,'
-      'par_impresora_boleto, par_comision_vend'
+      'select *'
       'from'
       'PARAMETROS'
       'WHERE EMP_CODIGO = :emp_codigo')
@@ -2767,6 +2648,9 @@ object frmPedidosCli: TfrmPedidosCli
     end
     object QParametrospar_comision_vend: TBooleanField
       FieldName = 'par_comision_vend'
+    end
+    object QParametrosPAR_Buscar_CODIGOCLIENTE: TIntegerField
+      FieldName = 'PAR_Buscar_CODIGOCLIENTE'
     end
   end
   object qEjecutar: TADOQuery

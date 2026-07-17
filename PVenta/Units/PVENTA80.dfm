@@ -6216,8 +6216,8 @@ object frmParametros: TfrmParametros
     end
   end
   object pnClientes: TPanel
-    Left = 1500
-    Top = 0
+    Left = 216
+    Top = 8
     Width = 417
     Height = 409
     Font.Charset = ANSI_CHARSET
@@ -6641,6 +6641,22 @@ object frmParametros: TfrmParametros
       ValueChecked = 'True'
       ValueUnchecked = 'False'
     end
+    object dbrgrpPAR_Busar_CODIGOCLIENTE: TDBRadioGroup
+      Left = 320
+      Top = 88
+      Width = 89
+      Height = 65
+      Caption = 'Busqueda '
+      DataField = 'PAR_Buscar_CODIGOCLIENTE'
+      DataSource = dsParametros
+      Items.Strings = (
+        'Interno'
+        'Referencia')
+      TabOrder = 16
+      Values.Strings = (
+        '1'
+        '2')
+    end
   end
   object pnConteo: TPanel
     Left = 1200
@@ -6972,8 +6988,8 @@ object frmParametros: TfrmParametros
     end
   end
   object pnFactura: TPanel
-    Left = 100
-    Top = 10
+    Left = 1500
+    Top = 58
     Width = 417
     Height = 389
     TabOrder = 24
@@ -7453,7 +7469,7 @@ object frmParametros: TfrmParametros
       Caption = 'Colocar cantidad primero, para facturar'
       DataField = 'par_cantidad_primero'
       DataSource = dsParametros
-      TabOrder = 20
+      TabOrder = 27
       ValueChecked = 'True'
       ValueUnchecked = 'False'
     end
@@ -8163,8 +8179,8 @@ object frmParametros: TfrmParametros
     end
   end
   object pnFormatosImp: TPanel
-    Left = 100
-    Top = -50
+    Left = 1500
+    Top = 6
     Width = 417
     Height = 380
     TabOrder = 28
@@ -9597,7 +9613,7 @@ object frmParametros: TfrmParametros
     end
   end
   object pntickets: TPanel
-    Left = 100
+    Left = 1500
     Top = 160
     Width = 417
     Height = 385
@@ -10304,7 +10320,7 @@ object frmParametros: TfrmParametros
     end
   end
   object pnGenerales: TPanel
-    Left = 548
+    Left = 1500
     Top = 148
     Width = 417
     Height = 385
@@ -10970,7 +10986,7 @@ object frmParametros: TfrmParametros
     end
   end
   object pnFE: TPanel
-    Left = 500
+    Left = 1500
     Top = 150
     Width = 480
     Height = 385
@@ -12481,6 +12497,9 @@ object frmParametros: TfrmParametros
     end
     object QParametrospar_usa_huella_supervisor: TBooleanField
       FieldName = 'par_usa_huella_supervisor'
+    end
+    object QParametrosPAR_Buscar_CODIGOCLIENTE: TIntegerField
+      FieldName = 'PAR_Buscar_CODIGOCLIENTE'
     end
   end
   object dsParametros: TDataSource
