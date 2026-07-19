@@ -492,6 +492,7 @@ type
     FacturacionElectronica1: TMenuItem;
     btnSoporte: TSpeedButton;
     qRepBalanceFact: TADOQuery;
+    PorPlaca1: TMenuItem;
 
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -929,6 +930,7 @@ type
     procedure CierredeldaCardnet1Click(Sender: TObject);
     procedure FacturacionElectronica1Click(Sender: TObject);
     procedure btnSoporteClick(Sender: TObject);
+    procedure PorPlaca1Click(Sender: TObject);
   private
     { Private declarations }
     FClientInstance : TFarProc;
@@ -1028,7 +1030,7 @@ uses PVENTA03, PVENTA02, PVENTA04, PVENTA05, PVENTA06, PVENTA08, PVENTA07,
   SERV05, PVENTA230, PTIKET001, DateUtils, PTIKET002, PTIKET003, PRENTA02,
   PVENTAREPVENC, USerial, PVenta233, RVENTA129, PVenta235, PVENTA236,
   PVENTA237, PVenta241, PVENTA242, PVENTA244, StdConvs, SIGMA09, CONT93,
-  PVENTA245, prueba, RVENTA137;
+  PVENTA245, prueba, RVENTA137, PVENTA254;
 
 {$R *.DFM}
 
@@ -6799,6 +6801,11 @@ begin
     on E: Exception do
       ShowMessage('Error: ' + E.Message);
   end;
+end;
+
+procedure TfrmMain.PorPlaca1Click(Sender: TObject);
+begin
+activaforma(tfrmConsFacturasProdPlaca, tform(frmConsFacturasProdPlaca));  
 end;
 
 end.

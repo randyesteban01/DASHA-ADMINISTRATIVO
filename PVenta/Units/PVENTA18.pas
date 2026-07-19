@@ -973,6 +973,13 @@ type
     btBuscaVendPorc: TBitBtn;
     QParametrospar_comision_vend: TBooleanField;
     QParametrosPAR_Buscar_CODIGOCLIENTE: TIntegerField;
+    QPedidosPED_IDCamion: TIntegerField;
+    QPedidosPED_Placa: TStringField;
+    QPedidosPED_Metraje: TFloatField;
+    QPedidosPED_Compania: TStringField;
+    QPedidosPED_Marca: TStringField;
+    QPedidosPED_Modelo: TStringField;
+    QPedidosPED_Chofer: TStringField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -3111,8 +3118,14 @@ begin
   if (dm.QParametrospar_fac_preimpresa.Value = 'False') or (dm.QParametrospar_formato_preimpreso.Value <> 'QClinico') then
     TabSheet4.Destroy;
 
-  if (dm.QParametrospar_fac_preimpresa.Value = 'False') or (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') then
+    if (dm.QParametrospar_fac_preimpresa.Value = 'False') and (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') then
     TabSheet3.Destroy;
+
+ if (dm.QParametrospar_fac_preimpresa.Value = 'False') and (dm.QParametrospar_formato_preimpreso.Value <> 'AutoServicios') then
+    TabSheet3.Destroy;
+
+ PageControl1.ActivePage := TabSheet1;
+
 
   if dm.QUsuariosusu_factura_cuentas.Value <> 'True' then
     TabSheet2.Destroy;
@@ -8479,7 +8492,7 @@ end;
 
          if (dm.QParametrospar_fac_preimpresa.Value = 'True') then
        begin
-            if (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') then
+            if (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') or (dm.QParametrospar_formato_preimpreso.Value <> 'AutoServicios') then
             begin
                       application.CreateForm(tRFacturaPreImpresa, RFacturaPreImpresa);
                       RFacturaPreImpresa.QFactura.Parameters.ParamByName('emp').Value    := DM.vp_cia;
@@ -9162,6 +9175,30 @@ if DM.QParametrospar_formato_preimpreso.Value <> 'Cepinta' then begin
   frmPedidosFactura.ShowModal;
   if MessageDlg('Introducir pedidos en la factura?',mtConfirmation,[mbyes,mbno],0) = mryes then
   begin
+     QPedidos.First;
+    //Agregando el vehiculos en Auto Servicios
+    if (dm.QParametrospar_fac_preimpresa.Value = 'True') and (dm.QParametrospar_formato_preimpreso.Value = 'AutoServicios') then
+    begin
+      Query1.close;
+      Query1.sql.clear;
+      Query1.sql.add('select PED_IDCamion, PED_Placa, PED_Metraje, PED_Compania,');
+      Query1.sql.add('PED_Marca, PED_Modelo, PED_Chofer');
+      Query1.sql.add('from PEDIDOS');
+      Query1.sql.add('where emp_codigo = :emp');
+      Query1.sql.add('and ped_tipo = '+#39+'C'+#39);
+      Query1.sql.add('and ped_numero = :num');
+      Query1.sql.add('and suc_codigo = :suc');
+      Query1.Parameters.parambyname('emp').Value    := dm.QEmpresasEMP_CODIGO.value;
+      Query1.Parameters.parambyname('num').Value := QPedidosped_numero.Value;
+      Query1.Parameters.parambyname('suc').Value    := QFacturaSUC_CODIGO.Value;
+      Query1.open;
+      if Query1.RecordCount > 0 then begin
+      QFacturaPlaca.Value := Query1.fieldbyname('PED_Placa').Value;
+      Query1.Close;
+      end;
+    end;
+
+
     //eliminando detalles de la factura
     QDetalle.close;
     QDetalle.open;
@@ -9174,7 +9211,7 @@ if DM.QParametrospar_formato_preimpreso.Value <> 'Cepinta' then begin
 
     //Insertando productos de los pedidos
 
-    QPedidos.First;
+
     while not QPedidos.Eof do
     begin
       Query1.close;
@@ -9621,6 +9658,7 @@ else
     QFacturaFAC_ITBIS.Value     := qOrdenesTallerped_itbis.Value;
     QFacturaFAC_DESCUENTO.Value := qOrdenesTallerdescuento.Value;
     QFacturaFAC_TOTAL.Value     := qOrdenesTallerped_total.Value;
+
 
     Buscando := False;
     PageControl1.ActivePageIndex := 0;
@@ -16632,7 +16670,7 @@ if vEnvioEstadoCta = True then GenerarEstadoCxC;
 vl_adjunto1 := '.\Factura_No_'+vl_factnum+'.PDF';
 
 if (dm.QParametrospar_fac_preimpresa.Value = 'True') then begin
-if (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') then
+if (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') or (dm.QParametrospar_formato_preimpreso.Value <> 'AutoServicios') then
 begin
 application.CreateForm(tRFacturaPreImpresa, RFacturaPreImpresa);
 RFacturaPreImpresa.QFactura.Parameters.ParamByName('emp').Value    := DM.vp_cia;

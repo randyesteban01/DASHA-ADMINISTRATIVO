@@ -1,6 +1,6 @@
 object frmFactura: TfrmFactura
-  Left = 334
-  Top = 176
+  Left = 290
+  Top = 210
   ActiveControl = edTipo
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -2264,7 +2264,7 @@ object frmFactura: TfrmFactura
         Left = 0
         Top = 0
         Width = 30
-        Height = 85
+        Height = 140
         Align = alLeft
         BevelInner = bvRaised
         BevelOuter = bvLowered
@@ -2319,8 +2319,8 @@ object frmFactura: TfrmFactura
       object gridclinico: TDBGrid
         Left = 30
         Top = 0
-        Width = 845
-        Height = 85
+        Width = 851
+        Height = 140
         Align = alClient
         Ctl3D = False
         DataSource = dsClinico
@@ -2408,8 +2408,8 @@ object frmFactura: TfrmFactura
       end
       object Panel6: TPanel
         Left = 0
-        Top = 85
-        Width = 875
+        Top = 140
+        Width = 881
         Height = 25
         Align = alBottom
         TabOrder = 2
@@ -4731,7 +4731,9 @@ object frmFactura: TfrmFactura
       
         'ped_tipo, ped_numero, ped_fecha, ped_nombre, ped_total, ped_itbi' +
         's,'
-      'mon_codigo, ped_tasa'
+      
+        'mon_codigo, ped_tasa,  PED_IDCamion, PED_Placa, PED_Metraje, PED' +
+        '_Compania, PED_Marca, PED_Modelo, PED_Chofer'
       'from'
       'FacPedidos'
       'where'
@@ -4791,6 +4793,31 @@ object frmFactura: TfrmFactura
       FieldName = 'ped_tasa'
       Precision = 15
       Size = 2
+    end
+    object QPedidosPED_IDCamion: TIntegerField
+      FieldName = 'PED_IDCamion'
+    end
+    object QPedidosPED_Placa: TStringField
+      FieldName = 'PED_Placa'
+    end
+    object QPedidosPED_Metraje: TFloatField
+      FieldName = 'PED_Metraje'
+    end
+    object QPedidosPED_Compania: TStringField
+      FieldName = 'PED_Compania'
+      Size = 100
+    end
+    object QPedidosPED_Marca: TStringField
+      FieldName = 'PED_Marca'
+      Size = 50
+    end
+    object QPedidosPED_Modelo: TStringField
+      FieldName = 'PED_Modelo'
+      Size = 50
+    end
+    object QPedidosPED_Chofer: TStringField
+      FieldName = 'PED_Chofer'
+      Size = 50
     end
   end
   object dsPedidos: TDataSource

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, Buttons, Mask, DBCtrls, Grids, DBGrids, Db,
   IBCustomDataSet, IBQuery, IBUpdateSQL, Variants, ADODB,
-  QuerySearchDlgADO, Menus, frxClass, frxDBSet;
+  QuerySearchDlgADO, Menus, frxClass, frxDBSet, ComCtrls;
 
 type
   TfrmPedidosCli = class(TForm)
@@ -40,7 +40,6 @@ type
     btCondi: TSpeedButton;
     tCondicion: TEdit;
     Panel5: TPanel;
-    Grid: TDBGrid;
     btBuscaPedido: TBitBtn;
     btGrabar: TBitBtn;
     btLimpiar: TBitBtn;
@@ -157,8 +156,6 @@ type
     Pantalladeproductos1: TMenuItem;
     Ajustedeinventario1: TMenuItem;
     SpeedButton2: TSpeedButton;
-    DBGrid_1: TDBGrid;
-    edt1: TEdit;
     QSelectIncrem1: TADOQuery;
     DS_1: TDataSource;
     QMsnExistencia: TADOQuery;
@@ -366,6 +363,23 @@ type
     lbVendedor: TLabel;
     qBuscVend: TADOQuery;
     QParametrosPAR_Buscar_CODIGOCLIENTE: TIntegerField;
+    PageControl1: TPageControl;
+    TabSheet1: TTabSheet;
+    Grid: TDBGrid;
+    DBGrid_1: TDBGrid;
+    edt1: TEdit;
+    TabSheet3: TTabSheet;
+    Label28: TLabel;
+    btcamion: TSpeedButton;
+    dbedtPED_Placa: TDBEdit;
+    memocamion: TMemo;
+    QPedidosPED_Placa: TStringField;
+    QPedidosPED_Chofer: TStringField;
+    QPedidosPED_Compania: TStringField;
+    QPedidosPED_Marca: TStringField;
+    QPedidosPED_Modelo: TStringField;
+    QPedidosPED_Metraje: TFloatField;
+    QPedidosPED_IDCamion: TIntegerField;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -426,6 +440,8 @@ type
     procedure dsDetalleDataChange(Sender: TObject; Field: TField);
     procedure QParametrosAfterOpen(DataSet: TDataSet);
     procedure btBuscaVendPorcClick(Sender: TObject);
+    procedure btcamionClick(Sender: TObject);
+    procedure QPedidosPED_PlacaChange(Sender: TField);
   private
     DesactivarCargaProductos :Boolean;
     vl_ped, vl_suc, vl_emp : Integer;
@@ -816,6 +832,14 @@ begin
     Grid.Columns[1].Width := Grid.Columns[1].Width + 20;
   end;   
   tPrecio.Text := cbPrecio.Text;
+
+   if (dm.QParametrospar_fac_preimpresa.Value = 'False') and (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') then
+    TabSheet3.Destroy;
+
+ if (dm.QParametrospar_fac_preimpresa.Value = 'False') and (dm.QParametrospar_formato_preimpreso.Value <> 'AutoServicios') then
+    TabSheet3.Destroy;
+
+  PageControl1.ActivePage := TabSheet1;  
 end;
 
 procedure TfrmPedidosCli.GridKeyDown(Sender: TObject; var Key: Word;
@@ -2321,6 +2345,55 @@ begin
     end;
 end;
 
+end;
+
+procedure TfrmPedidosCli.btcamionClick(Sender: TObject);
+begin
+  Search.Query.clear;
+  Search.AliasFields.Clear;
+  Search.AliasFields.Add('Placa');
+  Search.AliasFields.Add('Chofer');
+  Search.AliasFields.Add('Compania');
+  Search.AliasFields.Add('Marca');
+  Search.AliasFields.Add('Modelo');
+  Search.AliasFields.Add('Codigo');
+  Search.Query.add('select Placa, Chofer, Compania, Marca, Modelo, CamionID');
+  Search.Query.add('from Camiones');
+  Search.Title := 'Camiones';
+  Search.ResultField := 'Placa';
+  if Search.execute then
+  begin
+    QPedidosPED_Placa.value := Search.ValueField;
+    dbedtPED_Placa.setfocus;
+  end;
+end;
+
+procedure TfrmPedidosCli.QPedidosPED_PlacaChange(Sender: TField);
+begin
+if NOT QPedidosPED_Placa.IsNull then
+  begin
+    memocamion.Lines.clear;
+    dm.Query1.Close;
+    dm.Query1.SQL.Clear;
+    dm.Query1.SQL.Add('select CamionID, Marca, Modelo, Placa, Chofer, Metraje, Compania');
+    dm.Query1.SQL.Add('from camiones where placa = '+QuotedStr(QPedidosPED_Placa.AsString));
+    dm.Query1.Open;
+    if dm.Query1.RecordCount > 0 then
+    begin
+      memocamion.Lines.Add('Marca: '+dm.Query1.FieldByName('Marca').AsString);
+      memocamion.Lines.Add('Modelo: '+dm.Query1.FieldByName('Modelo').AsString);
+      memocamion.Lines.Add('Placa: '+dm.Query1.FieldByName('Placa').AsString);
+      memocamion.Lines.Add('Chofer: '+dm.Query1.FieldByName('Chofer').AsString);
+      memocamion.Lines.Add('Metraje: '+dm.Query1.FieldByName('Metraje').AsString);
+      memocamion.Lines.Add('Compania: '+dm.Query1.FieldByName('Compania').AsString);
+      QPedidosPED_Marca.Value    := dm.Query1.FieldByName('Marca').AsString;
+      QPedidosPED_Modelo.Value   := dm.Query1.FieldByName('Modelo').AsString;
+      QPedidosPED_IDCamion.Value := dm.Query1.FieldByName('CamionID').AsInteger;
+      QPedidosPED_Chofer.Value   := dm.Query1.FieldByName('Chofer').AsString;
+      QPedidosPED_Metraje.Value  := dm.Query1.FieldByName('Metraje').AsFloat;
+      QPedidosPED_Compania.Value := dm.Query1.FieldByName('Compania').AsString;
+    end;
+  end;
 end;
 
 end.

@@ -606,7 +606,7 @@ uses
   CONT92 in 'CTMContab\Units\CONT92.pas' {Frm_Balance_Bancos},
   CONT93 in 'CTMContab\Units\CONT93.pas' {frmDispBanco},
   RVENTA130 in 'PVenta\Reports\RVENTA130.pas' {RFacturaCaceresEquipos: TQuickRep},
-  EASendMailObjLib_TLB in '..\..\..\..\..\Program Files (x86)\Borland\Delphi7\Imports\EASendMailObjLib_TLB.pas',
+  EASendMailObjLib_TLB in '..\..\..\Program Files (x86)\Borland\Delphi7\Imports\EASendMailObjLib_TLB.pas',
   PVENTA245 in 'PVenta\Units\PVENTA245.pas' {frmCierreDiaCardnet},
   PVENTA246 in 'PVenta\Units\PVENTA246.pas' {FrmRecibosPagoDestino},
   RVENTA56 in 'PVenta\Reports\RVENTA56.pas' {RCuadre: TQuickRep},
@@ -621,7 +621,7 @@ uses
   PVENTA249 in 'PVenta\Units\PVENTA249.pas' {frmDigitarClave},
   PVENTA250 in 'PVenta\Units\PVENTA250.pas' {FormAnularBoleto},
   DelphiZXingQRCode in 'PVenta\Reports\DelphiZXingQRCode.pas',
-  FacturacionElectronicaDGII_TLB in '..\..\..\..\..\Program Files (x86)\Borland\Delphi7\Imports\FacturacionElectronicaDGII_TLB.pas',
+  FacturacionElectronicaDGII_TLB in '..\..\..\Program Files (x86)\Borland\Delphi7\Imports\FacturacionElectronicaDGII_TLB.pas',
   PVENTA251 in 'PVenta\Units\PVENTA251.pas',
   PVENTA252 in 'PVenta\Units\PVENTA252.pas' {frmeNCF},
   PROGRESO in 'PVenta\Units\PROGRESO.pas' {frmProgress},
@@ -629,7 +629,8 @@ uses
   RVENTA136 in 'PVenta\Reports\RVENTA136.pas' {RFacturaCorta: TQuickRep},
   RVENTA137 in 'PVenta\Reports\RVENTA137.pas' {RFacturaConstruccion: TQuickRep},
   PVENTA253 in 'PVenta\Units\PVENTA253.pas' {frmSelVendPorc},
-  uFrmPopupDGII in 'PVenta\Units\uFrmPopupDGII.pas' {FrmPopupDGII};
+  uFrmPopupDGII in 'PVenta\Units\uFrmPopupDGII.pas' {FrmPopupDGII},
+  PVENTA254 in 'PVenta\Units\PVENTA254.pas' {frmConsFacturasProdPlaca};
 
 {$R *.res}
 

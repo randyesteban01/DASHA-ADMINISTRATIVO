@@ -1,12 +1,12 @@
 object frmConsFacturasProd: TfrmConsFacturasProd
-  Left = 337
-  Top = 227
+  Left = 492
+  Top = 244
   ActiveControl = edProd
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Consulta de ventas por producto'
-  ClientHeight = 448
-  ClientWidth = 748
+  ClientHeight = 417
+  ClientWidth = 694
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -25,35 +25,35 @@ object frmConsFacturasProd: TfrmConsFacturasProd
   OnKeyPress = FormKeyPress
   OnPaint = FormPaint
   PixelsPerInch = 96
-  TextHeight = 14
+  TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 748
-    Height = 139
+    Width = 694
+    Height = 137
     Align = alTop
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 0
     object Label6: TLabel
-      Left = 9
-      Top = 9
+      Left = 8
+      Top = 8
       Width = 30
-      Height = 14
+      Height = 13
       Caption = 'Fecha'
     end
     object Label1: TLabel
-      Left = 9
-      Top = 60
+      Left = 8
+      Top = 56
       Width = 43
-      Height = 14
+      Height = 13
       Caption = 'Producto'
     end
     object SpeedButton1: TSpeedButton
-      Left = 136
-      Top = 60
-      Width = 24
-      Height = 24
+      Left = 126
+      Top = 56
+      Width = 23
+      Height = 22
       Flat = True
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -70,24 +70,24 @@ object frmConsFacturasProd: TfrmConsFacturasProd
       OnClick = SpeedButton1Click
     end
     object Label8: TLabel
-      Left = 9
-      Top = 34
-      Width = 43
-      Height = 14
+      Left = 8
+      Top = 32
+      Width = 41
+      Height = 13
       Caption = 'Sucursal'
     end
     object Label4: TLabel
-      Left = 9
-      Top = 86
+      Left = 8
+      Top = 80
       Width = 44
-      Height = 14
+      Height = 13
       Caption = 'Provincia'
     end
     object SpeedButton2: TSpeedButton
-      Left = 136
-      Top = 86
-      Width = 24
-      Height = 24
+      Left = 126
+      Top = 80
+      Width = 23
+      Height = 22
       Flat = True
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -104,17 +104,17 @@ object frmConsFacturasProd: TfrmConsFacturasProd
       OnClick = SpeedButton2Click
     end
     object Label12: TLabel
-      Left = 9
-      Top = 112
-      Width = 47
-      Height = 14
+      Left = 8
+      Top = 106
+      Width = 46
+      Height = 13
       Caption = 'Vendedor'
     end
     object btVendedor: TSpeedButton
-      Left = 136
-      Top = 112
-      Width = 24
-      Height = 24
+      Left = 126
+      Top = 104
+      Width = 23
+      Height = 22
       Flat = True
       Glyph.Data = {
         42010000424D4201000000000000760000002800000011000000110000000100
@@ -131,45 +131,45 @@ object frmConsFacturasProd: TfrmConsFacturasProd
       OnClick = btVendedorClick
     end
     object Fecha1: TDateTimePicker
-      Left = 69
-      Top = 9
-      Width = 85
-      Height = 22
+      Left = 64
+      Top = 8
+      Width = 79
+      Height = 21
       Date = 37506.000000000000000000
       Time = 37506.000000000000000000
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 0
     end
     object Fecha2: TDateTimePicker
-      Left = 155
-      Top = 9
-      Width = 85
-      Height = 22
+      Left = 144
+      Top = 8
+      Width = 79
+      Height = 21
       Date = 37506.000000000000000000
       Time = 37506.000000000000000000
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
       TabOrder = 1
     end
     object edProd: TEdit
-      Left = 69
-      Top = 60
-      Width = 61
-      Height = 23
+      Left = 64
+      Top = 56
+      Width = 57
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
@@ -177,27 +177,27 @@ object frmConsFacturasProd: TfrmConsFacturasProd
       OnKeyDown = edProdKeyDown
     end
     object tProd: TEdit
-      Left = 164
-      Top = 60
-      Width = 578
-      Height = 23
+      Left = 152
+      Top = 56
+      Width = 537
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 6
     end
     object cbGrupo: TRadioGroup
-      Left = 304
+      Left = 282
       Top = 1
-      Width = 197
-      Height = 33
+      Width = 183
+      Height = 31
       Caption = 'Grupo'
       Columns = 3
       ItemIndex = 0
@@ -210,14 +210,14 @@ object frmConsFacturasProd: TfrmConsFacturasProd
       OnClick = btRefreshClick
     end
     object DBLookupComboBox2: TDBLookupComboBox
-      Left = 69
-      Top = 34
-      Width = 371
-      Height = 22
+      Left = 64
+      Top = 32
+      Width = 345
+      Height = 21
       DropDownRows = 20
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       KeyField = 'suc_codigo'
@@ -227,23 +227,23 @@ object frmConsFacturasProd: TfrmConsFacturasProd
       TabOrder = 2
     end
     object ckSuc: TCheckBox
-      Left = 447
-      Top = 34
-      Width = 19
-      Height = 19
+      Left = 415
+      Top = 32
+      Width = 18
+      Height = 17
       TabOrder = 8
       OnClick = ckSucClick
     end
     object edProv: TEdit
-      Left = 69
-      Top = 86
-      Width = 61
-      Height = 23
+      Left = 64
+      Top = 80
+      Width = 57
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
@@ -252,50 +252,50 @@ object frmConsFacturasProd: TfrmConsFacturasProd
       OnKeyDown = edProvKeyDown
     end
     object tProvincia: TEdit
-      Left = 164
-      Top = 86
-      Width = 578
-      Height = 23
+      Left = 152
+      Top = 80
+      Width = 537
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 9
     end
     object tVendedor: TEdit
-      Left = 164
-      Top = 112
-      Width = 578
-      Height = 23
+      Left = 152
+      Top = 104
+      Width = 537
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       Color = clInfoBk
       Enabled = False
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 10
     end
     object edVendedor: TEdit
-      Left = 69
-      Top = 112
-      Width = 61
-      Height = 23
+      Left = 64
+      Top = 104
+      Width = 57
+      Height = 21
       BevelKind = bkFlat
       BorderStyle = bsNone
       CharCase = ecUpperCase
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
@@ -306,34 +306,34 @@ object frmConsFacturasProd: TfrmConsFacturasProd
   end
   object Panel2: TPanel
     Left = 0
-    Top = 405
-    Width = 748
-    Height = 43
+    Top = 377
+    Width = 694
+    Height = 40
     Align = alBottom
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 1
     DesignSize = (
-      748
-      43)
+      694
+      40)
     object lbCantidad: TLabel
-      Left = 9
-      Top = 14
-      Width = 60
-      Height = 15
+      Left = 8
+      Top = 13
+      Width = 61
+      Height = 13
       Caption = '0 Facturas'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object BitBtn2: TBitBtn
-      Left = 569
-      Top = 9
-      Width = 80
-      Height = 27
+      Left = 527
+      Top = 8
+      Width = 75
+      Height = 25
       Anchors = [akTop, akRight]
       Caption = 'Imprimir'
       TabOrder = 0
@@ -349,20 +349,20 @@ object frmConsFacturasProd: TfrmConsFacturasProd
         03333333333333333333}
     end
     object btRefresh: TBitBtn
-      Left = 482
-      Top = 9
-      Width = 81
-      Height = 27
+      Left = 447
+      Top = 8
+      Width = 75
+      Height = 25
       Anchors = [akTop, akRight]
       Caption = 'Refrescar >>'
       TabOrder = 1
       OnClick = btRefreshClick
     end
     object btClose: TBitBtn
-      Left = 655
-      Top = 9
-      Width = 81
-      Height = 27
+      Left = 607
+      Top = 8
+      Width = 75
+      Height = 25
       Anchors = [akTop, akRight]
       Caption = '&Salir'
       TabOrder = 2
@@ -384,10 +384,10 @@ object frmConsFacturasProd: TfrmConsFacturasProd
     end
   end
   object Memo1: TMemo
-    Left = 26
-    Top = 181
-    Width = 544
-    Height = 70
+    Left = 24
+    Top = 168
+    Width = 505
+    Height = 65
     Lines.Strings = (
       'Memo1')
     TabOrder = 2
@@ -395,10 +395,10 @@ object frmConsFacturasProd: TfrmConsFacturasProd
   end
   object PageControl1: TPageControl
     Left = 0
-    Top = 139
-    Width = 748
-    Height = 266
-    ActivePage = TabSheet1
+    Top = 137
+    Width = 694
+    Height = 240
+    ActivePage = TabSheet2
     Align = alClient
     TabOrder = 3
     object TabSheet1: TTabSheet
@@ -406,15 +406,15 @@ object frmConsFacturasProd: TfrmConsFacturasProd
       object Grid: TDBGrid
         Left = 0
         Top = 0
-        Width = 740
-        Height = 237
+        Width = 686
+        Height = 212
         Align = alClient
         Color = clInfoBk
         Ctl3D = False
         DataSource = dsFacturas
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         Options = [dgTitles, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
@@ -538,13 +538,13 @@ object frmConsFacturasProd: TfrmConsFacturasProd
       Caption = 'Tickets de caja'
       ImageIndex = 1
       DesignSize = (
-        740
-        237)
+        686
+        212)
       object DBGrid3: TDBGrid
         Left = 0
         Top = 0
-        Width = 740
-        Height = 208
+        Width = 686
+        Height = 186
         Align = alTop
         Anchors = [akLeft, akTop, akRight, akBottom]
         Color = clInfoBk
@@ -552,7 +552,7 @@ object frmConsFacturasProd: TfrmConsFacturasProd
         DataSource = dsTickets
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         Options = [dgTitles, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
@@ -638,10 +638,10 @@ object frmConsFacturasProd: TfrmConsFacturasProd
           end>
       end
       object lbtotal: TStaticText
-        Left = 396
-        Top = 215
-        Width = 106
-        Height = 22
+        Left = 368
+        Top = 193
+        Width = 98
+        Height = 20
         Alignment = taRightJustify
         Anchors = [akLeft, akBottom]
         AutoSize = False
@@ -649,17 +649,17 @@ object frmConsFacturasProd: TfrmConsFacturasProd
         Caption = '0.00'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Trebuchet MS'
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 1
       end
       object lbcant: TStaticText
-        Left = 353
-        Top = 214
-        Width = 37
-        Height = 22
+        Left = 328
+        Top = 192
+        Width = 34
+        Height = 20
         Alignment = taRightJustify
         Anchors = [akLeft, akBottom]
         AutoSize = False
@@ -667,7 +667,7 @@ object frmConsFacturasProd: TfrmConsFacturasProd
         Caption = '0'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
-        Font.Height = -12
+        Font.Height = -11
         Font.Name = 'Trebuchet MS'
         Font.Style = [fsBold]
         ParentFont = False

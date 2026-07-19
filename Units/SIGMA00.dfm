@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 306
-  Top = 224
+  Left = 201
+  Top = 210
   Width = 1297
   Height = 620
   HelpContext = 1
@@ -6838,6 +6838,10 @@ object frmMain: TfrmMain
         object Pormarca3: TMenuItem
           Caption = 'Por marca'
           OnClick = Pormarca3Click
+        end
+        object PorPlaca1: TMenuItem
+          Caption = 'Por Placa'
+          OnClick = PorPlaca1Click
         end
         object PorProducto1: TMenuItem
           Caption = 'Por producto'

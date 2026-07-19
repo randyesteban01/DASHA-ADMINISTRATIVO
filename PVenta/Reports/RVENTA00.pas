@@ -35,14 +35,6 @@ type
     QRDBText17: TQRDBText;
     QRDBText18: TQRDBText;
     QRExpr1: TQRExpr;
-    QRShape1: TQRShape;
-    QRShape2: TQRShape;
-    QRShape3: TQRShape;
-    QRShape4: TQRShape;
-    QRShape5: TQRShape;
-    QRShape6: TQRShape;
-    QRShape7: TQRShape;
-    QRShape8: TQRShape;
     QRLabel22: TQRLabel;
     QRShape9: TQRShape;
     QRLabel23: TQRLabel;
@@ -83,7 +75,6 @@ type
     QPedidoPED_TOTAL: TFloatField;
     QPedidoPED_NOMBRE: TIBStringField;
     QPedidoPED_LOCALIDAD: TIBStringField;
-    QRDBRichText1: TQRDBRichText;
     QPedidoPED_NOTA: TMemoField;
     dsPedido: TDataSource;
     QDetalle: TADOQuery;
@@ -155,6 +146,14 @@ type
     StringField12: TStringField;
     BlobField1: TBlobField;
     dsSucursal: TDataSource;
+    QPedidoPED_IDCamion: TIntegerField;
+    QPedidoPED_Placa: TStringField;
+    QPedidoPED_Metraje: TFloatField;
+    QPedidoPED_Compania: TStringField;
+    QPedidoPED_Marca: TStringField;
+    QPedidoPED_Modelo: TStringField;
+    QPedidoPED_Chofer: TStringField;
+    QRMemo1: TQRMemo;
     procedure QDetalleCalcFields(DataSet: TDataSet);
     procedure QuickRepBeforePrint(Sender: TCustomQuickRep;
       var PrintReport: Boolean);
@@ -325,6 +324,29 @@ end;
 procedure TRPedido.QPedidoAfterOpen(DataSet: TDataSet);
 begin
 qSucursal.Open;
+if (dm.QParametrospar_fac_preimpresa.Value = 'True') and (dm.QParametrospar_formato_preimpreso.Value = 'AutoServicios') then
+    begin
+    QRMemo1.Lines.Clear;
+    if not QPedidoPED_IDCamion.IsNull then
+    QRMemo1.Lines.Add('Codigo: '+QPedidoPED_IDCamion.Text);
+    if not QPedidoPED_Placa.IsNull then
+    QRMemo1.Lines.Add('Placa: '+QPedidoPED_Placa.Text);
+    if not QPedidoPED_Marca.IsNull then
+    QRMemo1.Lines.Add('Marca: '+QPedidoPED_Marca.Text);
+    if not QPedidoPED_Modelo.IsNull then
+    QRMemo1.Lines.Add('Modelo: '+QPedidoPED_Modelo.Text);
+    if not QPedidoPED_Metraje.IsNull then
+    QRMemo1.Lines.Add('Año: '+FormatFloat('#,0',QPedidoPED_Metraje.Value));
+    if not QPedidoPED_Chofer.IsNull then
+    QRMemo1.Lines.Add('Conducto: '+QPedidoPED_Chofer.Text);
+    if not QPedidoPED_Compania.IsNull then
+    QRMemo1.Lines.Add('Compañía: '+QPedidoPED_Compania.Text);
+    end
+    else
+    if not QPedidoPED_NOTA.IsNull then
+    QRMemo1.Lines.Text := QPedidoPED_NOTA.Value;
+
 end;
+
 
 end.

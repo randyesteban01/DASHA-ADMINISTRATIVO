@@ -1,6 +1,6 @@
 object frmParametros: TfrmParametros
-  Left = 326
-  Top = 95
+  Left = 360
+  Top = 200
   ActiveControl = tvOpciones
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -526,7 +526,7 @@ object frmParametros: TfrmParametros
     end
   end
   object pnPrecios: TPanel
-    Left = 732
+    Left = 1500
     Top = 73
     Width = 417
     Height = 386
@@ -2706,7 +2706,7 @@ object frmParametros: TfrmParametros
     end
   end
   object pnFormatosImpOrig: TPanel
-    Left = 1500
+    Left = 300
     Top = 16
     Width = 437
     Height = 386
@@ -2837,25 +2837,7 @@ object frmParametros: TfrmParametros
       DataField = 'par_formato_preimpreso'
       DataSource = dsParametros
       ItemHeight = 13
-      Items.Strings = (
-        'QRBelkis'
-        'QRSoloAutos'
-        'QRImpresosDuran'
-        'QRMSConsulting'
-        'QRBB'
-        'QRThorton'
-        'QRAgregados'
-        'Grabado_Exento'
-        'QClinico'
-        'QRMadeco'
-        'QRMateirosa'
-        'Norma 201806 Normal'
-        'Norma 201806 Tickets'
-        'Sarita & Asociados'
-        'Hotel'
-        'SteelTec'
-        'Cepinta'
-        'Caceres&Equipos')
+      Sorted = True
       TabOrder = 3
     end
     object DBCheckBox34: TDBCheckBox
@@ -6216,7 +6198,7 @@ object frmParametros: TfrmParametros
     end
   end
   object pnClientes: TPanel
-    Left = 216
+    Left = 1500
     Top = 8
     Width = 417
     Height = 409
@@ -8179,7 +8161,7 @@ object frmParametros: TfrmParametros
     end
   end
   object pnFormatosImp: TPanel
-    Left = 1500
+    Left = 0
     Top = 6
     Width = 417
     Height = 380
@@ -8382,27 +8364,29 @@ object frmParametros: TfrmParametros
             DataSource = dsParametros
             ItemHeight = 13
             Items.Strings = (
+              'AutoServicios'
+              'Caceres&Equipos'
+              'Cepinta'
               'Construccion'
-              'QRBelkis'
-              'QRSoloAutos'
-              'QRImpresosDuran'
-              'QRMSConsulting'
-              'QRBB'
-              'QRThorton'
-              'QRAgregados'
+              'Emtraba'
+              'FUNDGRUBEL'
               'Grabado_Exento'
-              'QClinico'
-              'QRMadeco'
-              'QRMateirosa'
+              'Hotel'
               'Norma 201806 Normal'
               'Norma 201806 Tickets'
+              'QClinico'
+              'QRAgregados'
+              'QRBB'
+              'QRBelkis'
+              'QRImpresosDuran'
+              'QRMadeco'
+              'QRMateirosa'
+              'QRMSConsulting'
+              'QRSoloAutos'
+              'QRThorton'
               'Sarita & Asociados'
-              'Hotel'
-              'SteelTec'
-              'Cepinta'
-              'Caceres&Equipos'
-              'Emtraba'
-              'FUNDGRUBEL')
+              'SteelTec')
+            Sorted = True
             TabOrder = 10
           end
           object DBRadioGroup31: TDBRadioGroup

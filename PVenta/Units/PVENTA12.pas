@@ -577,6 +577,7 @@ type
     QUsuariosusu_suc_default: TIntegerField;
     QUsuariosusu_reenvia_dgii: TBooleanField;
     DBCheckBox16: TDBCheckBox;
+    PorPlaca1: TMenuItem;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btCloseClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;

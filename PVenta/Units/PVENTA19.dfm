@@ -1,11 +1,11 @@
 object frmPedidosCli: TfrmPedidosCli
-  Left = 378
-  Top = 229
+  Left = 728
+  Top = 143
   ActiveControl = DBEdit5
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Pedidos de Clientes'
-  ClientHeight = 492
+  ClientHeight = 647
   ClientWidth = 695
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -699,7 +699,7 @@ object frmPedidosCli: TfrmPedidosCli
   end
   object Panel5: TPanel
     Left = 0
-    Top = 404
+    Top = 559
     Width = 695
     Height = 88
     Align = alBottom
@@ -711,7 +711,7 @@ object frmPedidosCli: TfrmPedidosCli
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    TabOrder = 3
+    TabOrder = 2
     object btBuscaProd: TSpeedButton
       Left = 264
       Top = 31
@@ -748,7 +748,7 @@ object frmPedidosCli: TfrmPedidosCli
       Left = 264
       Top = 58
       Width = 89
-      Height = 25
+      Height = 27
       Caption = '[ F12 ] - Escalas'
       OnClick = btEscalasClick
     end
@@ -965,161 +965,229 @@ object frmPedidosCli: TfrmPedidosCli
       OnClick = btBuscaVendPorcClick
     end
   end
-  object Grid: TDBGrid
+  object PageControl1: TPageControl
     Left = 0
     Top = 201
     Width = 695
-    Height = 203
+    Height = 358
+    ActivePage = TabSheet1
     Align = alClient
-    Ctl3D = False
-    DataSource = dsDetalle
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgCancelOnExit]
-    ParentCtl3D = False
-    ParentFont = False
-    PopupMenu = PopupMenu1
-    TabOrder = 2
-    TitleFont.Charset = ANSI_CHARSET
-    TitleFont.Color = clWindowText
-    TitleFont.Height = -11
-    TitleFont.Name = 'Tahoma'
-    TitleFont.Style = []
-    OnColEnter = GridColEnter
-    OnEnter = GridEnter
-    OnKeyDown = GridKeyDown
-    OnKeyPress = GridKeyPress
-    Columns = <
-      item
-        Expanded = False
-        FieldName = 'PRO_CODIGO'
-        Title.Alignment = taCenter
-        Title.Caption = 'C'#243'digo'
-        Width = 70
-        Visible = True
+    Style = tsFlatButtons
+    TabOrder = 3
+    TabStop = False
+    object TabSheet1: TTabSheet
+      Caption = 'Productos de la factura'
+      object Grid: TDBGrid
+        Left = 0
+        Top = 0
+        Width = 687
+        Height = 242
+        Align = alClient
+        Ctl3D = False
+        DataSource = dsDetalle
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgCancelOnExit]
+        ParentCtl3D = False
+        ParentFont = False
+        PopupMenu = PopupMenu1
+        TabOrder = 0
+        TitleFont.Charset = ANSI_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'Tahoma'
+        TitleFont.Style = []
+        OnColEnter = GridColEnter
+        OnEnter = GridEnter
+        OnKeyDown = GridKeyDown
+        OnKeyPress = GridKeyPress
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'PRO_CODIGO'
+            Title.Alignment = taCenter
+            Title.Caption = 'C'#243'digo'
+            Width = 70
+            Visible = True
+          end
+          item
+            Color = clInfoBk
+            Expanded = False
+            FieldName = 'DET_DESCRIPCION'
+            Title.Caption = 'Descripci'#243'n del Producto'
+            Width = 281
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'DET_CANTIDAD'
+            Title.Alignment = taCenter
+            Title.Caption = 'Cantidad'
+            Width = 45
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Color = clInfoBk
+            Expanded = False
+            FieldName = 'DET_ESCALA'
+            ReadOnly = True
+            Title.Alignment = taCenter
+            Title.Caption = 'Escala'
+            Width = 64
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'DET_MEDIDA'
+            Title.Alignment = taCenter
+            Title.Caption = 'Medida'
+            Width = 64
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'DET_PRECIO'
+            Title.Alignment = taCenter
+            Title.Caption = 'Precio'
+            Width = 59
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'DET_DESCUENTO'
+            Title.Alignment = taCenter
+            Title.Caption = '%Desc'
+            Width = 35
+            Visible = True
+          end
+          item
+            Alignment = taCenter
+            Expanded = False
+            FieldName = 'DET_CONITBIS'
+            Title.Alignment = taCenter
+            Title.Caption = 'Itbis?'
+            Visible = True
+          end
+          item
+            Color = clInfoBk
+            Expanded = False
+            FieldName = 'Valor'
+            Title.Alignment = taCenter
+            Width = 71
+            Visible = True
+          end>
       end
-      item
-        Color = clInfoBk
-        Expanded = False
-        FieldName = 'DET_DESCRIPCION'
-        Title.Caption = 'Descripci'#243'n del Producto'
-        Width = 281
-        Visible = True
+      object DBGrid_1: TDBGrid
+        Left = 0
+        Top = 242
+        Width = 687
+        Height = 85
+        Align = alBottom
+        Options = [dgTitles, dgIndicator, dgColLines, dgRowLines, dgTabs]
+        TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'MS Sans Serif'
+        TitleFont.Style = []
+        Visible = False
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'CODIGO'
+            Title.Caption = 'Codigo'
+            Width = 80
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'NOMBRE'
+            Title.Caption = 'Nombre'
+            Width = 423
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'PRECIO'
+            Width = 100
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'EXIST'
+            Width = 37
+            Visible = True
+          end>
       end
-      item
-        Expanded = False
-        FieldName = 'DET_CANTIDAD'
-        Title.Alignment = taCenter
-        Title.Caption = 'Cantidad'
-        Width = 45
-        Visible = True
+      object edt1: TEdit
+        Left = 88
+        Top = 360
+        Width = 121
+        Height = 21
+        Enabled = False
+        TabOrder = 2
+        Visible = False
       end
-      item
-        Alignment = taCenter
-        Color = clInfoBk
-        Expanded = False
-        FieldName = 'DET_ESCALA'
+    end
+    object TabSheet3: TTabSheet
+      Caption = 'Datos del cami'#243'n'
+      ImageIndex = 2
+      object Label28: TLabel
+        Left = 8
+        Top = 8
+        Width = 27
+        Height = 13
+        Caption = 'Placa'
+        FocusControl = dbedtPED_Placa
+      end
+      object btcamion: TSpeedButton
+        Left = 155
+        Top = 8
+        Width = 23
+        Height = 22
+        Hint = 'Buscar Placa del Camion'
+        Flat = True
+        Glyph.Data = {
+          42010000424D4201000000000000760000002800000011000000110000000100
+          040000000000CC00000000000000000000001000000010000000000000000000
+          BF0000BF000000BFBF00BF000000BF00BF00BFBF0000C0C0C000808080000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777777
+          77777000000077777777777777777000000070000077777000007000000070B0
+          00777770F0007000000070F000777770B0007000000070000000700000007000
+          0000700B000000B0000070000000700F000700F0000070000000700B000700B0
+          0000700000007700000000000007700000007770B00070B00077700000007770
+          0000700000777000000077770007770007777000000077770B07770B07777000
+          0000777700077700077770000000777777777777777770000000777777777777
+          777770000000}
+        OnClick = btcamionClick
+      end
+      object dbedtPED_Placa: TDBEdit
+        Left = 56
+        Top = 8
+        Width = 97
+        Height = 21
+        BevelKind = bkFlat
+        BorderStyle = bsNone
+        DataField = 'PED_Placa'
+        DataSource = dsPedidos
+        TabOrder = 0
+      end
+      object memocamion: TMemo
+        Left = 56
+        Top = 32
+        Width = 628
+        Height = 113
+        BevelKind = bkFlat
+        BorderStyle = bsNone
         ReadOnly = True
-        Title.Alignment = taCenter
-        Title.Caption = 'Escala'
-        Visible = True
+        TabOrder = 1
       end
-      item
-        Alignment = taCenter
-        Expanded = False
-        FieldName = 'DET_MEDIDA'
-        Title.Alignment = taCenter
-        Title.Caption = 'Medida'
-        Visible = True
-      end
-      item
-        Expanded = False
-        FieldName = 'DET_PRECIO'
-        Title.Alignment = taCenter
-        Title.Caption = 'Precio'
-        Width = 59
-        Visible = True
-      end
-      item
-        Expanded = False
-        FieldName = 'DET_DESCUENTO'
-        Title.Alignment = taCenter
-        Title.Caption = '%Desc'
-        Width = 35
-        Visible = True
-      end
-      item
-        Alignment = taCenter
-        Expanded = False
-        FieldName = 'DET_CONITBIS'
-        Title.Alignment = taCenter
-        Title.Caption = 'Itbis?'
-        Visible = True
-      end
-      item
-        Color = clInfoBk
-        Expanded = False
-        FieldName = 'Valor'
-        Title.Alignment = taCenter
-        Width = 71
-        Visible = True
-      end>
-  end
-  object DBGrid_1: TDBGrid
-    Left = -10
-    Top = 320
-    Width = 737
-    Height = 85
-    DataSource = DS_1
-    Options = [dgTitles, dgIndicator, dgColLines, dgRowLines, dgTabs]
-    TabOrder = 4
-    TitleFont.Charset = DEFAULT_CHARSET
-    TitleFont.Color = clWindowText
-    TitleFont.Height = -11
-    TitleFont.Name = 'MS Sans Serif'
-    TitleFont.Style = []
-    Visible = False
-    OnDblClick = DBGrid_1DblClick
-    OnKeyPress = DBGrid_1KeyPress
-    Columns = <
-      item
-        Expanded = False
-        FieldName = 'CODIGO'
-        Title.Caption = 'Codigo'
-        Width = 80
-        Visible = True
-      end
-      item
-        Expanded = False
-        FieldName = 'NOMBRE'
-        Title.Caption = 'Nombre'
-        Width = 423
-        Visible = True
-      end
-      item
-        Expanded = False
-        FieldName = 'PRECIO'
-        Width = 100
-        Visible = True
-      end
-      item
-        Expanded = False
-        FieldName = 'EXIST'
-        Width = 37
-        Visible = True
-      end>
-  end
-  object edt1: TEdit
-    Left = 88
-    Top = 360
-    Width = 121
-    Height = 21
-    Enabled = False
-    TabOrder = 5
-    Visible = False
+    end
   end
   object QPedidos: TADOQuery
     Connection = DM.ADOSigma
@@ -1161,7 +1229,10 @@ object frmPedidosCli: TfrmPedidosCli
       'PED_ITBIS, PED_OTROS, PED_TOTAL, PED_STATUS, SUP_CODIGO, '
       'PED_NOMBRE, CLI_REFERENCIA, PED_NOTA, PED_COTIZACION, '
       'USU_CODIGO, PED_FECHAENTREGA, ORDEN_CLIENTE, SUC_CODIGO,'
-      'COT_NUMERO, ped_tasa, mon_codigo, PED_FICHA'
+      
+        'COT_NUMERO, ped_tasa, mon_codigo, PED_FICHA, PED_IDCamion, PED_P' +
+        'laca, PED_Metraje, PED_Compania, PED_Marca, PED_Modelo, PED_Chof' +
+        'er'
       'from PEDIDOS'
       'where emp_codigo = :emp_codigo'
       'and ped_tipo = '#39'C'#39
@@ -1292,6 +1363,32 @@ object frmPedidosCli: TfrmPedidosCli
     object QPedidosPED_FICHA: TStringField
       FieldName = 'PED_FICHA'
       Size = 10
+    end
+    object QPedidosPED_IDCamion: TIntegerField
+      FieldName = 'PED_IDCamion'
+    end
+    object QPedidosPED_Placa: TStringField
+      FieldName = 'PED_Placa'
+      OnChange = QPedidosPED_PlacaChange
+    end
+    object QPedidosPED_Chofer: TStringField
+      FieldName = 'PED_Chofer'
+      Size = 50
+    end
+    object QPedidosPED_Compania: TStringField
+      FieldName = 'PED_Compania'
+      Size = 100
+    end
+    object QPedidosPED_Marca: TStringField
+      FieldName = 'PED_Marca'
+      Size = 50
+    end
+    object QPedidosPED_Modelo: TStringField
+      FieldName = 'PED_Modelo'
+      Size = 50
+    end
+    object QPedidosPED_Metraje: TFloatField
+      FieldName = 'PED_Metraje'
     end
   end
   object dsPedidos: TDataSource

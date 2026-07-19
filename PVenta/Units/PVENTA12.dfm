@@ -2257,6 +2257,9 @@ object frmUsuarios: TfrmUsuarios
         object Pormarca3: TMenuItem
           Caption = 'Por marca'
         end
+        object PorPlaca1: TMenuItem
+          Caption = 'Por Placa'
+        end
         object PorProducto1: TMenuItem
           Caption = 'Por producto'
           Hint = 'Consulta de ventas por producto'
