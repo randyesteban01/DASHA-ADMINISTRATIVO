@@ -833,11 +833,12 @@ begin
   end;   
   tPrecio.Text := cbPrecio.Text;
 
-   if (dm.QParametrospar_fac_preimpresa.Value = 'False') and (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') then
-    TabSheet3.Destroy;
-
- if (dm.QParametrospar_fac_preimpresa.Value = 'False') and (dm.QParametrospar_formato_preimpreso.Value <> 'AutoServicios') then
-    TabSheet3.Destroy;
+    if (dm.QParametrospar_fac_preimpresa.Value = 'False') and
+   (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') and
+   (dm.QParametrospar_formato_preimpreso.Value <> 'AutoServicios') then
+   begin
+   FreeAndNil(TabSheet3);
+   end;
 
   PageControl1.ActivePage := TabSheet1;  
 end;

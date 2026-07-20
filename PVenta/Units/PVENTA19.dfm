@@ -1037,7 +1037,6 @@ object frmPedidosCli: TfrmPedidosCli
             ReadOnly = True
             Title.Alignment = taCenter
             Title.Caption = 'Escala'
-            Width = 64
             Visible = True
           end
           item
@@ -1046,7 +1045,6 @@ object frmPedidosCli: TfrmPedidosCli
             FieldName = 'DET_MEDIDA'
             Title.Alignment = taCenter
             Title.Caption = 'Medida'
-            Width = 64
             Visible = True
           end
           item
