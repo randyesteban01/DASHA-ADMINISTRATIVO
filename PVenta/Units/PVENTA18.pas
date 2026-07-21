@@ -5398,22 +5398,11 @@ var
   PrecioReal:Double;
 
 begin
-
-if ((Realizado<>true)) THEN
-BEGIN
-//DOLAR
-               if dm.QParametrospar_mostrarfacturadolares.Value = true then
-                BEGIN
-                  IF  QFacturaMON_CODIGO.value = 2 THEN
-                  BEGIN
-                    IF QFacturafac_tasacambio.Value>0 THEN
-                    BEGIN
-                       QDetalleDET_PRECIO.Value:=QDetalleDET_PRECIO.Value / QFacturafac_tasacambio.Value;
-                        //QDetalle.Post;
-                    END ;
-                  END;
-                END;
-END;
+  { No convertir DET_PRECIO aqui.
+    Los precios de catalogo/linea se guardan en pesos; el total en US
+    se calcula en pantalla (FAC_TOTAL / FAC_TASA). Convertir en BeforePost
+    (p.ej. al Totalizar con Realizado=False) altera lo guardado y deja
+    MON_CODIGO=dolares con montos inconsistentes. }
 QDetalleFAC_NUMERO.Value := QFacturaFAC_NUMERO.Value;
 
 if (DM.QParametrospar_itbisincluido.Value = 'False') and (QDetalleDET_CONITBIS.Value = 'S') then
@@ -6541,6 +6530,16 @@ begin
                                     QFacturafac_selectivo_ad.Value-
                                     vTotal_x_DescGral_sin_Itbis-
                                     TDesc;
+
+    if (QFacturaMON_CODIGO.Value = 2) and
+       (Assigned(QFacturafac_total_dolar)) and
+       (QFactura.State in [dsEdit, dsInsert]) then
+    begin
+      if (QFacturaFAC_TASA.Value > 0) then
+        QFacturafac_total_dolar.Value := QFacturaFAC_TOTAL.Value / QFacturaFAC_TASA.Value
+      else
+        QFacturafac_total_dolar.Value := 0;
+    end;
 
    if (dm.QParametrospar_fac_preimpresa.Value = 'True') and
    (dm.QParametrosservicio_construccion.AsBoolean = True) and
@@ -19340,8 +19339,9 @@ else
   vTotalUS := QFacturaFAC_TOTAL.Value / QFacturaFAC_TASA.Value;
 
 if Assigned(QFacturaFAC_TOTALUS) then
-  QFacturaFAC_TOTALUS.Value := vTotalUS
-else if Assigned(QFacturafac_total_dolar) then
+  QFacturaFAC_TOTALUS.Value := vTotalUS;
+{ Persistido en BD; FAC_TOTALUS es solo calculado en pantalla }
+if Assigned(QFacturafac_total_dolar) and (QFactura.State in [dsEdit, dsInsert]) then
   QFacturafac_total_dolar.Value := vTotalUS;
     end
 else
