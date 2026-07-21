@@ -19340,9 +19340,8 @@ else
 
 if Assigned(QFacturaFAC_TOTALUS) then
   QFacturaFAC_TOTALUS.Value := vTotalUS;
-{ Persistido en BD; FAC_TOTALUS es solo calculado en pantalla }
-if Assigned(QFacturafac_total_dolar) and (QFactura.State in [dsEdit, dsInsert]) then
-  QFacturafac_total_dolar.Value := vTotalUS;
+{ No asignar fac_total_dolar aqui: escribir campos de BD en OnCalcFields
+  provoca recursion / access violation al agregar productos. }
     end
 else
 begin
