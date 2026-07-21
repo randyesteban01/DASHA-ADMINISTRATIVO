@@ -1167,6 +1167,7 @@ type
     SelCajero, SelCondi, facturar : boolean;
     descuento, total, sSubTotal,sPreciosinItbis, TGralDesc, TGralItbis, sPorcItbis, TotalOtros, Limite, Balance, Comision, PorcFijo, MontoFijo : Double;
     Totaliza, Buscando, Realizado : boolean;
+    PreciosDetalleEnDolar : boolean;
     Cajero, FormatoImp, Dias, CodMov, Intervalo, FPagoIni, copias, caja, TipoFac, Vendedor, vl_cliente, vl_accion : integer;
     PuertoImp, TraerFormaPago, actbalance, FactPendiente, FactVencida,
     TieneVencido, Vencidos, Precio, Cuotas, CtaCliente, VerLimite,
@@ -1183,6 +1184,9 @@ type
     procedure Totalizar;
     Procedure TotalizarCuentas;
     procedure CodificarCuentas;
+    procedure ConvertirDetalleDolaresAPesosParaGuardar;
+    procedure ConvertirDetallePesosADolaresParaEdicion;
+    function FactorMonedaAPesos: Double;
     procedure TotalizaClinico;
     procedure ImpTicketEnvio(vSucEnvia, vSucRecibe, vRecibe, vRecibeTel, vEnvia, vDescripcion, vCodigo, vCodigo2:String;vPagoDestino:Boolean; vnumero:Integer; vcantidad:Integer);
     procedure Imp40ColumnasHotel;
@@ -2155,6 +2159,7 @@ begin
   TotalOtros := 0;
   Totaliza   := True;
   Buscando   := False;
+  PreciosDetalleEnDolar := False;
   descuento  := 0;
   btBalance.caption := 'Balance';
   tLimite.text      := '';
@@ -2191,10 +2196,12 @@ begin
     begin
       tmoneda.Text := dm.Query1.FieldByName('mon_nombre').AsString+' ('+dm.Query1.FieldByName('mon_sigla').AsString+')';
       QFacturaFAC_TASA.Value := DM.Query1.fieldbyname('MON_RELACIONPESOCOMPRA').AsFloat;
+      PreciosDetalleEnDolar := (QFacturaMON_CODIGO.Value = 2);
     end
     else
     begin
       tmoneda.Text := '';
+      PreciosDetalleEnDolar := False;
     end;
 
       //Buscamos la tasa de cambio del dolar
@@ -5398,11 +5405,15 @@ var
   PrecioReal:Double;
 
 begin
-  { No convertir DET_PRECIO aqui.
-    Los precios de catalogo/linea se guardan en pesos; el total en US
-    se calcula en pantalla (FAC_TOTAL / FAC_TASA). Convertir en BeforePost
-    (p.ej. al Totalizar con Realizado=False) altera lo guardado y deja
-    MON_CODIGO=dolares con montos inconsistentes. }
+  { Con moneda dolar: el catalogo viene en pesos; al cargar producto (Realizado)
+    se muestra en dolares. No convertir en Totalizar (Realizado=False).
+    Al Grabar se pasa de dolares a pesos para DET_PRECIO / ITBIS / FAC_TOTAL. }
+  if Realizado and (QFacturaMON_CODIGO.Value = 2) and (QFacturaFAC_TASA.Value > 0) then
+  begin
+    PreciosDetalleEnDolar := True;
+    QDetalleDET_PRECIO.Value := QDetalleDET_PRECIO.Value / QFacturaFAC_TASA.Value;
+  end;
+
 QDetalleFAC_NUMERO.Value := QFacturaFAC_NUMERO.Value;
 
 if (DM.QParametrospar_itbisincluido.Value = 'False') and (QDetalleDET_CONITBIS.Value = 'S') then
@@ -6224,6 +6235,110 @@ end;
 end; }
 
 
+function TfrmFactura.FactorMonedaAPesos: Double;
+begin
+  Result := 1;
+  if PreciosDetalleEnDolar and
+     (QFacturaMON_CODIGO.Value = 2) and
+     (QFacturaFAC_TASA.Value > 0) then
+    Result := QFacturaFAC_TASA.Value;
+end;
+
+procedure TfrmFactura.ConvertirDetallePesosADolaresParaEdicion;
+var
+  bm: TBookmark;
+  Tasa: Double;
+  GuardarTotaliza: Boolean;
+begin
+  { Solo aplica al pasar a moneda dolar; no toca facturas en pesos. }
+  if QFacturaMON_CODIGO.Value <> 2 then
+    Exit;
+  Tasa := QFacturaFAC_TASA.Value;
+  if Tasa <= 0 then
+    Exit;
+
+  GuardarTotaliza := Totaliza;
+  Totaliza := False;
+  QDetalle.DisableControls;
+  bm := nil;
+  try
+    if QDetalle.RecordCount > 0 then
+      bm := QDetalle.GetBookmark;
+    QDetalle.First;
+    while not QDetalle.Eof do
+    begin
+      if not QDetallePRO_CODIGO.IsNull then
+      begin
+        QDetalle.Edit;
+        QDetalleDET_PRECIO.Value := QDetalleDET_PRECIO.Value / Tasa;
+        QDetalle.Post;
+      end;
+      QDetalle.Next;
+    end;
+    if (bm <> nil) and QDetalle.BookmarkValid(bm) then
+      QDetalle.GotoBookmark(bm);
+  finally
+    if bm <> nil then
+      QDetalle.FreeBookmark(bm);
+    QDetalle.EnableControls;
+    Totaliza := GuardarTotaliza;
+  end;
+  PreciosDetalleEnDolar := True;
+end;
+
+procedure TfrmFactura.ConvertirDetalleDolaresAPesosParaGuardar;
+var
+  bm: TBookmark;
+  TotalUS, Tasa: Double;
+  GuardarTotaliza: Boolean;
+begin
+  if not PreciosDetalleEnDolar then
+    Exit;
+  if (QFacturaMON_CODIGO.Value <> 2) then
+    Exit;
+  Tasa := QFacturaFAC_TASA.Value;
+  if Tasa <= 0 then
+    Exit;
+
+  { FAC_TOTAL ya esta en pesos por Totalizar con factor }
+  if Tasa > 0 then
+    TotalUS := QFacturaFAC_TOTAL.Value / Tasa
+  else
+    TotalUS := 0;
+
+  GuardarTotaliza := Totaliza;
+  Totaliza := False;
+  QDetalle.DisableControls;
+  bm := nil;
+  try
+    if QDetalle.RecordCount > 0 then
+      bm := QDetalle.GetBookmark;
+    QDetalle.First;
+    while not QDetalle.Eof do
+    begin
+      if not QDetallePRO_CODIGO.IsNull then
+      begin
+        QDetalle.Edit;
+        QDetalleDET_PRECIO.Value := QDetalleDET_PRECIO.Value * Tasa;
+        QDetalle.Post;
+      end;
+      QDetalle.Next;
+    end;
+    if (bm <> nil) and QDetalle.BookmarkValid(bm) then
+      QDetalle.GotoBookmark(bm);
+  finally
+    if bm <> nil then
+      QDetalle.FreeBookmark(bm);
+    QDetalle.EnableControls;
+    Totaliza := GuardarTotaliza;
+  end;
+
+  if not (QFactura.State in [dsEdit, dsInsert]) then
+    QFactura.Edit;
+  QFacturafac_total_dolar.Value := TotalUS;
+  PreciosDetalleEnDolar := False;
+end;
+
 procedure TfrmFactura.totalizar;
 var
   Puntero : TBookmark;
@@ -6240,6 +6355,8 @@ var
   ValorTmp,par_monto_domicilio:Currency;
   HayServicioConstruccionConItbis: Boolean;
   vDetalleTieneServicioConstruccion: Boolean;
+  Factor: Double;
+  PrecioP: Double;
 begin
   vPorc_Desc_Gral := 0;
   vTotal_x_DescGral :=0;
@@ -6250,6 +6367,7 @@ begin
   vSubTotaltmp_con_Itbis :=0;
   TGralItbis := 0;
   TItbis2 := 0;
+  Factor := FactorMonedaAPesos;
 
   vDetalleTieneServicioConstruccion := DetalleTieneServicioConstruccion;
 
@@ -6344,22 +6462,24 @@ begin
       if not QDetallePRO_CODIGO.isnull then
         cant := cant + 1;
 
+      PrecioP := QDetalleDET_PRECIO.Value * Factor;
+
       if  (QDetalleDET_ITBIS.asfloat > 0) and (ConItbis = 'True') then
         sPorcItbis:=  (QDetalleDET_ITBIS.asfloat/100)+1
         else sPorcItbis:= 0;
 
       if (dm.QParametrospar_itbisincluido.Value = 'True') and (sPorcItbis > 0) and (ConItbis = 'True') then
-      sPreciosinItbis := QDetalleDET_PRECIO.Value/sPorcItbis else
-      sPreciosinItbis := QDetalleDET_PRECIO.Value;
+      sPreciosinItbis := PrecioP/sPorcItbis else
+      sPreciosinItbis := PrecioP;
 
 
 
       //------------------------------------------------------------------------
-      vPrecio:= QDetalleDET_PRECIO.Value ;
+      vPrecio:= PrecioP ;
       vPorcDesc := (vPrecio * (QDetalleDET_DESCUENTO.value / 100));
       vPrecio := vPrecio - vPorcDesc;
 
-      vSubTotaltmp_con_Itbis := vSubTotaltmp_con_Itbis + (QDetalleDET_PRECIO.value*QDetalledet_cantidad.Value );
+      vSubTotaltmp_con_Itbis := vSubTotaltmp_con_Itbis + (PrecioP*QDetalledet_cantidad.Value );
       /// vDesc:=0; vSubTotal:=0;
 
       if (ckItbis.Checked) then
@@ -6367,14 +6487,14 @@ begin
        //  TGralItbis := TGralItbis + QDetalleCalcItbisGral.Value;
         if (dm.QParametrospar_itbisincluido.Value = 'True')  then
           begin
-            Total  := Total  + QDetallePrecioItbis.value;
+            Total  := Total  + (QDetallePrecioItbis.value * Factor);
             //resta el itbis al precio si lleva itbis
             if (sPorcItbis > 0)  then
-              sPreciosinItbis := (QDetalleDET_PRECIO.Value / sPorcItbis)
-            else sPreciosinItbis := QDetalleDET_PRECIO.Value;
+              sPreciosinItbis := (PrecioP / sPorcItbis)
+            else sPreciosinItbis := PrecioP;
           end
         else
-          Total  := Total  + QDetalleDET_PRECIO.value*QDetalledet_cantidad.Value;
+          Total  := Total  + PrecioP*QDetalledet_cantidad.Value;
       end
       else
         begin
@@ -6383,16 +6503,16 @@ begin
 
           QDetalleDET_CONITBIS.Value := 'N'; //Agregado por Titin porque devolucion trae itbis
           QDetalleDET_ITBIS.value := 0;
-          Total  := Total  + QDetalleDET_PRECIO.value*QDetalledet_cantidad.Value;
+          Total  := Total  + PrecioP*QDetalledet_cantidad.Value;
           if (sPorcItbis > 0)  then
-          sPreciosinItbis := QDetalleDET_PRECIO.Value;
+          sPreciosinItbis := PrecioP;
         end;
 
       if QDetalleDET_CONITBIS.Value = 'S' then
-        grabado := grabado + ((QDetallePrecioItbis.value-QDetalleCalcDesc.Value));
+        grabado := grabado + (((QDetallePrecioItbis.value-QDetalleCalcDesc.Value) * Factor));
 
       if QDetalleDET_CONITBIS.Value = 'N' then
-        exento := exento + ((QDetalleDET_PRECIO.value-QDetalleCalcDesc.Value)); 
+        exento := exento + ((PrecioP-(QDetalleCalcDesc.Value * Factor))); 
 
       if (vDetalleTieneServicioConstruccion) and (QDetalleDET_CONITBIS.Value = 'S') then
         HayServicioConstruccionConItbis := True;
@@ -6400,19 +6520,19 @@ begin
       SelectivoAd  := SelectivoAd  + (QDetalledet_selectivo_ad.Value);
       SelectivoCon := SelectivoCon + (QDetalledet_selectivo_con.Value);
 
-      TDesc   := TDesc  + QDetalleCalcDesc.value;
+      TDesc   := TDesc  + (QDetalleCalcDesc.value * Factor);
 
       sSubTotal := sSubTotal + (sPreciosinItbis *  QDetalleDET_CANTIDAD.Value);
 
 
-      TItbis  := TItbis + QDetalleCalcItbis.value;
+      TItbis  := TItbis + (QDetalleCalcItbis.value * Factor);
       if (QDetalleCalcDesc.Value = 0) and (QFacturaporc_desc_gral.Value > 0) then
       TItbis2  := TItbis2 + (((sPreciosinItbis *  QDetalleDET_CANTIDAD.Value) - ((sPreciosinItbis *  QDetalleDET_CANTIDAD.Value)*(QFacturaporc_desc_gral.Value/100)))*(sPorcItbis-1));
 
       if (sSubTotal)*(QFacturaporc_desc_gral.Value/100)> 0 then
 
       if QDetalleDET_COMISION.Value > 0 then
-        TComision := TComision + (((QDetallePrecioItbis.Value-QDetalleCalcDesc.Value)*QDetalleDET_COMISION.Value)/100);
+        TComision := TComision + ((((QDetallePrecioItbis.Value-QDetalleCalcDesc.Value)*Factor)*QDetalleDET_COMISION.Value)/100);
 
       QDetalle.Post;
 
@@ -7306,6 +7426,14 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
      // edTipo.SetFocus;
       Exit;
     end;
+
+      { Captura en US$ -> DET_PRECIO/ITBIS/FAC_TOTAL en pesos; fac_total_dolar en US$ }
+      if PreciosDetalleEnDolar then
+      begin
+        Totalizar;
+        ConvertirDetalleDolaresAPesosParaGuardar;
+      end;
+
       if QFacturaCON_NUMERO.Value = 0 then begin
       if QDetalle.State <> dsBrowse then
       begin
@@ -13645,6 +13773,20 @@ begin
     begin
       QFacturafac_tasacambio.Value := 1;
     end;
+
+    { Al pasar a dolar, los precios de linea se capturan en US$;
+      al salir de dolar se dejan en pesos. }
+    if QFacturaMON_CODIGO.Value = 2 then
+    begin
+      if not PreciosDetalleEnDolar then
+        ConvertirDetallePesosADolaresParaEdicion
+      else
+        PreciosDetalleEnDolar := True;
+    end
+    else if PreciosDetalleEnDolar then
+      ConvertirDetalleDolaresAPesosParaGuardar
+    else
+      PreciosDetalleEnDolar := False;
   end;
     //VERIFICAMOS SI TIENE ACTIVO MULTIMONEDA
     //modificargrid();
