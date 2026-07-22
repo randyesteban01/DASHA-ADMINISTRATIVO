@@ -245,10 +245,9 @@ begin
   Q.SQL.Add('SELECT s.Secuencia_Inicial_DGII, s.Ultima_secuencia_DGII, ');
   Q.SQL.Add('     CONVERT(datetime, s.FechaVencimientoSecuenciaDGII, 120) AS FechaVencimientoSecuenciaDGII, s.Activa, s.Cantidad');
   Q.SQL.Add('FROM SecuenciaDGII s');
-  Q.SQL.Add('JOIN TipoNCF t ON t.emp_codigo = s.emp_codigo AND s.Tipo = t.cod_dgii');
-  Q.SQL.Add('WHERE s.emp_codigo = :emp AND t.tip_codigo = :tip');
+  Q.SQL.Add('WHERE s.emp_codigo = :emp AND s.Tipo = :tipo');
   Q.Parameters.ParamByName('emp').Value := AEmp;
-  Q.Parameters.ParamByName('tip').Value := ATipo;
+  Q.Parameters.ParamByName('tipo').Value := ATipo;
 
   Q.Open;
 
@@ -276,7 +275,7 @@ begin
   if not Q.FieldByName('Activa').IsNull then
   activa := Q.FieldByName('Activa').AsBoolean
   else
-    activa := False; // por defecto
+    activa := True; // NULL = activa (filas legacy sin flag)
 
   hasta     := desde + cantidad - 1;
   siguiente := ultima + 1;

@@ -7109,10 +7109,9 @@ begin
   Q.SQL.Add('SELECT s.Secuencia_Inicial_DGII, s.Ultima_secuencia_DGII, ');
   Q.SQL.Add('     CONVERT(datetime, s.FechaVencimientoSecuenciaDGII, 120) AS FechaVencimientoSecuenciaDGII, s.Activa, s.Cantidad');
   Q.SQL.Add('FROM SecuenciaDGII s');
-  Q.SQL.Add('JOIN TipoNCF t ON t.emp_codigo = s.emp_codigo AND s.Tipo = t.cod_dgii');
-  Q.SQL.Add('WHERE s.emp_codigo = :emp AND t.tip_codigo = :tip');
+  Q.SQL.Add('WHERE s.emp_codigo = :emp AND s.Tipo = :tipo');
   Q.Parameters.ParamByName('emp').Value := AEmp;
-  Q.Parameters.ParamByName('tip').Value := ATipo;
+  Q.Parameters.ParamByName('tipo').Value := ATipo;
 
   Q.Open;
 
@@ -7140,7 +7139,7 @@ begin
   if not Q.FieldByName('Activa').IsNull then
   activa := Q.FieldByName('Activa').AsBoolean
   else
-    activa := False; // por defecto
+    activa := True; // NULL = activa (filas legacy sin flag)
 
   hasta     := desde + cantidad - 1;
   siguiente := ultima + 1;
@@ -7173,6 +7172,7 @@ var
    ok: Boolean;
    msg: string;
    prox: Int64; // o Int64 si usas valores grandes
+   tipoDgii: Integer;
 
   empRNC: string;
   FacturaTieneITBIS, existeProdConITBIS: Boolean;
@@ -7209,9 +7209,25 @@ with QVerificaNCF do begin
 
   if (DM.QParametrosPAR_FE_DetenerFacturacion.Value and dm.QParametrosUsa_FacturacionElectronica.Value) then
         begin
+          // Validar por SecuenciaDGII.Tipo (= cod_dgii), no tip_codigo interno
+          tipoDgii := 0;
+          if (not QFacturaTipoeNCF.IsNull) and (QFacturaTipoeNCF.Value > 0) then
+            tipoDgii := QFacturaTipoeNCF.Value
+          else
+          begin
+            dm.Query1.Close;
+            dm.Query1.SQL.Clear;
+            dm.Query1.SQL.Add('SELECT TOP 1 ISNULL(cod_dgii, 0) AS cod_dgii FROM TipoNCF');
+            dm.Query1.SQL.Add('WHERE tip_codigo = :tip');
+            dm.Query1.Parameters.ParamByName('tip').Value := QFacturatip_codigo.Value;
+            dm.Query1.Open;
+            if not dm.Query1.Eof then
+              tipoDgii := dm.Query1.FieldByName('cod_dgii').AsInteger;
+            dm.Query1.Close;
+          end;
           ok := ValidarENCFDisponible(
                         dm.vp_cia,
-                        QFacturatip_codigo.Value,
+                        tipoDgii,
                         msg, prox);
           if (not ok) then
           begin
@@ -7980,9 +7996,25 @@ end;
                 if DM.QParametrosPAR_FE_DetenerFacturacion.Value then 
                 begin
                     // 1) Validar disponibilidad de secuencia SIN reservar ni asignar
+                    //    (SecuenciaDGII.Tipo = cod_dgii)
+                    tipoDgii := 0;
+                    if (not QFacturaTipoeNCF.IsNull) and (QFacturaTipoeNCF.Value > 0) then
+                      tipoDgii := QFacturaTipoeNCF.Value
+                    else
+                    begin
+                      dm.Query1.Close;
+                      dm.Query1.SQL.Clear;
+                      dm.Query1.SQL.Add('SELECT TOP 1 ISNULL(cod_dgii, 0) AS cod_dgii FROM TipoNCF');
+                      dm.Query1.SQL.Add('WHERE tip_codigo = :tip');
+                      dm.Query1.Parameters.ParamByName('tip').Value := QFacturatip_codigo.Value;
+                      dm.Query1.Open;
+                      if not dm.Query1.Eof then
+                        tipoDgii := dm.Query1.FieldByName('cod_dgii').AsInteger;
+                      dm.Query1.Close;
+                    end;
                 ok := ValidarENCFDisponible(
                         QFacturaEMP_CODIGO.Value,
-                        QFacturatip_codigo.Value,
+                        tipoDgii,
                         msg, prox);
                 end else  ok :=True;
 
