@@ -8119,12 +8119,11 @@ end;
                         );
                       end;
                     end;
-                    if Trim(resultado) <> '' then
-                      ShowMessage('Respuesta FE/LUGANIS: ' + Copy(resultado, 1, 1000));
+                    // Resultado FE/LUGANIS solo en LogsCliente / TXT (sin ShowMessage en factura)
                   except
                     on E: Exception do
                     begin
-                      ShowMessage('Error FE/LUGANIS: ' + E.Message);
+                      // Error FE/LUGANIS solo en logs de la DLL
                     end;
                   end;
                 end;
