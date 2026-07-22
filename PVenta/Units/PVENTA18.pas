@@ -8082,7 +8082,7 @@ end;
                         '',                                          // outputFolder (usa carpeta de la DLL/XML)
                         False,                                       // isNotaCredito
                         '',                                          // supCodigo
-                        False                                        // logDebug
+                        True                                         // logDebug: trazar login/envio Luganis
                       );
                     end
                     else
@@ -8119,12 +8119,12 @@ end;
                         );
                       end;
                     end;
-                    // aqu? puedes hacer ShowMessage('Resultado: ' + resultado); si quieres ver el JSON
+                    if Trim(resultado) <> '' then
+                      ShowMessage('Respuesta FE/LUGANIS: ' + Copy(resultado, 1, 1000));
                   except
                     on E: Exception do
                     begin
-                      // Manejo de error (log, mensaje, etc.)
-                      // ShowMessage('Error: ' + E.Message);
+                      ShowMessage('Error FE/LUGANIS: ' + E.Message);
                     end;
                   end;
                 end;
