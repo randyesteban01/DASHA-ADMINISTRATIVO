@@ -4010,10 +4010,9 @@ begin
       RFacturaContruccion.Destroy;
     end
 
-    else if dm.QParametrospar_formato_preimpreso.Value = 'Emtraba' then
+    else if (dm.QParametrospar_formato_preimpreso.Value = 'Emtraba') or
+            (dm.QParametrospar_formato_preimpreso.Value = 'AutoServicios') then
     begin
-      // TODO: verificar que este sea el nombre real del campo del parametro
-      // "Preguntar por factura pequena" en dm.QParametros.
       if (dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True') then
       begin
         // Si esta marcado "Preguntar por factura pequena", se pregunta
@@ -4071,7 +4070,6 @@ begin
         RFactura.Destroy;
       end;
     end
-
     else if dm.QParametrospar_formato_preimpreso.Value = 'FUNDGRUBEL' then
     begin
       application.createform(tRFacturaFUNDGRUBEL, RFacturaFUNDGRUBEL);

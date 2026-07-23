@@ -1147,12 +1147,12 @@ object frmFactura: TfrmFactura
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object lbVendedor: TLabel
+    object lblVendedor: TLabel
       Left = 155
       Top = 91
-      Width = 64
+      Width = 67
       Height = 13
-      Caption = 'lbVendedor'
+      Caption = 'lblVendedor'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -1739,7 +1739,7 @@ object frmFactura: TfrmFactura
     Top = 190
     Width = 889
     Height = 196
-    ActivePage = TabSheet3
+    ActivePage = TabSheet1
     Align = alClient
     Style = tsFlatButtons
     TabOrder = 2

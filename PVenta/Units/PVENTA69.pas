@@ -1868,11 +1868,8 @@ begin
         end;
       end
 
-      // -----------------------------------------------------------------
-      // NUEVO: Emtraba (factura normal grande), mismo patron ya usado
-      // en el formulario de listado de facturas (BitBtn1Click).
-      // -----------------------------------------------------------------
-      else if dm.QParametrospar_formato_preimpreso.Value = 'Emtraba' then
+      else if (dm.QParametrospar_formato_preimpreso.Value = 'Emtraba') or
+            (dm.QParametrospar_formato_preimpreso.Value = 'AutoServicios') then
       begin
         CrearRFactura;
         RFactura.QFactura.Parameters.ParamByName('emp').Value    := dm.vp_cia;

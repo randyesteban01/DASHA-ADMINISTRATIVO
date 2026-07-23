@@ -980,6 +980,7 @@ type
     QPedidosPED_Marca: TStringField;
     QPedidosPED_Modelo: TStringField;
     QPedidosPED_Chofer: TStringField;
+    lblVendedor: TLabel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -13163,6 +13164,26 @@ procedure TfrmFactura.dsDetalleDataChange(Sender: TObject; Field: TField);
 begin
   DatosdelMedidor1.Enabled := QDetallepro_utilizamedidor.Value = 'True';
   DatosdelEnvio1.Enabled := QDetallepro_UtilizaEnvio.Value = 'True';
+
+  if not QDetalleVEN_CODIGO.IsNull then begin
+  with dm.qEjecutar do begin
+  Close;
+  SQL.Clear;
+  SQL.Add('SELECT VEN_NOMBRE FROM VENDEDORES WHERE EMP_CODIGO = :EMP AND VEN_CODIGO = :VEN');
+  Parameters.ParamByName('EMP').Value := DM.vp_cia;
+  Parameters.ParamByName('VEN').Value := QDetalleVEN_CODIGO.Value;
+  Open;
+  IF DM.qEjecutar.RecordCount > 0 THEN begin
+  lblVendedor.Caption := FieldByName('VEN_NOMBRE').Text;
+  lblVendedor.Visible := Enabled;
+  end
+  else
+  lblVendedor.Visible := False;
+  end;
+  end
+  else
+  lblVendedor.Visible := False;
+  
 
   
 
