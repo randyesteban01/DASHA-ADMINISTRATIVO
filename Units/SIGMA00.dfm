@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 201
-  Top = 210
+  Left = 176
+  Top = 170
   Width = 1297
   Height = 620
   HelpContext = 1
