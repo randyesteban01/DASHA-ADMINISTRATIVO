@@ -5643,6 +5643,9 @@ IF DM.QParametrospar_busqueda_dejar_ultimo.Value = 'True' then
 
                //(QDetallePrecioItbis.value - QDetalleCalcDesc.value + QDetalleCalcItbis.value);
              end;
+          { En dolar DET_PRECIO esta en USD; costo del catalogo sigue en pesos. }
+          if PreciosDetalleEnDolar then
+            PrecioReal := PrecioReal * FactorMonedaAPesos;
 
          // if (StrToFloat(format('%10.2F',[dm.Query1.FieldByName('costo').AsFloat])) >
           //StrToFloat(format('%10.2F',[QDetalleDET_PRECIO.Value - ((QDetalleDET_PRECIO.Value*QDetalleDET_DESCUENTO.Value)/100)])))
@@ -5703,7 +5706,7 @@ IF DM.QParametrospar_busqueda_dejar_ultimo.Value = 'True' then
           if (dm.QParametrosPAR_DEBAJOPRECIO.Value <> 'False') and
           (StrToFloat(Format('%10.2f',[QDetalleDET_PRECIOMINIMO.Value])) > 0) then
           begin
-            if StrToFloat(Format('%10.2f',[QDetalleValor.Value])) <
+            if StrToFloat(Format('%10.2f',[QDetalleValor.Value * FactorMonedaAPesos])) <
             StrToFloat(Format('%10.2f',[QDetalleDET_PRECIOMINIMO.Value])) then
             begin
               MessageDlg('EL PRECIO MINIMO PARA ESTE PRODUCTO ES '+
@@ -5756,7 +5759,7 @@ IF DM.QParametrospar_busqueda_dejar_ultimo.Value = 'True' then
           if (dm.QParametrosPAR_DEBAJOPRECIO.Value <> 'False') and
           (StrToFloat(Format('%10.2f',[QDetalleDET_PRECIOMINIMOEMP.Value])) > 0) then
           begin
-            if StrToFloat(Format('%10.2f',[QDetalleValor.Value])) <
+            if StrToFloat(Format('%10.2f',[QDetalleValor.Value * FactorMonedaAPesos])) <
             StrToFloat(Format('%10.2f',[QDetalleDET_PRECIOMINIMOEMP.Value])) then
             begin
               MessageDlg('EL PRECIO MINIMO PARA ESTE PRODUCTO ES '+
@@ -5777,7 +5780,7 @@ IF DM.QParametrospar_busqueda_dejar_ultimo.Value = 'True' then
   begin
     if (dm.QParametrosPAR_PRECIOUND.Value = 'Precio1') and (QDetalleDET_MEDIDA.Value = 'Und') then
     begin
-      if QDetalleDET_PRECIO.Value < QDetalleDET_PRECIO1.Value then
+      if (QDetalleDET_PRECIO.Value * FactorMonedaAPesos) < QDetalleDET_PRECIO1.Value then
       begin
         MessageDlg('NO PUEDE DISMINUIR EL PRECIO DEL PRODUCTO', mterror, [mbok],0);
         abort;
@@ -5785,7 +5788,7 @@ IF DM.QParametrospar_busqueda_dejar_ultimo.Value = 'True' then
     end
     else if (dm.QParametrosPAR_PRECIOUND.Value = 'Precio2') and (QDetalleDET_MEDIDA.Value = 'Und') then
     begin
-      if QDetalleDET_PRECIO.Value < QDetalleDET_PRECIO2.Value then
+      if (QDetalleDET_PRECIO.Value * FactorMonedaAPesos) < QDetalleDET_PRECIO2.Value then
       begin
         MessageDlg('NO PUEDE DISMINUIR EL PRECIO DEL PRODUCTO', mterror, [mbok],0);
         abort;
@@ -5793,7 +5796,7 @@ IF DM.QParametrospar_busqueda_dejar_ultimo.Value = 'True' then
     end
     else if (dm.QParametrosPAR_PRECIOEMP.Value = 'Precio1') and (QDetalleDET_MEDIDA.Value = 'Emp') then
     begin
-      if QDetalleDET_PRECIO.Value < QDetalleDET_PRECIO1.Value then
+      if (QDetalleDET_PRECIO.Value * FactorMonedaAPesos) < QDetalleDET_PRECIO1.Value then
       begin
         MessageDlg('NO PUEDE DISMINUIR EL PRECIO DEL PRODUCTO', mterror, [mbok],0);
         abort;
@@ -5801,7 +5804,7 @@ IF DM.QParametrospar_busqueda_dejar_ultimo.Value = 'True' then
     end
     else if (dm.QParametrosPAR_PRECIOEMP.Value = 'Precio2') and (QDetalleDET_MEDIDA.Value = 'Emp') then
     begin
-      if QDetalleDET_PRECIO.Value < QDetalleDET_PRECIO2.Value then
+      if (QDetalleDET_PRECIO.Value * FactorMonedaAPesos) < QDetalleDET_PRECIO2.Value then
       begin
         MessageDlg('NO PUEDE DISMINUIR EL PRECIO DEL PRODUCTO', mterror, [mbok],0);
         abort;
@@ -11781,6 +11784,9 @@ begin
                   PrecioReal := (QDetalleDET_PRECIO.Value - ((QDetalleDET_PRECIO.Value*QDetalleDET_DESCUENTO.Value)/100));
                   PrecioReal := QDetallePrecioItbis.value;
                end;
+          { En dolar DET_PRECIO esta en USD; costo del catalogo sigue en pesos. }
+          if PreciosDetalleEnDolar then
+            PrecioReal := PrecioReal * FactorMonedaAPesos;
 
           if (StrToFloat(format('%10.2F',[qVerProductos.FieldByName('costo').AsFloat])) >
             PrecioReal)
@@ -11836,7 +11842,7 @@ begin
           if (dm.QParametrosPAR_DEBAJOPRECIO.Value <> 'False') and
           (StrToFloat(Format('%10.2f',[QDetalleDET_PRECIOMINIMO.Value])) > 0) then
           begin
-            if StrToFloat(Format('%10.2f',[QDetalleValor.Value])) <
+            if StrToFloat(Format('%10.2f',[QDetalleValor.Value * FactorMonedaAPesos])) <
             StrToFloat(Format('%10.2f',[QDetalleDET_PRECIOMINIMO.Value])) then
             begin
               MessageDlg('EL PRECIO MINIMO PARA ESTE PRODUCTO ES '+
@@ -11888,7 +11894,7 @@ begin
           if (dm.QParametrosPAR_DEBAJOPRECIO.Value <> 'False') and
           (StrToFloat(Format('%10.2f',[QDetalleDET_PRECIOMINIMOEMP.Value])) > 0) then
           begin
-            if StrToFloat(Format('%10.2f',[QDetalleValor.Value])) <
+            if StrToFloat(Format('%10.2f',[QDetalleValor.Value * FactorMonedaAPesos])) <
             StrToFloat(Format('%10.2f',[QDetalleDET_PRECIOMINIMOEMP.Value])) then
             begin
               MessageDlg('EL PRECIO MINIMO PARA ESTE PRODUCTO ES '+
@@ -11907,7 +11913,7 @@ begin
         if (dm.QParametrosPAR_DEBAJOPRECIO.Value <> 'False') and
           (StrToFloat(Format('%10.2f',[QDetalleDET_PRECIO4.Value])) > 0) then
           begin
-            if StrToFloat(Format('%10.2f',[QDetalleValor.Value])) <
+            if StrToFloat(Format('%10.2f',[QDetalleValor.Value * FactorMonedaAPesos])) <
             StrToFloat(Format('%10.2f',[QDetalleDET_PRECIO4.Value])) then
             begin
               MessageDlg('EL PRECIO MINIMO PARA ESTE PRODUCTO ES '+

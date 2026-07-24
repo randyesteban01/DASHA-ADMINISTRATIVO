@@ -1677,7 +1677,7 @@ begin
   search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
   search.AliasFields.clear;
   search.AliasFields.add('Nombre');
-  search.AliasFields.add('Código');
+  search.AliasFields.add('C?digo');
   search.ResultField := 'tfa_codigo';
   search.Title := 'Tipos de factura';
   if search.execute then
@@ -1773,10 +1773,10 @@ var
 begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
 
   Search.Query.Clear;
-  Search.Query.Add('select cpa_nombre, cpa_codigo'); // no necesitas cpa_dias aquí
+  Search.Query.Add('select cpa_nombre, cpa_codigo'); // no necesitas cpa_dias aqu?
   Search.Query.Add('from condiciones');
   Search.Query.Add('where emp_codigo = ' + IntToStr(dm.vp_cia));
 
@@ -1785,13 +1785,13 @@ begin
 
   if Search.Execute then
   begin
-    // 1) Guardar código seleccionado
+    // 1) Guardar c?digo seleccionado
     codCondi := StrToIntDef(Search.ValueField, 0);
     //QFactura.Edit;
     QFacturaCPA_CODIGO.AsInteger := codCondi;
     dbCondi.SetFocus;
 
-    // 2) Leer cpa_dias con un query rápido
+    // 2) Leer cpa_dias con un query r?pido
     q := TADOQuery.Create(nil);
     try
       q.Connection := DM.ADOSigma; // AliasName = DM.ADOSigma
@@ -1810,7 +1810,7 @@ begin
       q.Free;
     end;
 
-    // 3) Calcular fecha límite (base = hoy o la fecha de la factura)
+    // 3) Calcular fecha l?mite (base = hoy o la fecha de la factura)
     // Usa la fecha de la factura si la tienes en el dataset:
     if QFactura.FindField('FAC_FECHA') <> nil then
       fechaBase := QFactura.FieldByName('FAC_FECHA').AsDateTime
@@ -1820,11 +1820,11 @@ begin
     // Con DateUtils: fechaLim := IncDay(fechaBase, dias);
     fechaLim := fechaBase + dias;
 
-    // 4) Asignar a tu TBEdit dtFechaLimite (o al campo de la tabla si está ligado)
+    // 4) Asignar a tu TBEdit dtFechaLimite (o al campo de la tabla si est? ligado)
     // Si dtFechaLimite es un TEdit/TBEdit:
     dtFechaLimite.Text := FormatDateTime('dd/mm/yyyy', fechaLim);
 
-    // Si además tienes un campo en QFactura para guardar la fecha límite:
+    // Si adem?s tienes un campo en QFactura para guardar la fecha l?mite:
     if QFactura.FindField('FechaLimitePago') <> nil then
       QFactura.FieldByName('FechaLimitePago').AsDateTime := fechaLim;
 
@@ -1839,7 +1839,7 @@ procedure TfrmFactura.btVendedorClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('C?digo');
   Search.Query.clear;
   Search.Query.add('select ven_nombre, ven_codigo');
   Search.Query.add('from vendedores');
@@ -1910,11 +1910,11 @@ begin
       Cuotas := dm.Query1.fieldbyname('cpa_cuotas').asstring;
       Intereses := dm.Query1.fieldbyname('cpa_intereses').asstring;
 
-      // 1) Guardar código seleccionado
+      // 1) Guardar c?digo seleccionado
       codCondi := QFacturaCPA_CODIGO.value;
       //dbinteres.Enabled := intereses = 'True';
 
-      // 2) Calcular fecha límite (base = hoy o la fecha de la factura)
+      // 2) Calcular fecha l?mite (base = hoy o la fecha de la factura)
       // Usa la fecha de la factura si la tienes en el dataset:
       if QFactura.FindField('FAC_FECHA') <> nil then
         fechaBase := QFactura.FieldByName('FAC_FECHA').AsDateTime
@@ -1924,11 +1924,11 @@ begin
        // Con DateUtils: fechaLim := IncDay(fechaBase, dias);
       fechaLim := fechaBase + dias;
 
-      // 4) Asignar a tu TBEdit dtFechaLimite (o al campo de la tabla si está ligado)
+      // 4) Asignar a tu TBEdit dtFechaLimite (o al campo de la tabla si est? ligado)
       // Si dtFechaLimite es un TEdit/TBEdit:
       dtFechaLimite.Text := FormatDateTime('dd/mm/yyyy', fechaLim);
 
-      // Si además tienes un campo en QFactura para guardar la fecha límite:
+      // Si adem?s tienes un campo en QFactura para guardar la fecha l?mite:
       if QFactura.FindField('FECHA_LIMITE') <> nil then
       begin
         QFactura.Edit;
@@ -2518,8 +2518,8 @@ begin
   Search.AliasFields.clear;
   Search.AliasFields.Add('Nombre');
   Search.AliasFields.Add('Telefono');
-  Search.AliasFields.Add('Cédula/RNC');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?dula/RNC');
+  Search.AliasFields.Add('C?digo');
   Search.Query.add('select substring(cli_nombre,1,50) as cli_nombre, cli_telefono, cli_cedula, cli_codigo, cli_referencia');
   if dm.QParametrosPAR_CODIGOCLIENTE.value = 'I' then
     Search.ResultField := 'cli_codigo'
@@ -2740,13 +2740,13 @@ begin
         if dbCondi.Enabled = True then
         begin
              dbCondi.SetFocus;
-           // 1) Guardar código seleccionado
+           // 1) Guardar c?digo seleccionado
           codCondi := StrToIntDef(dbCondi.Text, 0);
           QFactura.Edit;
           QFacturaCPA_CODIGO.AsInteger := codCondi;
           dbCondi.SetFocus;
 
-    // 2) Leer cpa_dias con un query rápido
+    // 2) Leer cpa_dias con un query r?pido
     q := TADOQuery.Create(nil);
     try
       q.Connection := DM.ADOSigma; // AliasName = DM.ADOSigma
@@ -2765,7 +2765,7 @@ begin
       q.Free;
     end;
 
-    // 3) Calcular fecha límite (base = hoy o la fecha de la factura)
+    // 3) Calcular fecha l?mite (base = hoy o la fecha de la factura)
     // Usa la fecha de la factura si la tienes en el dataset:
     if QFactura.FindField('FAC_FECHA') <> nil then
       fechaBase := QFactura.FieldByName('FAC_FECHA').AsDateTime
@@ -2775,11 +2775,11 @@ begin
     // Con DateUtils: fechaLim := IncDay(fechaBase, dias);
     fechaLim := fechaBase + dias;
 
-    // 4) Asignar a tu TBEdit dtFechaLimite (o al campo de la tabla si está ligado)
+    // 4) Asignar a tu TBEdit dtFechaLimite (o al campo de la tabla si est? ligado)
     // Si dtFechaLimite es un TEdit/TBEdit:
     dtFechaLimite.Text := FormatDateTime('dd/mm/yyyy', fechaLim);
 
-    // Si además tienes un campo en QFactura para guardar la fecha límite:
+    // Si adem?s tienes un campo en QFactura para guardar la fecha l?mite:
     if QFactura.FindField('FECHA_LIMITE') <> nil then
       QFactura.FieldByName('FECHA_LIMITE').AsDateTime := fechaLim;
 
@@ -3036,7 +3036,7 @@ begin
     Grid.Columns[0].Width     := 30;
     Grid.Columns[0].Title.Caption := 'Cant.';
     Grid.Columns[2].Width     := 60;
-    Grid.Columns[2].Title.Caption := 'Código';
+    Grid.Columns[2].Title.Caption := 'C?digo';
     if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'I' then
        Grid.Columns[2].FieldName := 'PRO_CODIGO'
     else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'F' then
@@ -6402,7 +6402,7 @@ begin
     end
     else
     begin
-      // lógica vieja para servicio sin ITBIS
+      // l?gica vieja para servicio sin ITBIS
       QFacturaSubTotal.Value := (QFacturaFAC_TOTAL.Value * 0.88231827112);
       QFacturaFAC_SERVICIOS.Value := (QFacturaFAC_TOTAL.Value * 0.10);
       QFacturaFAC_ITBIS.Value := ((QFacturaSubTotal.Value +
@@ -6825,10 +6825,9 @@ begin
   Q.SQL.Add('SELECT s.Secuencia_Inicial_DGII, s.Ultima_secuencia_DGII, ');
   Q.SQL.Add('     CONVERT(datetime, s.FechaVencimientoSecuenciaDGII, 120) AS FechaVencimientoSecuenciaDGII, s.Activa, s.Cantidad');
   Q.SQL.Add('FROM SecuenciaDGII s');
-  Q.SQL.Add('JOIN TipoNCF t ON t.emp_codigo = s.emp_codigo AND s.Tipo = t.cod_dgii');
-  Q.SQL.Add('WHERE s.emp_codigo = :emp AND t.tip_codigo = :tip');
+  Q.SQL.Add('WHERE s.emp_codigo = :emp AND s.Tipo = :tipo');
   Q.Parameters.ParamByName('emp').Value := AEmp;
-  Q.Parameters.ParamByName('tip').Value := ATipo;
+  Q.Parameters.ParamByName('tipo').Value := ATipo;
 
   Q.Open;
 
@@ -6847,7 +6846,7 @@ begin
     vence := Q.FieldByName('FechaVencimientoSecuenciaDGII').AsDateTime;
     if Now > vence then
     begin
-      AMsg := 'La secuencia está vencida.';
+      AMsg := 'La secuencia est? vencida.';
       Exit;
     end;
   end;
@@ -6856,7 +6855,7 @@ begin
   if not Q.FieldByName('Activa').IsNull then
   activa := Q.FieldByName('Activa').AsBoolean
   else
-    activa := False; // por defecto
+    activa := True; // NULL = activa (filas legacy sin flag)
 
   hasta     := desde + cantidad - 1;
   siguiente := ultima + 1;
@@ -6873,7 +6872,7 @@ begin
     Exit;
   end;
 
-  // Hay secuencia válida y disponible (sin reservar)
+  // Hay secuencia v?lida y disponible (sin reservar)
   ASiguienteCorrelativo := siguiente;
   Result := True;
 end;
@@ -6889,6 +6888,7 @@ var
    ok: Boolean;
    msg: string;
    prox: Int64; // o Int64 si usas valores grandes
+   tipoDgii: Integer;
 
   empRNC: string;
   FacturaTieneITBIS, existeProdConITBIS: Boolean;
@@ -6925,9 +6925,25 @@ with QVerificaNCF do begin
 
   if (DM.QParametrosPAR_FE_DetenerFacturacion.Value and dm.QParametrosUsa_FacturacionElectronica.Value) then
         begin
+          // Validar por SecuenciaDGII.Tipo (= cod_dgii), no tip_codigo interno
+          tipoDgii := 0;
+          if (not QFacturaTipoeNCF.IsNull) and (QFacturaTipoeNCF.Value > 0) then
+            tipoDgii := QFacturaTipoeNCF.Value
+          else
+          begin
+            dm.Query1.Close;
+            dm.Query1.SQL.Clear;
+            dm.Query1.SQL.Add('SELECT TOP 1 ISNULL(cod_dgii, 0) AS cod_dgii FROM TipoNCF');
+            dm.Query1.SQL.Add('WHERE tip_codigo = :tip');
+            dm.Query1.Parameters.ParamByName('tip').Value := QFacturatip_codigo.Value;
+            dm.Query1.Open;
+            if not dm.Query1.Eof then
+              tipoDgii := dm.Query1.FieldByName('cod_dgii').AsInteger;
+            dm.Query1.Close;
+          end;
           ok := ValidarENCFDisponible(
                         dm.vp_cia,
-                        QFacturatip_codigo.Value,
+                        tipoDgii,
                         msg, prox);
           if (not ok) then
           begin
@@ -7057,7 +7073,7 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
   end
   else
   begin
-        // ================= VALIDACIÓN ITBIS GENERAL SEGÚN RNC EMPRESA =================
+        // ================= VALIDACI?N ITBIS GENERAL SEG?N RNC EMPRESA =================
         // 1) Solo aplica a empresas con estos RNC
         empRNC := '';
         dm.Query1.Close;
@@ -7069,7 +7085,7 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
         if not dm.Query1.IsEmpty then
           empRNC := Trim(dm.Query1.FieldByName('emp_rnc').AsString);
 
-     {   // Aquí ajusta el campo del total de ITBIS de la factura:
+     {   // Aqu? ajusta el campo del total de ITBIS de la factura:
         // Ejemplo: QFacturaFAC_ITBIS.Value, QFacturaFAC_TOTALITBIS.Value, etc.
         FacturaTieneITBIS := False;
         if (not QFactura.State in [dsInsert, dsEdit]) then
@@ -7113,7 +7129,7 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
           end;
 
           // Regla final:
-          // Si la factura tiene ITBIS general, pero NINGÚN producto tiene pro_montoitbis > 0 -> error
+          // Si la factura tiene ITBIS general, pero NING?N producto tiene pro_montoitbis > 0 -> error
           if not existeProdConITBIS then
           begin
             MessageDlg(
@@ -7126,7 +7142,7 @@ if (Trim(QFacturafac_rnc.Text)<>'') and (QFacturatip_codigo.Value <> 1) then beg
             Exit;
           end;
         end;
-    // ================= FIN VALIDACIÓN ITBIS GENERAL SEGÚN RNC EMPRESA =================
+    // ================= FIN VALIDACI?N ITBIS GENERAL SEG?N RNC EMPRESA =================
         }
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
@@ -7688,9 +7704,25 @@ end;
                 if DM.QParametrosPAR_FE_DetenerFacturacion.Value then 
                 begin
                     // 1) Validar disponibilidad de secuencia SIN reservar ni asignar
+                    //    (SecuenciaDGII.Tipo = cod_dgii)
+                    tipoDgii := 0;
+                    if (not QFacturaTipoeNCF.IsNull) and (QFacturaTipoeNCF.Value > 0) then
+                      tipoDgii := QFacturaTipoeNCF.Value
+                    else
+                    begin
+                      dm.Query1.Close;
+                      dm.Query1.SQL.Clear;
+                      dm.Query1.SQL.Add('SELECT TOP 1 ISNULL(cod_dgii, 0) AS cod_dgii FROM TipoNCF');
+                      dm.Query1.SQL.Add('WHERE tip_codigo = :tip');
+                      dm.Query1.Parameters.ParamByName('tip').Value := QFacturatip_codigo.Value;
+                      dm.Query1.Open;
+                      if not dm.Query1.Eof then
+                        tipoDgii := dm.Query1.FieldByName('cod_dgii').AsInteger;
+                      dm.Query1.Close;
+                    end;
                 ok := ValidarENCFDisponible(
                         QFacturaEMP_CODIGO.Value,
-                        QFacturatip_codigo.Value,
+                        tipoDgii,
                         msg, prox);
                 end else  ok :=True;
 
@@ -7701,7 +7733,7 @@ end;
                 end;
                 if ok then
                 begin
-                  // Proceso para enviar la Facturación Electrónica (DGII o LUGANIS)
+                  // Proceso para enviar la Facturaci?n Electr?nica (DGII o LUGANIS)
                   try
                     QFactura.Edit;
                     // ==========================
@@ -7827,7 +7859,7 @@ end;
                         );
                       end;
                     end;
-                    // aquí puedes hacer ShowMessage('Resultado: ' + resultado); si quieres ver el JSON
+                    // aqu? puedes hacer ShowMessage('Resultado: ' + resultado); si quieres ver el JSON
                   except
                     on E: Exception do
                     begin
@@ -8183,7 +8215,7 @@ end;
 
 
             if ((dm.QParametrosPAR_PREGUNTAPEQ.Value = 'True') and
-            (MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUEÑA?',mtConfirmation,[mbyes,mbno],0) = mryes)
+            (MessageDLG('DESEA IMPRIMIR EN IMPRESORA PEQUE?A?',mtConfirmation,[mbyes,mbno],0) = mryes)
                 AND (FormatoImp <> 1)) then
                 begin
                 if dm.QParametrosPAR_CAJA.Value = 'S' then
@@ -8612,7 +8644,7 @@ end;
                 end;
               end;
 
-              //Si una nota de credito se utilizó
+              //Si una nota de credito se utiliz?
               dm.Query1.close;
                dm.Query1.sql.clear;
               dm.Query1.sql.add('select ncr_numero from FACNOTASCREDITO');
@@ -9963,9 +9995,9 @@ begin
   DBEdit13.enabled  := dsFactura.State = dsInsert;
 
   if dsFactura.State = dsedit then
-    frmFactura.Caption := 'Facturación - Factura # '+QFacturaFAC_NUMERO.AsString
+    frmFactura.Caption := 'Facturaci?n - Factura # '+QFacturaFAC_NUMERO.AsString
   else
-    frmFactura.Caption := 'Facturación';
+    frmFactura.Caption := 'Facturaci?n';
 end;
 
 // Imprime QR nativo ESC/POS (module 1..16, EC: 48=L,49=M,50=Q,51=H)
@@ -9977,9 +10009,9 @@ begin
 
   // modelo
   Write(F, GS($28) + 'k' + #04#00 + #49#65#50#00); // GS ( k 4 0 1 41 2 0
-  // tamaño de módulo
+  // tama?o de m?dulo
   Write(F, GS($28) + 'k' + #03#00 + #49#67 + AnsiChar(ModuleSize));
-  // nivel de corrección
+  // nivel de correcci?n
   Write(F, GS($28) + 'k' + #03#00 + #49#69 + AnsiChar(ECLevel));
 
   // almacenar datos
@@ -10004,7 +10036,7 @@ begin
   i := 1;
   while i <= Length(S) do
   begin
-    Writeln(F, Copy(S, i, 40)); // imprime 40 caracteres por línea
+    Writeln(F, Copy(S, i, 40)); // imprime 40 caracteres por l?nea
     Inc(i, 40);
   end;
 end;
@@ -10080,7 +10112,7 @@ end;
 
   AssignFile(arch, '.\t.txt');
   rewrite(arch);
-  // Inicializar impresora y codepage 850 (acentos y Ñ)
+  // Inicializar impresora y codepage 850 (acentos y ?)
   Write(arch, ESC($40));                     // ESC @ (init)
   Write(arch, ESC($74) + AnsiChar(#2));      // ESC t 2 -> CP850
   Writeln(arch);
@@ -10467,7 +10499,8 @@ end;
      writeln(arch, '                             -----------');
      writeln(arch, '              Total Neto US$:'+s3+format('%n',[RFactura.QFacturaFAC_TOTAL_DOLAR.value]));
 
- { IF (QEnviofacpagodestino.Value= True) then
+
+ { IF (QEnviofacpagodestino.Value= True) then
   begin
      writeln(arch, '');
      writeln(arch, #27'E' + 'PAGAR DESTINO:' + format('%n',[RFactura.QFacturaFAC_TOTAL.value]) + #27'F');
@@ -10581,7 +10614,7 @@ end;
     msg := Trim(RFactura.QFacturaFAC_MENSAJE1.Value);
   if msg <> '' then
   begin
-    writeln(arch, ' '); // una línea en blanco antes del mensaje
+    writeln(arch, ' '); // una l?nea en blanco antes del mensaje
 
     if Length(copy(msg,1,39)) > 0 then
       writeln(arch, copy(msg,1,39));
@@ -10724,22 +10757,22 @@ end;
     begin
 
      qrData := AnsiString(Trim(qrURL));
-    WriteQR(arch, qrData, 6, 48);   // módulo 6, nivel L (rápido y legible)
+    WriteQR(arch, qrData, 6, 48);   // m?dulo 6, nivel L (r?pido y legible)
      Writeln(arch, 'Fecha firma: ' + fechaFirma);
     Writeln(arch, 'Cod. seguridad: ' + codSeg);
 
      {
     qrData := AnsiString(qrURL);
-    WriteQR(arch, qrData, 6, 48);  // módulo 6, nivel L
+    WriteQR(arch, qrData, 6, 48);  // m?dulo 6, nivel L
     Writeln(arch, 'Fecha firma: ' + fechaFirma);
     Writeln(arch, 'Cod. seguridad: ' + codSeg);   
-    Writeln(arch); // línea en blanco antes del corte
+    Writeln(arch); // l?nea en blanco antes del corte
     }
   end
   else
   begin
     // No imprime QR ni datos;
-    // Writeln(arch, 'Documento pendiente de aceptación DGII');
+    // Writeln(arch, 'Documento pendiente de aceptaci?n DGII');
   end;
   writeln(arch, ' ');
   // Mensaje final opcional
@@ -11131,7 +11164,7 @@ begin
         QDetallepro_serializado.Value := Query1.FieldByName('pro_serializado').Value;
 
        if VarIsNull(Query1.FieldByName('pro_preciomenor').Value) or VarIsEmpty(Query1.FieldByName('pro_preciomenor').Value) then
-          QDetalleDET_PRECIOMINIMO.Value := 0  // Ajusta esto según el tipo de campo si no es numérico
+          QDetalleDET_PRECIOMINIMO.Value := 0  // Ajusta esto seg?n el tipo de campo si no es num?rico
        else
           QDetalleDET_PRECIOMINIMO.Value := Query1.FieldByName('pro_preciomenor').Value;
 
@@ -12669,7 +12702,7 @@ procedure TfrmFactura.btmonedaClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('C?digo');
   Search.Query.clear;
   Search.Query.add('select mon_nombre, mon_codigo');
   Search.Query.add('from moneda');
@@ -12837,7 +12870,7 @@ procedure TfrmFactura.btcajaClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('C?digo');
   Search.Query.clear;
   Search.Query.add('select caj_nombre, caj_codigo');
   Search.Query.add('from cajas');
@@ -13064,7 +13097,7 @@ begin
   Search.Query.Add('from contcatalogo');
   Search.Query.Add('where emp_codigo = '+IntToStr(dm.vp_cia));
   Search.Query.Add('and cat_movimiento = '+#39+'S'+#39);
-  Search.AliasFields.Add('Descripción');
+  Search.AliasFields.Add('Descripci?n');
   Search.AliasFields.Add('Cuenta');
   Search.ResultField := 'cat_cuenta';
   Search.Title := 'Catalogo de Cuentas';
@@ -13376,7 +13409,7 @@ procedure TfrmFactura.Preventasdelproducto1Click(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('C?digo');
   Search.Query.clear;
   Search.Query.add('select pre_nombre, pre_codigo');
   Search.Query.add('from Preventas');
@@ -13480,10 +13513,10 @@ begin
   Search.AliasFields.Clear;
   Search.AliasFields.Add('Placa');
   Search.AliasFields.Add('Chofer');
-  Search.AliasFields.Add('Compañía');
+  Search.AliasFields.Add('Compa??a');
   Search.AliasFields.Add('Marca');
   Search.AliasFields.Add('Modelo');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.add('select Placa, Chofer, Compania, Marca, Modelo, CamionID');
   Search.Query.add('from Camiones');
   Search.Title := 'Camiones';
@@ -14338,9 +14371,9 @@ end;
 procedure TfrmFactura.bttiponcfClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
-  Search.AliasFields.add('Código');
+  Search.AliasFields.add('C?digo');
   Search.AliasFields.add('Nombre');
-  Search.AliasFields.add('Código DGII');
+  Search.AliasFields.add('C?digo DGII');
   Search.Query.Clear;
   Search.Query.Add('select tip_codigo, (nombre_dgii) as tip_nombre, cod_dgii');
  // Search.Query.Add('select tip_codigo, trim(tip_nombre) as tip_nombre');
@@ -15086,7 +15119,7 @@ begin
     if QEnvio.Active and (not QEnvio.IsEmpty) then
     begin
       
-      // Activamos el modo de edición del dataset
+      // Activamos el modo de edici?n del dataset
       QEnvio.Edit;
 
       // Actualizamos el valor del campo Cantidad en base a otro dataset
@@ -15142,7 +15175,7 @@ procedure TfrmFactura.btnReservaClick(Sender: TObject);
 begin
   Search.AliasFields.clear;
   Search.AliasFields.Add('Nombre');
-  Search.AliasFields.Add('Código');
+  Search.AliasFields.Add('C?digo');
   Search.Query.clear;
   Search.Query.add('select Numero_Reserva, Reserva_nombre');
   Search.Query.add('from Hotel_Reservas');
@@ -16704,13 +16737,13 @@ begin
   vTotalgral:=0;
   SetLength(arrayMultiUso, 17);
 
-    //Obtiene los datos de fiscalización
+    //Obtiene los datos de fiscalizaci?n
     err := DriverFiscal1.IF_WRITE('@GetInitData');
     arrayMultiUso[0] := DriverFiscal1.IF_READ(1);
     arrayMultiUso[1] := DriverFiscal1.IF_READ(2);
     arrayMultiUso[2] := DriverFiscal1.IF_READ(3);
     arrayMultiUso[3] := DriverFiscal1.IF_READ(4);
-    //Obtiene las características fiscales
+    //Obtiene las caracter?sticas fiscales
     err := DriverFiscal1.IF_WRITE('@GetFiscalFeatures');
     arrayMultiUso[4] := DriverFiscal1.IF_READ(1); //--Tauru
     arrayMultiUso[5] := DriverFiscal1.IF_READ(2); //
@@ -16721,12 +16754,12 @@ begin
     arrayMultiUso[10] := DriverFiscal1.IF_READ(7);
     arrayMultiUso[11] := DriverFiscal1.IF_READ(8);
     arrayMultiUso[12] := DriverFiscal1.IF_READ(9);
-    //Obtiene los datos de serialización
+    //Obtiene los datos de serializaci?n
     err := DriverFiscal1.IF_WRITE('@GetPrinterVersion');
     arrayMultiUso[13] := DriverFiscal1.IF_READ(1);  //Serie
     arrayMultiUso[14] := DriverFiscal1.IF_READ(2);  //id
 
-   //Retorna los valores de respuesta del último comprobante cerrado
+   //Retorna los valores de respuesta del ?ltimo comprobante cerrado
     err := DriverFiscal1.IF_WRITE('@GetLastTicketStatus');
     arrayMultiUso[15] := DriverFiscal1.IF_READ(1);  //NIF
     //arrayMultiUso[17]
@@ -16815,7 +16848,7 @@ begin
             informacion, entonces lo que hacesmo es dividir la descripcion en
             3 grupos para poder imprimir la descripcion completa de manera parcial
             en la definicion de la ayuda podra notar que las descripciones van desde
-            Descripcion hasta Descripción extra #9, pero el titulo de descripcion
+            Descripcion hasta Descripci?n extra #9, pero el titulo de descripcion
             se imprime ultimo a las descripciones extra . Aqui capturamo el valor
             de la descripcion del producto en base de datos, y lo asignamos a una
             variable y a esta la dividimos.  Manuel Titin Abril/2018}
@@ -17153,7 +17186,7 @@ begin
 
     //  DriverFiscal1.IF_TRACE(1) ; //esta linea es para ver un log con lo que hace el printer
   {
-  'Habilitar la depuración y captura de comandos enviados al archivo debug.log
+  'Habilitar la depuraci?n y captura de comandos enviados al archivo debug.log
   IF_TRACE(1)
   'Deshabilitar el debugging
   IF_TRACE(0)
@@ -17214,7 +17247,7 @@ begin
       informacion, entonces lo que hacesmo es dividir la descripcion en
       3 grupos para poder imprimir la descripcion completa de manera parcial
       en la definicion de la ayuda podra notar que las descripciones van desde
-      Descripcion hasta Descripción extra #9, pero el titulo de descripcion
+      Descripcion hasta Descripci?n extra #9, pero el titulo de descripcion
       se imprime ultimo a las descripciones extra . Aqui capturamo el valor
       de la descripcion del producto en base de datos, y lo asignamos a una
       variable y a esta la dividimos.  Manuel Titin Abril/2018}
@@ -17682,7 +17715,7 @@ begin
 
   {if (length(RFactura.QFacturaNumeroCF.AsString) < 19) then
   begin
-    Application.MessageBox('El número de comprabante fiscal debe de tener 19 digitos','Error',MB_OK);
+    Application.MessageBox('El n?mero de comprabante fiscal debe de tener 19 digitos','Error',MB_OK);
 
     exit;
   end;}
@@ -17727,34 +17760,34 @@ begin
       (*
       A = Factura a consumidor final (predeterminado).
 
-      B = Factura con derecho a crédito fiscal.
+      B = Factura con derecho a cr?dito fiscal.
 
-      C = Nota de crédito a consumidor final
+      C = Nota de cr?dito a consumidor final
 
-      D = Nota de crédito con derecho a crédito fiscal.
+      D = Nota de cr?dito con derecho a cr?dito fiscal.
 
-      E = Factura a consumidor final con exoneración de ITBIS.
+      E = Factura a consumidor final con exoneraci?n de ITBIS.
 
-      F = Factura con derecho a crédito fiscal con exoneración de ITBIS
+      F = Factura con derecho a cr?dito fiscal con exoneraci?n de ITBIS
 
-      ‘000’ – Factura a consumidor final.
-      ‘001’ – Factura con derecho a crédito fiscal.
-      ‘010’ – Nota de crédito a consumidor final.
-      ‘011’ – Nota de crédito con derecho a crédito fiscal.
-      ‘100’ – Factura a consumidor final con exoneración de ITBIS.
-      ‘101’ – Factura con derecho a crédito fiscal con exoneración de ITBIS.
-      ‘110’ – Nota de Crédito consumidor final con exoneración ITBIS
-      ‘111’ – Nota de Crédito para crédito fiscal con exoneración ITBIS.
+      ?000? ? Factura a consumidor final.
+      ?001? ? Factura con derecho a cr?dito fiscal.
+      ?010? ? Nota de cr?dito a consumidor final.
+      ?011? ? Nota de cr?dito con derecho a cr?dito fiscal.
+      ?100? ? Factura a consumidor final con exoneraci?n de ITBIS.
+      ?101? ? Factura con derecho a cr?dito fiscal con exoneraci?n de ITBIS.
+      ?110? ? Nota de Cr?dito consumidor final con exoneraci?n ITBIS
+      ?111? ? Nota de Cr?dito para cr?dito fiscal con exoneraci?n ITBIS.
 
-      01 Facturas que Generan Crédito y Sustentan
+      01 Facturas que Generan Cr?dito y Sustentan
 Costos y/o Gastos
 02 Facturas para Consumidores Finales
-03 Nota de Débito
-04 Nota de Crédito
+03 Nota de D?bito
+04 Nota de Cr?dito
 11 Proveedores Informales
-12 Registro Único de Ingresos
+12 Registro ?nico de Ingresos
 13 Gastos Menores
-14 Regímenes Especiales de Tributación
+14 Reg?menes Especiales de Tributaci?n
 15 Comprobantes Gubernamentales
 
       *)
@@ -18168,9 +18201,9 @@ begin
     //apertura de la factura
     case QFacturatip_codigo.Value of
       1:SendCmd(Stat, Err, PChar('/0'));    //Factura Para Consumidor Final
-      2:SendCmd(Stat, Err, PChar('/1'));     //Factura Para Crédito Fiscal
+      2:SendCmd(Stat, Err, PChar('/1'));     //Factura Para Cr?dito Fiscal
       3:SendCmd(Stat, Err, PChar('/1'));     ////Gubernamental
-      4:SendCmd(Stat, Err, PChar('/4'));    ////Regimen Especial (Factura Para Crédito Fiscal con Exoneración ITBIS)
+      4:SendCmd(Stat, Err, PChar('/4'));    ////Regimen Especial (Factura Para Cr?dito Fiscal con Exoneraci?n ITBIS)
     end;
 
 
@@ -18445,7 +18478,7 @@ end;
 
     procedure TfrmFactura.QFacturaAfterInsert(DataSet: TDataSet);
 begin
-frmFactura.Caption := 'Facturación';
+frmFactura.Caption := 'Facturaci?n';
 end;
 
 procedure TfrmFactura.QFacturaTFA_CODIGOGetText(Sender: TField;
@@ -18708,7 +18741,7 @@ begin
     for i := 1 to vcantidad do
     begin
       try
-        // Generar un nombre de archivo único por ticket
+        // Generar un nombre de archivo ?nico por ticket
         FileName := '.\Envio_' + IntToStr(i) + '_' + IntToStr(vnumero) + '.txt';
          desTicket := '';
         // Abrir y escribir en el archivo
@@ -18728,11 +18761,11 @@ begin
         writeln(ar, 'B05,500,0,1,6,2,140,B,"' + vCodigoBarra + '"');
         writeln(ar, 'A100,730,0,5,0,1,N,"NUMERO:' + IntToStr(vnumero) + '"');
 
-        // Validación y modificación de la descripción
+        // Validaci?n y modificaci?n de la descripci?n
         if (vDescripcion = '') or (vDescripcion = null) then
           desTicket := 'TICKET'
         else
-        // Cortar la descripción al primer espacio
+        // Cortar la descripci?n al primer espacio
         desTicket := Copy(vDescripcion, 1, Pos(' ', vDescripcion) - 1);
 
       // Luego lo usamos en la escritura del archivo:
@@ -18745,14 +18778,14 @@ begin
         writeln(ar, 'FK');
         closefile(ar);
 
-        // Crear un archivo .bat temporal para ejecutar la impresión
+        // Crear un archivo .bat temporal para ejecutar la impresi?n
         AssignFile(ar, '.\impEnv_' + IntToStr(i) + '.bat');
         rewrite(ar);
 
         writeln(ar, 'type ' + FileName + ' > ' + IniBarra);
        // writeln(ar, 'type .\Envio.txt > ' + IniBarra);
         closefile(ar);
-         // Ejecutar la impresión
+         // Ejecutar la impresi?n
         WinExec(PAnsiChar('.\impEnv_' + IntToStr(i) + '.bat'), 0);
         
        // WinExec('.\impEnv.bat', 0);
@@ -19394,14 +19427,14 @@ end;
         exit;
       end;
 
-  //Obtiene los datos de fiscalización
+  //Obtiene los datos de fiscalizaci?n
     err := DriverFiscal1.IF_WRITE('@GetInitData');
-    //Obtiene las características fiscales
+    //Obtiene las caracter?sticas fiscales
     err := DriverFiscal1.IF_WRITE('@GetFiscalFeatures');
-    //Obtiene los datos de serialización
+    //Obtiene los datos de serializaci?n
     err := DriverFiscal1.IF_WRITE('@GetPrinterVersion');
 
-   //Retorna los valores de respuesta del último comprobante cerrado
+   //Retorna los valores de respuesta del ?ltimo comprobante cerrado
     err := DriverFiscal1.IF_WRITE('@GetLastTicketStatus');
     //arrayMultiUso[17]
 
@@ -19483,14 +19516,14 @@ end;
         exit;
       end;
 
-  //Obtiene los datos de fiscalización
+  //Obtiene los datos de fiscalizaci?n
     err := DriverFiscal1.IF_WRITE('@GetInitData');
-    //Obtiene las características fiscales
+    //Obtiene las caracter?sticas fiscales
     err := DriverFiscal1.IF_WRITE('@GetFiscalFeatures');
-    //Obtiene los datos de serialización
+    //Obtiene los datos de serializaci?n
     err := DriverFiscal1.IF_WRITE('@GetPrinterVersion');
 
-   //Retorna los valores de respuesta del último comprobante cerrado
+   //Retorna los valores de respuesta del ?ltimo comprobante cerrado
     err := DriverFiscal1.IF_WRITE('@GetLastTicketStatus');
     //arrayMultiUso[17]
 
@@ -19780,13 +19813,13 @@ begin
   vTotalgral:=0;
   SetLength(arrayMultiUso, 17);
 
-    //Obtiene los datos de fiscalización
+    //Obtiene los datos de fiscalizaci?n
     err := DriverFiscal1.IF_WRITE('@GetInitData');
     arrayMultiUso[0] := DriverFiscal1.IF_READ(1);
     arrayMultiUso[1] := DriverFiscal1.IF_READ(2);
     arrayMultiUso[2] := DriverFiscal1.IF_READ(3);
     arrayMultiUso[3] := DriverFiscal1.IF_READ(4);
-    //Obtiene las características fiscales
+    //Obtiene las caracter?sticas fiscales
     err := DriverFiscal1.IF_WRITE('@GetFiscalFeatures');
     arrayMultiUso[4] := DriverFiscal1.IF_READ(1); //--Tauru
     arrayMultiUso[5] := DriverFiscal1.IF_READ(2); //
@@ -19797,12 +19830,12 @@ begin
     arrayMultiUso[10] := DriverFiscal1.IF_READ(7);
     arrayMultiUso[11] := DriverFiscal1.IF_READ(8);
     arrayMultiUso[12] := DriverFiscal1.IF_READ(9);
-    //Obtiene los datos de serialización
+    //Obtiene los datos de serializaci?n
     err := DriverFiscal1.IF_WRITE('@GetPrinterVersion');
     arrayMultiUso[13] := DriverFiscal1.IF_READ(1);  //Serie
     arrayMultiUso[14] := DriverFiscal1.IF_READ(2);  //id
 
-   //Retorna los valores de respuesta del último comprobante cerrado
+   //Retorna los valores de respuesta del ?ltimo comprobante cerrado
     err := DriverFiscal1.IF_WRITE('@GetLastTicketStatus');
     arrayMultiUso[15] := DriverFiscal1.IF_READ(1);  //NIF
     //arrayMultiUso[17]
@@ -19891,7 +19924,7 @@ begin
             informacion, entonces lo que hacesmo es dividir la descripcion en
             3 grupos para poder imprimir la descripcion completa de manera parcial
             en la definicion de la ayuda podra notar que las descripciones van desde
-            Descripcion hasta Descripción extra #9, pero el titulo de descripcion
+            Descripcion hasta Descripci?n extra #9, pero el titulo de descripcion
             se imprime ultimo a las descripciones extra . Aqui capturamo el valor
             de la descripcion del producto en base de datos, y lo asignamos a una
             variable y a esta la dividimos.  Manuel Titin Abril/2018}
@@ -20212,7 +20245,7 @@ begin
 
     //  DriverFiscal1.IF_TRACE(1) ; //esta linea es para ver un log con lo que hace el printer
   {
-  'Habilitar la depuración y captura de comandos enviados al archivo debug.log
+  'Habilitar la depuraci?n y captura de comandos enviados al archivo debug.log
   IF_TRACE(1)
   'Deshabilitar el debugging
   IF_TRACE(0)
@@ -20273,7 +20306,7 @@ begin
       informacion, entonces lo que hacesmo es dividir la descripcion en
       3 grupos para poder imprimir la descripcion completa de manera parcial
       en la definicion de la ayuda podra notar que las descripciones van desde
-      Descripcion hasta Descripción extra #9, pero el titulo de descripcion
+      Descripcion hasta Descripci?n extra #9, pero el titulo de descripcion
       se imprime ultimo a las descripciones extra . Aqui capturamo el valor
       de la descripcion del producto en base de datos, y lo asignamos a una
       variable y a esta la dividimos.  Manuel Titin Abril/2018}
