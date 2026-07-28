@@ -1,9 +1,9 @@
 object frmConsFacturasProdPlaca: TfrmConsFacturasProdPlaca
-  Left = 238
-  Top = 226
+  Left = 305
+  Top = 359
   BorderStyle = bsSingle
   Caption = 'Consulta de ventas por producto x Placa'
-  ClientHeight = 513
+  ClientHeight = 491
   ClientWidth = 1287
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -107,6 +107,41 @@ object frmConsFacturasProdPlaca: TfrmConsFacturasProdPlaca
         777770000000}
       OnClick = btnTecnicoClick
     end
+    object btnbVehiculo: TSpeedButton
+      Left = 166
+      Top = 102
+      Width = 23
+      Height = 22
+      Hint = 'Buscar Placa del Camion'
+      Flat = True
+      Glyph.Data = {
+        42010000424D4201000000000000760000002800000011000000110000000100
+        040000000000CC00000000000000000000001000000010000000000000000000
+        BF0000BF000000BFBF00BF000000BF00BF00BFBF0000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777777
+        77777000000077777777777777777000000070000077777000007000000070B0
+        00777770F0007000000070F000777770B0007000000070000000700000007000
+        0000700B000000B0000070000000700F000700F0000070000000700B000700B0
+        0000700000007700000000000007700000007770B00070B00077700000007770
+        0000700000777000000077770007770007777000000077770B07770B07777000
+        0000777700077700077770000000777777777777777770000000777777777777
+        777770000000}
+      OnClick = btnbVehiculoClick
+    end
+    object lblProximoChequeo: TLabel
+      Left = 192
+      Top = 107
+      Width = 108
+      Height = 13
+      Caption = 'lblProximoChequeo'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+      Visible = False
+    end
     object Fecha1: TDateTimePicker
       Left = 64
       Top = 8
@@ -190,6 +225,7 @@ object frmConsFacturasProdPlaca: TfrmConsFacturasProdPlaca
       Font.Style = []
       ParentFont = False
       TabOrder = 3
+      OnKeyPress = edPlacaKeyPress
     end
     object tVendedor: TEdit
       Left = 152
@@ -260,7 +296,7 @@ object frmConsFacturasProdPlaca: TfrmConsFacturasProdPlaca
   end
   object Panel2: TPanel
     Left = 0
-    Top = 473
+    Top = 451
     Width = 1287
     Height = 40
     Align = alBottom
@@ -351,7 +387,7 @@ object frmConsFacturasProdPlaca: TfrmConsFacturasProdPlaca
     Left = 0
     Top = 137
     Width = 1287
-    Height = 336
+    Height = 314
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 3
@@ -361,7 +397,7 @@ object frmConsFacturasProdPlaca: TfrmConsFacturasProdPlaca
         Left = 0
         Top = 0
         Width = 1279
-        Height = 308
+        Height = 286
         Align = alClient
         Color = clInfoBk
         Ctl3D = False
@@ -399,14 +435,6 @@ object frmConsFacturasProdPlaca: TfrmConsFacturasProdPlaca
             FieldName = 'suc_nombre'
             Title.Caption = 'Sucursal'
             Width = 213
-            Visible = True
-          end
-          item
-            Alignment = taCenter
-            Expanded = False
-            FieldName = 'fac_forma'
-            Title.Alignment = taCenter
-            Title.Caption = 'Grupo'
             Visible = True
           end
           item

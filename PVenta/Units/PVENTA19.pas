@@ -380,6 +380,12 @@ type
     QPedidosPED_Modelo: TStringField;
     QPedidosPED_Metraje: TFloatField;
     QPedidosPED_IDCamion: TIntegerField;
+    DBEdit17: TDBEdit;
+    Label23: TLabel;
+    QPedidosPED_KM_PROXMANT: TIntegerField;
+    QPedidosPED_KM_ACTUAL: TIntegerField;
+    DBEdit18: TDBEdit;
+    Label24: TLabel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -399,7 +405,6 @@ type
     procedure GridEnter(Sender: TObject);
     procedure GridColEnter(Sender: TObject);
     procedure GridKeyPress(Sender: TObject; var Key: Char);
-    procedure FormCreate(Sender: TObject);
     procedure GridKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure btBuscaProdClick(Sender: TObject);
@@ -442,6 +447,7 @@ type
     procedure btBuscaVendPorcClick(Sender: TObject);
     procedure btcamionClick(Sender: TObject);
     procedure QPedidosPED_PlacaChange(Sender: TField);
+    procedure FormCreate(Sender: TObject);
   private
     DesactivarCargaProductos :Boolean;
     vl_ped, vl_suc, vl_emp : Integer;
@@ -793,55 +799,6 @@ end;
 end;
 END;
 
-procedure TfrmPedidosCli.FormCreate(Sender: TObject);
-var
-  a : integer;
-begin
-  for a := 0 to (Sender as TForm).ComponentCount -1 DO
-  begin
-    if Components[a].ClassType = tdbedit then
-    begin
-      (Components[a] as tdbedit).OnEnter := frmMain.Entra;
-      (Components[a] as tdbedit).OnExit := frmMain.sale;
-    end;
-  end;
-  if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'I' then
-     Grid.Columns[0].FieldName := 'PRO_CODIGO'
-  else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'F' then
-     Grid.Columns[0].FieldName := 'PRO_RFABRIC'
-  else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'O' then
-     Grid.Columns[0].FieldName := 'PRO_RORIGINAL';
-
-  Grid.Columns[0].Width := 69;
-
-  if dm.QParametrospar_visualizadesc.Value <> 'True' then
-  begin
-    Grid.Columns[6].Destroy;
-    Grid.Columns[1].Width := Grid.Columns[1].Width + 13;
-  end;
-
-  if dm.QParametrosPAR_FACMEDIDA.Value <> 'True' then
-  begin
-    Grid.Columns[4].Destroy;
-    Grid.Columns[1].Width := Grid.Columns[1].Width + 20;
-  end;
-
-  if dm.QParametrosPAR_FACESCALA.Value <> 'True' then
-  begin
-    Grid.Columns[3].Destroy;
-    Grid.Columns[1].Width := Grid.Columns[1].Width + 20;
-  end;   
-  tPrecio.Text := cbPrecio.Text;
-
-    if (dm.QParametrospar_fac_preimpresa.Value = 'False') and
-   (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') and
-   (dm.QParametrospar_formato_preimpreso.Value <> 'AutoServicios') then
-   begin
-   FreeAndNil(TabSheet3);
-   end;
-
-  PageControl1.ActivePage := TabSheet1;  
-end;
 
 procedure TfrmPedidosCli.GridKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
@@ -2358,7 +2315,7 @@ begin
   Search.AliasFields.Add('Marca');
   Search.AliasFields.Add('Modelo');
   Search.AliasFields.Add('Codigo');
-  Search.Query.add('select Placa, Chofer, Compania, Marca, Modelo, CamionID');
+  Search.Query.add('select Placa, Chofer, Compania, Marca, Modelo, CamionID, KM_ACTUAL, KM_PROXMANT');
   Search.Query.add('from Camiones');
   Search.Title := 'Camiones';
   Search.ResultField := 'Placa';
@@ -2376,7 +2333,7 @@ if NOT QPedidosPED_Placa.IsNull then
     memocamion.Lines.clear;
     dm.Query1.Close;
     dm.Query1.SQL.Clear;
-    dm.Query1.SQL.Add('select CamionID, Marca, Modelo, Placa, Chofer, Metraje, Compania');
+    dm.Query1.SQL.Add('select CamionID, Marca, Modelo, Placa, Chofer, Metraje, Compania, KM_ACTUAL, KM_PROXMANT');
     dm.Query1.SQL.Add('from camiones where placa = '+QuotedStr(QPedidosPED_Placa.AsString));
     dm.Query1.Open;
     if dm.Query1.RecordCount > 0 then
@@ -2393,8 +2350,68 @@ if NOT QPedidosPED_Placa.IsNull then
       QPedidosPED_Chofer.Value   := dm.Query1.FieldByName('Chofer').AsString;
       QPedidosPED_Metraje.Value  := dm.Query1.FieldByName('Metraje').AsFloat;
       QPedidosPED_Compania.Value := dm.Query1.FieldByName('Compania').AsString;
+      QPedidosPED_KM_ACTUAL.Value := dm.Query1.FieldByName('KM_ACTUAL').AsInteger;
+      QPedidosPED_KM_PROXMANT.Value := dm.Query1.FieldByName('KM_PROXMANT').AsInteger;
     end;
   end;
+end;
+
+procedure TfrmPedidosCli.FormCreate(Sender: TObject);
+var
+  a : integer;
+begin
+  for a := 0 to (Sender as TForm).ComponentCount -1 DO
+  begin
+    if Components[a].ClassType = tdbedit then
+    begin
+      (Components[a] as tdbedit).OnEnter := frmMain.Entra;
+      (Components[a] as tdbedit).OnExit := frmMain.sale;
+    end;
+  end;
+  if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'I' then
+     Grid.Columns[0].FieldName := 'PRO_CODIGO'
+  else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'F' then
+     Grid.Columns[0].FieldName := 'PRO_RFABRIC'
+  else if dm.QParametrosPAR_CODIGOPRODUCTO.value = 'O' then
+     Grid.Columns[0].FieldName := 'PRO_RORIGINAL';
+
+  Grid.Columns[0].Width := 69;
+
+  if dm.QParametrospar_visualizadesc.Value <> 'True' then
+  begin
+    Grid.Columns[6].Destroy;
+    Grid.Columns[1].Width := Grid.Columns[1].Width + 13;
+  end;
+
+  if dm.QParametrosPAR_FACMEDIDA.Value <> 'True' then
+  begin
+    Grid.Columns[4].Destroy;
+    Grid.Columns[1].Width := Grid.Columns[1].Width + 20;
+  end;
+
+  if dm.QParametrosPAR_FACESCALA.Value <> 'True' then
+  begin
+    Grid.Columns[3].Destroy;
+    Grid.Columns[1].Width := Grid.Columns[1].Width + 20;
+  end;
+  tPrecio.Text := cbPrecio.Text;
+
+    if (dm.QParametrospar_fac_preimpresa.Value = 'False') and
+   (dm.QParametrospar_formato_preimpreso.Value <> 'QRAgregados') and
+   (dm.QParametrospar_formato_preimpreso.Value <> 'AutoServicios') then
+   begin
+   FreeAndNil(TabSheet3);
+   end;
+
+  PageControl1.ActivePage := TabSheet1;
+
+  if (dm.QParametrospar_fac_preimpresa.Value = 'True') and
+   (dm.QParametrospar_formato_preimpreso.Value = 'AutoServicios') then
+  TabSheet3.Caption := 'Vehiculo' else
+  TabSheet3.Caption := 'Datos del camión';
+
+
+
 end;
 
 end.

@@ -228,13 +228,6 @@ object frmFactura: TfrmFactura
       Caption = '#Orden'
       FocusControl = DBEdit16
     end
-    object Label15: TLabel
-      Left = 400
-      Top = 105
-      Width = 52
-      Height = 13
-      Caption = 'Referencia'
-    end
     object lbPedido: TLabel
       Left = 744
       Top = 32
@@ -284,6 +277,13 @@ object frmFactura: TfrmFactura
       Width = 45
       Height = 13
       Caption = 'Reservas'
+    end
+    object Label15: TLabel
+      Left = 370
+      Top = 107
+      Width = 52
+      Height = 13
+      Caption = 'Referencia'
     end
     object edCliente: TEdit
       Left = 64
@@ -1147,20 +1147,6 @@ object frmFactura: TfrmFactura
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object lblVendedor: TLabel
-      Left = 155
-      Top = 91
-      Width = 67
-      Height = 13
-      Caption = 'lblVendedor'
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-      ParentFont = False
-      Visible = False
-    end
     object btPedido: TBitBtn
       Left = 4
       Top = 9
@@ -1739,7 +1725,7 @@ object frmFactura: TfrmFactura
     Top = 190
     Width = 889
     Height = 196
-    ActivePage = TabSheet1
+    ActivePage = TabSheet3
     Align = alClient
     Style = tsFlatButtons
     TabOrder = 2
@@ -2507,6 +2493,20 @@ object frmFactura: TfrmFactura
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object lblVendedor: TLabel
+      Left = 0
+      Top = 16
+      Width = 67
+      Height = 13
+      Caption = 'lblVendedor'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      Visible = False
+    end
     object ckdomicilio: TDBCheckBox
       Left = 146
       Top = 0
@@ -2638,7 +2638,7 @@ object frmFactura: TfrmFactura
         ','
       
         'fac_total_dolar, eNCF, E.emp_rnc, C.cli_rnc, t.cod_dgii as Tipoe' +
-        'NCF, FechaLimitePago'
+        'NCF, FechaLimitePago, KM_PROXMANT, KM_ACTUAL'
       'from'
       'FACTURAS F INNER JOIN Empresas E ON E.emp_codigo=F.emp_codigo'
       'LEFT join TipoNCF t on t.tip_codigo=f.tip_codigo'
@@ -2998,6 +2998,12 @@ object frmFactura: TfrmFactura
       FieldName = 'FechaLimitePago'
       OnValidate = QFacturaFechaLimitePagoValidate
       DisplayFormat = 'dd/mm/yyyy'
+    end
+    object QFacturaKM_PROXMANT: TIntegerField
+      FieldName = 'KM_PROXMANT'
+    end
+    object QFacturaKM_ACTUAL: TIntegerField
+      FieldName = 'KM_ACTUAL'
     end
   end
   object dsFactura: TDataSource
@@ -4679,151 +4685,6 @@ object frmFactura: TfrmFactura
       Caption = 'Pantalla de ajuste de inventario'
       OnClick = Ajustedeinventario1Click
     end
-  end
-  object QPedidos: TADOQuery
-    Connection = DM.ADOSigma
-    LockType = ltBatchOptimistic
-    OnNewRecord = QPedidosNewRecord
-    Parameters = <
-      item
-        Name = 'emp'
-        Attributes = [paSigned]
-        DataType = ftInteger
-        Precision = 10
-        Size = 4
-        Value = Null
-      end
-      item
-        Name = 'suc'
-        Attributes = [paSigned]
-        DataType = ftInteger
-        Precision = 10
-        Size = 4
-        Value = Null
-      end
-      item
-        Name = 'for'
-        DataType = ftString
-        NumericScale = 255
-        Precision = 255
-        Size = 1
-        Value = Null
-      end
-      item
-        Name = 'tfa'
-        Attributes = [paSigned]
-        DataType = ftInteger
-        Precision = 10
-        Size = 4
-        Value = Null
-      end
-      item
-        Name = 'num'
-        Attributes = [paSigned]
-        DataType = ftInteger
-        Precision = 10
-        Size = 4
-        Value = Null
-      end>
-    SQL.Strings = (
-      'select'
-      'emp_codigo, suc_codigo, fac_forma, tfa_codigo, fac_numero,'
-      
-        'ped_tipo, ped_numero, ped_fecha, ped_nombre, ped_total, ped_itbi' +
-        's,'
-      
-        'mon_codigo, ped_tasa,  PED_IDCamion, PED_Placa, PED_Metraje, PED' +
-        '_Compania, PED_Marca, PED_Modelo, PED_Chofer'
-      'from'
-      'FacPedidos'
-      'where'
-      'emp_codigo = :emp'
-      'and suc_codigo = :suc'
-      'and fac_forma = :for'
-      'and tfa_codigo = :tfa'
-      'and fac_numero = :num'
-      'order by ped_numero desc')
-    Left = 608
-    Top = 299
-    object QPedidosemp_codigo: TIntegerField
-      FieldName = 'emp_codigo'
-    end
-    object QPedidossuc_codigo: TIntegerField
-      FieldName = 'suc_codigo'
-    end
-    object QPedidosfac_forma: TStringField
-      FieldName = 'fac_forma'
-      Size = 1
-    end
-    object QPedidostfa_codigo: TIntegerField
-      FieldName = 'tfa_codigo'
-    end
-    object QPedidosfac_numero: TIntegerField
-      FieldName = 'fac_numero'
-    end
-    object QPedidosped_tipo: TStringField
-      FieldName = 'ped_tipo'
-      Size = 1
-    end
-    object QPedidosped_numero: TIntegerField
-      FieldName = 'ped_numero'
-      OnChange = QPedidosped_numeroChange
-    end
-    object QPedidosped_fecha: TDateTimeField
-      FieldName = 'ped_fecha'
-    end
-    object QPedidosped_nombre: TStringField
-      FieldName = 'ped_nombre'
-      Size = 100
-    end
-    object QPedidosped_total: TBCDField
-      FieldName = 'ped_total'
-      Precision = 18
-      Size = 2
-    end
-    object QPedidosped_itbis: TBCDField
-      FieldName = 'ped_itbis'
-      Precision = 18
-      Size = 2
-    end
-    object QPedidosmon_codigo: TIntegerField
-      FieldName = 'mon_codigo'
-    end
-    object QPedidosped_tasa: TBCDField
-      FieldName = 'ped_tasa'
-      Precision = 15
-      Size = 2
-    end
-    object QPedidosPED_IDCamion: TIntegerField
-      FieldName = 'PED_IDCamion'
-    end
-    object QPedidosPED_Placa: TStringField
-      FieldName = 'PED_Placa'
-    end
-    object QPedidosPED_Metraje: TFloatField
-      FieldName = 'PED_Metraje'
-    end
-    object QPedidosPED_Compania: TStringField
-      FieldName = 'PED_Compania'
-      Size = 100
-    end
-    object QPedidosPED_Marca: TStringField
-      FieldName = 'PED_Marca'
-      Size = 50
-    end
-    object QPedidosPED_Modelo: TStringField
-      FieldName = 'PED_Modelo'
-      Size = 50
-    end
-    object QPedidosPED_Chofer: TStringField
-      FieldName = 'PED_Chofer'
-      Size = 50
-    end
-  end
-  object dsPedidos: TDataSource
-    DataSet = QPedidos
-    Left = 640
-    Top = 299
   end
   object QClinico: TADOQuery
     Connection = DM.ADOSigma
@@ -10791,5 +10652,352 @@ object frmFactura: TfrmFactura
       '')
     Left = 384
     Top = 344
+  end
+  object QPedidos: TADOQuery
+    Connection = DM.ADOSigma
+    LockType = ltBatchOptimistic
+    OnNewRecord = QPedidosNewRecord
+    Parameters = <
+      item
+        Name = 'emp'
+        Attributes = [paSigned]
+        DataType = ftInteger
+        Precision = 10
+        Size = 4
+        Value = Null
+      end
+      item
+        Name = 'suc'
+        Attributes = [paSigned]
+        DataType = ftInteger
+        Precision = 10
+        Size = 4
+        Value = Null
+      end
+      item
+        Name = 'for'
+        DataType = ftString
+        NumericScale = 255
+        Precision = 255
+        Size = 1
+        Value = Null
+      end
+      item
+        Name = 'tfa'
+        Attributes = [paSigned]
+        DataType = ftInteger
+        Precision = 10
+        Size = 4
+        Value = Null
+      end
+      item
+        Name = 'num'
+        Attributes = [paSigned]
+        DataType = ftInteger
+        Precision = 10
+        Size = 4
+        Value = Null
+      end>
+    SQL.Strings = (
+      'select'
+      'emp_codigo, suc_codigo, fac_forma, tfa_codigo, fac_numero,'
+      
+        'ped_tipo, ped_numero, ped_fecha, ped_nombre, ped_total, ped_itbi' +
+        's,'
+      
+        'mon_codigo, ped_tasa,  PED_IDCamion, PED_Placa, PED_Metraje, PED' +
+        '_Compania, PED_Marca, PED_Modelo, PED_Chofer'
+      'from'
+      'FacPedidos'
+      'where'
+      'emp_codigo = :emp'
+      'and suc_codigo = :suc'
+      'and fac_forma = :for'
+      'and tfa_codigo = :tfa'
+      'and fac_numero = :num'
+      'order by ped_numero desc')
+    Left = 608
+    Top = 299
+    object QPedidosemp_codigo: TIntegerField
+      FieldName = 'emp_codigo'
+    end
+    object QPedidossuc_codigo: TIntegerField
+      FieldName = 'suc_codigo'
+    end
+    object QPedidosfac_forma: TStringField
+      FieldName = 'fac_forma'
+      Size = 1
+    end
+    object QPedidostfa_codigo: TIntegerField
+      FieldName = 'tfa_codigo'
+    end
+    object QPedidosfac_numero: TIntegerField
+      FieldName = 'fac_numero'
+    end
+    object QPedidosped_tipo: TStringField
+      FieldName = 'ped_tipo'
+      Size = 1
+    end
+    object QPedidosped_numero: TIntegerField
+      FieldName = 'ped_numero'
+      OnChange = QPedidosped_numeroChange
+    end
+    object QPedidosped_fecha: TDateTimeField
+      FieldName = 'ped_fecha'
+    end
+    object QPedidosped_nombre: TStringField
+      FieldName = 'ped_nombre'
+      Size = 100
+    end
+    object QPedidosped_total: TBCDField
+      FieldName = 'ped_total'
+      Precision = 18
+      Size = 2
+    end
+    object QPedidosped_itbis: TBCDField
+      FieldName = 'ped_itbis'
+      Precision = 18
+      Size = 2
+    end
+    object QPedidosmon_codigo: TIntegerField
+      FieldName = 'mon_codigo'
+    end
+    object QPedidosped_tasa: TBCDField
+      FieldName = 'ped_tasa'
+      Precision = 15
+      Size = 2
+    end
+    object QPedidosPED_IDCamion: TIntegerField
+      FieldName = 'PED_IDCamion'
+    end
+    object QPedidosPED_Placa: TStringField
+      FieldName = 'PED_Placa'
+    end
+    object QPedidosPED_Metraje: TFloatField
+      FieldName = 'PED_Metraje'
+    end
+    object QPedidosPED_Compania: TStringField
+      FieldName = 'PED_Compania'
+      Size = 100
+    end
+    object QPedidosPED_Marca: TStringField
+      FieldName = 'PED_Marca'
+      Size = 50
+    end
+    object QPedidosPED_Modelo: TStringField
+      FieldName = 'PED_Modelo'
+      Size = 50
+    end
+    object QPedidosPED_Chofer: TStringField
+      FieldName = 'PED_Chofer'
+      Size = 50
+    end
+  end
+  object dsPedidos: TDataSource
+    DataSet = QPedidos
+    Left = 640
+    Top = 299
+  end
+  object qFacPedidos: TADOQuery
+    Connection = DM.ADOSigma
+    Parameters = <
+      item
+        Name = 'EMP'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'SUC'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'TFA'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'FOR'
+        DataType = ftString
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'FAC'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'NUM'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'FEC'
+        DataType = ftDateTime
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'NOM'
+        DataType = ftString
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'TOT'
+        DataType = ftFloat
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'ITB'
+        DataType = ftFloat
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'MON'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'TAS'
+        DataType = ftFloat
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'IDC'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'PLA'
+        DataType = ftString
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'CHO'
+        DataType = ftString
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'MET'
+        DataType = ftFloat
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'CIA'
+        DataType = ftString
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'MAR'
+        DataType = ftString
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'MOD'
+        DataType = ftString
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'KMA'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end
+      item
+        Name = 'KMPM'
+        DataType = ftInteger
+        Size = -1
+        Value = Null
+      end>
+    SQL.Strings = (
+      
+        'DECLARE @EMP INT, @SUC INT, @TFA INT, @FOR CHAR(1), @FAC INT, @T' +
+        'PED CHAR(1), @NUM INT, @FEC DATETIME, '
+      
+        '        @NOM varchar(255), @TOT numeric(18,2), @ITB numeric(18,2' +
+        '), @MON int, @TAS numeric(18,2), @IDC int, '
+      
+        '        @PLA varchar(10), @CHO varchar(100), @MET numeric(18,2),' +
+        ' @CIA varcHar(100), @MAR VARCHAR(50), '
+      '        @MOD varchar(50), @KMA int, @KMPM int'
+      ''
+      'SET @EMP = :EMP'
+      'SET @SUC = :SUC'
+      'SET @TFA = :TFA'
+      'SET @FOR = :FOR'
+      'SET @FAC = :FAC'
+      'SET @TPED = '#39'C'#39
+      'SET @NUM = :NUM'
+      'SET @FEC = :FEC'
+      'SET @NOM = :NOM'
+      'SET @TOT = :TOT  '
+      'SET @ITB = :ITB'
+      'SET @MON = :MON'
+      'SET @TAS = :TAS '
+      'SET @IDC = :IDC'
+      'SET @PLA = :PLA'
+      'SET @CHO = :CHO'
+      'SET @MET = :MET'
+      'SET @CIA = :CIA'
+      'SET @MAR = :MAR'
+      'SET @MOD = :MOD '
+      'SET @KMA = :KMA'
+      'SET @KMPM = :KMPM'
+      ''
+      
+        'IF NOT EXISTS (SELECT * FROM FACPEDIDOS WHERE EMP_CODIGO = @EMP ' +
+        'AND SUC_CODIGO = @SUC AND PED_NUMERO = @NUM) '
+      'BEGIN'
+      'INSERT INTO FACPEDIDOS'
+      
+        'SELECT @EMP, @SUC, @TFA, @FOR, @FAC, @TPED, @NUM, @FEC, @NOM, @T' +
+        'OT, @ITB, @MON, @TAS, @IDC, @PLA, @CHO, @MET, @CIA, @MAR, @MOD, ' +
+        '@KMA, @KMPM '
+      'END ELSE BEGIN'
+      'UPDATE FACPEDIDOS'
+      'SET PED_NOMBRE    = @NOM, '
+      '    PED_TOTAL     = @TOT, '
+      '    PED_ITBIS     = @ITB, '
+      '    MON_CODIGO    = @MON, '
+      '    PED_TASA      = @TAS,'
+      '    PED_IDCamion  = @IDC, '
+      '    PED_PLACA     = @PLA, '
+      '    PED_CHOFER    = @CHO, '
+      '    PED_METRAJE   = @MET, '
+      '    PED_COMPANIA  = @CIA,'
+      '    PED_MARCA     = @MAR, '
+      '    PED_MODELO    = @MOD, '
+      '    PED_KM_ACTUAL = @KMA, '
+      '    PED_KM_PROXMANT = @KMPM'
+      
+        'WHERE EMP_CODIGO = @EMP AND SUC_CODIGO = @SUC AND PED_NUMERO = @' +
+        'NUM AND PED_TIPO = @TPED'
+      'END'
+      '  '
+      'UPDATE PEDIDOS'
+      'SET PED_STATUS = '#39'REC'#39
+      
+        'WHERE EMP_CODIGO = @EMP AND SUC_CODIGO = @SUC AND PED_NUMERO = @' +
+        'NUM AND PED_TIPO = '#39'C'#39)
+    Left = 824
+    Top = 216
   end
 end

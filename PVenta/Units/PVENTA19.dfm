@@ -970,7 +970,7 @@ object frmPedidosCli: TfrmPedidosCli
     Top = 201
     Width = 695
     Height = 358
-    ActivePage = TabSheet1
+    ActivePage = TabSheet3
     Align = alClient
     Style = tsFlatButtons
     TabOrder = 3
@@ -1144,7 +1144,7 @@ object frmPedidosCli: TfrmPedidosCli
         FocusControl = dbedtPED_Placa
       end
       object btcamion: TSpeedButton
-        Left = 155
+        Left = 171
         Top = 8
         Width = 23
         Height = 22
@@ -1164,10 +1164,26 @@ object frmPedidosCli: TfrmPedidosCli
           777770000000}
         OnClick = btcamionClick
       end
+      object Label23: TLabel
+        Left = 8
+        Top = 156
+        Width = 49
+        Height = 13
+        Caption = 'KM Actual'
+        FocusControl = DBEdit17
+      end
+      object Label24: TLabel
+        Left = 8
+        Top = 180
+        Width = 67
+        Height = 13
+        Caption = 'KM Prox Mant'
+        FocusControl = DBEdit18
+      end
       object dbedtPED_Placa: TDBEdit
-        Left = 56
+        Left = 80
         Top = 8
-        Width = 97
+        Width = 89
         Height = 21
         BevelKind = bkFlat
         BorderStyle = bsNone
@@ -1176,14 +1192,36 @@ object frmPedidosCli: TfrmPedidosCli
         TabOrder = 0
       end
       object memocamion: TMemo
-        Left = 56
+        Left = 80
         Top = 32
-        Width = 628
+        Width = 604
         Height = 113
         BevelKind = bkFlat
         BorderStyle = bsNone
         ReadOnly = True
         TabOrder = 1
+      end
+      object DBEdit17: TDBEdit
+        Left = 80
+        Top = 152
+        Width = 97
+        Height = 21
+        BevelKind = bkFlat
+        BorderStyle = bsNone
+        DataField = 'PED_KM_ACTUAL'
+        DataSource = dsPedidos
+        TabOrder = 2
+      end
+      object DBEdit18: TDBEdit
+        Left = 80
+        Top = 176
+        Width = 97
+        Height = 21
+        BevelKind = bkFlat
+        BorderStyle = bsNone
+        DataField = 'PED_KM_PROXMANT'
+        DataSource = dsPedidos
+        TabOrder = 3
       end
     end
   end
@@ -1231,6 +1269,8 @@ object frmPedidosCli: TfrmPedidosCli
         'COT_NUMERO, ped_tasa, mon_codigo, PED_FICHA, PED_IDCamion, PED_P' +
         'laca, PED_Metraje, PED_Compania, PED_Marca, PED_Modelo, PED_Chof' +
         'er'
+      ',PED_KM_ACTUAL'
+      ',PED_KM_PROXMANT'
       'from PEDIDOS'
       'where emp_codigo = :emp_codigo'
       'and ped_tipo = '#39'C'#39
@@ -1387,6 +1427,12 @@ object frmPedidosCli: TfrmPedidosCli
     end
     object QPedidosPED_Metraje: TFloatField
       FieldName = 'PED_Metraje'
+    end
+    object QPedidosPED_KM_PROXMANT: TIntegerField
+      FieldName = 'PED_KM_PROXMANT'
+    end
+    object QPedidosPED_KM_ACTUAL: TIntegerField
+      FieldName = 'PED_KM_ACTUAL'
     end
   end
   object dsPedidos: TDataSource

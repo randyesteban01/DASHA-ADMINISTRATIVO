@@ -1,8 +1,8 @@
 object DM: TDM
   OldCreateOrder = False
   OnCreate = DataModuleCreate
-  Left = 583
-  Top = 353
+  Left = 729
+  Top = 441
   Height = 356
   Width = 619
   object dsEmpresas: TDataSource

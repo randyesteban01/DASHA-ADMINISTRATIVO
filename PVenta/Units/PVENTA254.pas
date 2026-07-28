@@ -63,6 +63,8 @@ type
     QFacturasCalcDesc: TCurrencyField;
     QFacturasplaca: TStringField;
     QFacturasTecnico: TStringField;
+    btnbVehiculo: TSpeedButton;
+    lblProximoChequeo: TLabel;
     procedure btVendedorClick(Sender: TObject);
     procedure btRefreshClick(Sender: TObject);
     procedure btnTecnicoClick(Sender: TObject);
@@ -75,6 +77,8 @@ type
     procedure FormPaint(Sender: TObject);
     procedure btCloseClick(Sender: TObject);
     procedure QFacturasCalcFields(DataSet: TDataSet);
+    procedure btnbVehiculoClick(Sender: TObject);
+    procedure edPlacaKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
   public
@@ -125,6 +129,8 @@ procedure TfrmConsFacturasProdPlaca.btRefreshClick(Sender: TObject);
 var
   cant, tot : double;
 begin
+    lblProximoChequeo.Visible := False;
+    
     PageControl1.ActivePageIndex := 0;
 
     Screen.Cursor := crHourGlass;
@@ -292,6 +298,59 @@ begin
     QFacturasCalcDesc.value    := strtofloat(format('%10.2f',[(Venta * QFacturasDET_DESCUENTO.value)/100]));
     QFacturasValor.value       := strtofloat(format('%10.2f',[(Venta-QFacturasCalcDesc.value)*QFacturasDET_CANTIDAD.value]));
   end;
+end;
+
+procedure TfrmConsFacturasProdPlaca.btnbVehiculoClick(Sender: TObject);
+begin
+  Search.Query.clear;
+  Search.AliasFields.Clear;
+  Search.AliasFields.Add('Placa');
+  Search.AliasFields.Add('Chofer');
+  Search.AliasFields.Add('Compania');
+  Search.AliasFields.Add('Marca');
+  Search.AliasFields.Add('Modelo');
+  Search.AliasFields.Add('Codigo');
+  Search.Query.add('select Placa, Chofer, Compania, Marca, Modelo, CamionID, KM_ACTUAL, KM_PROXMANT');
+  Search.Query.add('from Camiones');
+  Search.Title := 'Camiones';
+  Search.ResultField := 'Placa';
+  if Search.execute then
+  begin
+    edPlaca.Text := Search.ValueField;
+    edPlaca.setfocus;
+    btRefreshClick(Sender);
+
+    if edPlaca.Text <> '' then begin
+   WITH DM.qEjecutar do begin
+   Close;
+   SQL.Add('SELECT MAX(KM_PROXMANT) PROXMANT FROM FACTURAS');
+   SQL.Add('WHERE fac_status <> ''ANU'' AND EMP_CODIGO = :EMP AND SUC_CODIGO = :SUC AND Placa = :PLA AND ISNULL(KM_PROXMANT,0)>0');
+   Parameters.ParamByName('EMP').DataType := ftInteger;
+   Parameters.ParamByName('SUC').DataType := ftInteger;
+   Parameters.ParamByName('PLA').DataType := ftString;
+
+   Parameters.ParamByName('EMP').Value := DM.vp_cia;
+   Parameters.ParamByName('SUC').Value := DBLookupComboBox2.KeyValue;
+   Parameters.ParamByName('PLA').Value := Trim(edPlaca.Text);
+   Open;
+   if DM.qEjecutar.RecordCount > 0 THEN begin
+   lblProximoChequeo.Caption := 'Proximo mant '+FormatCurr('#,0',fieldbyname('PROXMANT').Value);
+   lblProximoChequeo.Visible := True;
+   end
+   else
+   lblProximoChequeo.Visible := False;
+
+
+
+ end;
+end;
+  end;
+end;
+
+procedure TfrmConsFacturasProdPlaca.edPlacaKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+if key = #13  then btRefreshClick(Sender);
 end;
 
 end.

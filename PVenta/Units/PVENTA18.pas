@@ -220,21 +220,6 @@ type
     QDetalleMedidor_Cantidad: TBCDField;
     QDetallepro_utilizamedidor: TStringField;
     DatosdelMedidor1: TMenuItem;
-    QPedidos: TADOQuery;
-    QPedidosemp_codigo: TIntegerField;
-    QPedidossuc_codigo: TIntegerField;
-    QPedidosfac_forma: TStringField;
-    QPedidostfa_codigo: TIntegerField;
-    QPedidosfac_numero: TIntegerField;
-    QPedidosped_tipo: TStringField;
-    QPedidosped_numero: TIntegerField;
-    dsPedidos: TDataSource;
-    QPedidosped_fecha: TDateTimeField;
-    QPedidosped_nombre: TStringField;
-    QPedidosped_total: TBCDField;
-    QPedidosped_itbis: TBCDField;
-    QPedidosmon_codigo: TIntegerField;
-    QPedidosped_tasa: TBCDField;
     TabSheet4: TTabSheet;
     Panel1: TPanel;
     gridclinico: TDBGrid;
@@ -271,7 +256,6 @@ type
     ttiponcf: TEdit;
     DBEdit13: TDBEdit;
     btreceta: TMenuItem;
-    Label15: TLabel;
     DBEdit4: TDBEdit;
     QDetallepro_UtilizaEnvio: TStringField;
     DatosdelEnvio1: TMenuItem;
@@ -973,6 +957,22 @@ type
     btBuscaVendPorc: TBitBtn;
     QParametrospar_comision_vend: TBooleanField;
     QParametrosPAR_Buscar_CODIGOCLIENTE: TIntegerField;
+    Label15: TLabel;
+    lblVendedor: TLabel;
+    QPedidos: TADOQuery;
+    QPedidosemp_codigo: TIntegerField;
+    QPedidossuc_codigo: TIntegerField;
+    QPedidosfac_forma: TStringField;
+    QPedidostfa_codigo: TIntegerField;
+    QPedidosfac_numero: TIntegerField;
+    QPedidosped_tipo: TStringField;
+    QPedidosped_numero: TIntegerField;
+    QPedidosped_fecha: TDateTimeField;
+    QPedidosped_nombre: TStringField;
+    QPedidosped_total: TBCDField;
+    QPedidosped_itbis: TBCDField;
+    QPedidosmon_codigo: TIntegerField;
+    QPedidosped_tasa: TBCDField;
     QPedidosPED_IDCamion: TIntegerField;
     QPedidosPED_Placa: TStringField;
     QPedidosPED_Metraje: TFloatField;
@@ -980,7 +980,10 @@ type
     QPedidosPED_Marca: TStringField;
     QPedidosPED_Modelo: TStringField;
     QPedidosPED_Chofer: TStringField;
-    lblVendedor: TLabel;
+    dsPedidos: TDataSource;
+    QFacturaKM_PROXMANT: TIntegerField;
+    QFacturaKM_ACTUAL: TIntegerField;
+    qFacPedidos: TADOQuery;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormPaint(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -1148,9 +1151,10 @@ type
     vSer, DesactivarCargaProductos, FAsignandoCliente :Boolean;
     vSecuencia, vl_index, vl_index2:Integer;
     vSecFactura :Integer;
-    vAlmacen : Integer;
+    vAlmacen, IDPedido : Integer;
     vCajVendedor, vModProducto : Boolean;
     vtfa_espcliente, vp_desde, vp_hasta, vl_fecha :String;
+    PedFecha : TDate;
     procedure DatosEnvio(llenar: boolean = false);
     procedure ActualisarEnvio(actualizar: boolean = false);
     function  Producto_sin_Serializar:boolean;
@@ -3233,7 +3237,11 @@ begin
   end;
 
 
- 
+ if (dm.QParametrospar_fac_preimpresa.Value = 'True') and
+   (dm.QParametrospar_formato_preimpreso.Value = 'AutoServicios') then
+  TabSheet3.Caption := 'Vehiculo' else
+  TabSheet3.Caption := 'Datos del camión';
+
 
 
 end;
@@ -8212,24 +8220,34 @@ end;
                         }
 
               //Pedidos
-              QPedidos.DisableControls;
-              QPedidos.first;
-              a := 0;
-              while not QPedidos.eof do
-              begin
-                a := a + 1;
-                QPedidos.edit;
-                QPedidosEMP_CODIGO.value := dm.vp_cia;
-                QPedidosFAC_NUMERO.value := QFacturaFAC_NUMERO.value;
-                QPedidosFAC_FORMA.value  := QFacturaFAC_FORMA.value;
-                QPedidosTFA_CODIGO.value := strtoint(edTipo.text);
-                QPedidosSUC_CODIGO.Value := QFacturaSUC_CODIGO.Value;
-                QPedidosped_tipo.Value   := 'C';
-                QPedidos.post;
-                QPedidos.next;
+              IF IDPedido > 0 THEN BEGIN
+              with qFacPedidos do begin
+              Close;
+              Parameters.ParamByName('EMP').Value  := QFacturaEMP_CODIGO.Value;
+              Parameters.ParamByName('SUC').Value  := QFacturaSUC_CODIGO.Value;
+              Parameters.ParamByName('TFA').Value  := QFacturaTFA_CODIGO.Value;
+              Parameters.ParamByName('FOR').Value  := QFacturaFAC_FORMA.Value;
+              Parameters.ParamByName('FAC').Value  := QFacturaFAC_NUMERO.Value;
+              Parameters.ParamByName('NUM').Value  := IDPedido;
+              Parameters.ParamByName('FEC').Value  := PedFecha;
+              Parameters.ParamByName('NOM').Value  := QFacturaFAC_NOMBRE.Value;
+              Parameters.ParamByName('TOT').Value  := QFacturaFAC_TOTAL.Value;
+              Parameters.ParamByName('ITB').Value  := QFacturaFAC_ITBIS.Value;
+              Parameters.ParamByName('MON').Value  := QFacturaMON_CODIGO.Value;
+              Parameters.ParamByName('TAS').Value  := QFacturaFAC_TASA.Value;
+              Parameters.ParamByName('IDC').Value  := QFacturaCamionID.Value;
+              Parameters.ParamByName('PLA').Value  := QFacturaPlaca.Value;
+              Parameters.ParamByName('CHO').Value  := QFacturaChofer.Value;
+              Parameters.ParamByName('MET').Value  := QFacturaMetraje.Value;
+              Parameters.ParamByName('CIA').Value  := QFacturaCompania.Value;
+              Parameters.ParamByName('MAR').Value  := QFacturaMarca.Value;
+              Parameters.ParamByName('MOD').Value  := QFacturaModelo.Value;
+              Parameters.ParamByName('KMA').Value  := QFacturaKM_ACTUAL.Value;
+              Parameters.ParamByName('KMPM').Value  := QFacturaKM_PROXMANT.Value;
+              ExecSQL;
               end;
-              QPedidos.enableControls;
-              QPedidos.UpdateBatch;
+              END;
+            
 
               //Envio
               QEnvio.DisableControls;
@@ -9322,8 +9340,10 @@ procedure TfrmFactura.btPedidoClick(Sender: TObject);
 var
   a, moneda : integer;
   CtaCosto, CtaInvent, CtaIngreso, CtaDescuento : String;
+  vKey: Word;
 begin
-if DM.QParametrospar_formato_preimpreso.Value <> 'Cepinta' then begin
+ IDPedido := 0;
+if (DM.QParametrospar_formato_preimpreso.Value <> 'Cepinta') then begin
   if not QPedidos.Active then
   begin
     QPedidos.Close;
@@ -9334,29 +9354,80 @@ if DM.QParametrospar_formato_preimpreso.Value <> 'Cepinta' then begin
     QPedidos.Parameters.ParamByName('suc').Value := -1;
     QPedidos.Open;
   end;
+  if (DM.QParametrospar_formato_preimpreso.Value = 'AutoServicios') then begin
+  Search.AliasFields.clear;
+  Search.AliasFields.add('Pedido');
+  Search.AliasFields.add('Nombre del Cliente');
+  Search.Query.clear;
+  Search.Query.add('select ped_numero, ped_nombre');
+  Search.Query.add('from pedidos');
+  Search.Query.add('where emp_codigo = '+inttostr(dm.vp_cia));
+  Search.Query.add('and suc_codigo = '+inttostr(DBLookupComboBox2.KeyValue));
+  Search.Query.add('and ped_status = '+QuotedStr('EMI'));
+  Search.Query.add('AND PED_NUMERO NOT IN (SELECT isnull(PED_NUMERO,0) FROM FACTURAS)');
+  if not QFacturaCLI_CODIGO.IsNull then
+    Search.Query.add('and cli_codigo = '+inttostr(QFacturaCLI_CODIGO.Value));
+  Search.ResultField := 'ped_numero';
+  Search.Title := 'Pedidos';
+  if Search.execute then
+  begin
+    IDPedido :=  strtoint(search.valuefield);
+    Totaliza := false;
+    Buscando := True;
+ end
+ else
+ Exit;
+ end
+ else
+ begin
   Application.CreateForm(tfrmPedidosFactura, frmPedidosFactura);
   frmPedidosFactura.ShowModal;
+  end;
   if MessageDlg('Introducir pedidos en la factura?',mtConfirmation,[mbyes,mbno],0) = mryes then
   begin
-     QPedidos.First;
+     //Buscar el pedido
+      dm.qEjecutar.close;
+      dm.qEjecutar.sql.clear;
+      dm.qEjecutar.sql.add('select PED_Numero, CLI_CODIGO, PED_FECHA');
+      dm.qEjecutar.sql.add('from PEDIDOS');
+      dm.qEjecutar.sql.add('where emp_codigo = :emp');
+      dm.qEjecutar.sql.add('and ped_tipo = '+#39+'C'+#39);
+      dm.qEjecutar.sql.add('and ped_numero = :num');
+      dm.qEjecutar.sql.add('and suc_codigo = :suc');
+      dm.qEjecutar.sql.add('AND PED_NUMERO NOT IN (SELECT isnull(PED_NUMERO,0) FROM FACTURAS)');
+      dm.qEjecutar.Parameters.parambyname('emp').Value    := dm.QEmpresasEMP_CODIGO.value;
+      dm.qEjecutar.Parameters.parambyname('num').Value    := IDPedido;
+      dm.qEjecutar.Parameters.parambyname('suc').Value    := QFacturaSUC_CODIGO.Value;
+      dm.qEjecutar.open;
+      if dm.qEjecutar.RecordCount > 0 then
+      dm.qEjecutar.First;
+     if dm.qEjecutar.FieldByName('ped_numero').AsInteger > 0 then begin
+     IDPedido       := dm.qEjecutar.FieldByName('ped_numero').AsInteger;
+     PedFecha       := dm.qEjecutar.FieldByName('PED_FECHA').AsDateTime;
+     edCliente.Text := dm.qEjecutar.FieldByName('cli_codigo').AsString;
+     vKey := VK_RETURN;
+     edClienteKeyDown(Self, vKey, []);
+     end;
     //Agregando el vehiculos en Auto Servicios
     if (dm.QParametrospar_fac_preimpresa.Value = 'True') and (dm.QParametrospar_formato_preimpreso.Value = 'AutoServicios') then
     begin
       Query1.close;
       Query1.sql.clear;
       Query1.sql.add('select PED_IDCamion, PED_Placa, PED_Metraje, PED_Compania,');
-      Query1.sql.add('PED_Marca, PED_Modelo, PED_Chofer');
+      Query1.sql.add('PED_Marca, PED_Modelo, PED_Chofer, ISNULL(PED_KM_ACTUAL,0)KM_ACTUAL, ISNULL(PED_KM_PROXMANT,0) KM_PROXMANT');
       Query1.sql.add('from PEDIDOS');
       Query1.sql.add('where emp_codigo = :emp');
       Query1.sql.add('and ped_tipo = '+#39+'C'+#39);
       Query1.sql.add('and ped_numero = :num');
       Query1.sql.add('and suc_codigo = :suc');
       Query1.Parameters.parambyname('emp').Value    := dm.QEmpresasEMP_CODIGO.value;
-      Query1.Parameters.parambyname('num').Value := QPedidosped_numero.Value;
+      Query1.Parameters.parambyname('num').Value    := IDPedido;
       Query1.Parameters.parambyname('suc').Value    := QFacturaSUC_CODIGO.Value;
       Query1.open;
       if Query1.RecordCount > 0 then begin
-      QFacturaPlaca.Value := Query1.fieldbyname('PED_Placa').Value;
+      QFacturaPlaca.Value       := Query1.fieldbyname('PED_Placa').Value;
+      QFacturaKM_ACTUAL.Value   := Query1.fieldbyname('KM_ACTUAL').Value;
+      QFacturaKM_PROXMANT.Value := Query1.fieldbyname('KM_PROXMANT').Value;
       Query1.Close;
       end;
     end;
@@ -9375,7 +9446,7 @@ if DM.QParametrospar_formato_preimpreso.Value <> 'Cepinta' then begin
     //Insertando productos de los pedidos
 
 
-    while not QPedidos.Eof do
+    while not dm.qEjecutar.Eof do
     begin
       Query1.close;
       Query1.sql.clear;
@@ -9392,7 +9463,7 @@ if DM.QParametrospar_formato_preimpreso.Value <> 'Cepinta' then begin
       Query1.sql.add('and d.suc_codigo = :suc');
       Query1.Parameters.parambyname('emp').Value    := dm.QEmpresasEMP_CODIGO.value;
       Query1.Parameters.parambyname('empinv').Value := dm.QParametrosPAR_INVEMPRESA.Value;
-      Query1.Parameters.parambyname('numero').Value := QPedidosped_numero.Value;
+      Query1.Parameters.parambyname('numero').Value := dm.qEjecutar.FieldByName('ped_numero').AsInteger;
       Query1.Parameters.parambyname('suc').Value    := QFacturaSUC_CODIGO.Value;
       Query1.open;
 
@@ -9572,7 +9643,7 @@ else
         QDetalle.post;
         Query1.next;
       end;
-      QPedidos.Next;
+      dm.qEjecutar.Next;
     end;
     TotalizarCuentas;
 
@@ -9685,7 +9756,7 @@ else
         QDetalleDET_ESCALA.Value       := qDetalleOrdenTallerdet_escala.asstring;
         QDetalleDET_MEDIDA.Value       := qDetalleOrdenTallerdet_medida.asstring;
         QDetalleDET_COSTO.Value        := qDetalleOrdenTallerpro_costo.asfloat;
-        QDetallePED_NUMERO.Value       := QPedidosped_numero.Value;
+        QDetallePED_NUMERO.Value       := IDPedido;
         QDetallePRO_SERVICIO.Value     := qDetalleOrdenTallerpro_servicio.asstring;
         QDetalleDET_PRECIO.value       := qDetalleOrdenTallerdet_precio.asfloat;
         if Moneda <> dm.QParametrospar_moneda_local.Value then
@@ -9777,7 +9848,7 @@ else
           end
           else
           begin
-            QCuentas.Edit;;
+            QCuentas.Edit;
             QCuentasdet_origen.Value := 'Credito';
             QCuentasdet_monto.Value  := QCuentasdet_monto.Value + (QDetalleDET_COSTO.Value * QDetalleDET_CANTIDAD.Value);
             QCuentas.Post;
@@ -9826,7 +9897,7 @@ else
     Buscando := False;
     PageControl1.ActivePageIndex := 0;
     Grid.setfocus;
-  end;
+   end;
 end;
 end;
 
@@ -9913,7 +9984,7 @@ if not dm.pr_verifica_disp(QFacturaEMP_CODIGO.AsString,
 else
         QDetalleDET_CANTIDAD.value     := qDetalleOrdenTallerDET_CANTIDAD.asfloat;
         QDetalleDET_ITBIS.value        := qDetalleOrdenTallerDET_ITBIS.asfloat;
-        if QDetalleDET_DESCUENTO.ReadOnly = False then 
+        if QDetalleDET_DESCUENTO.ReadOnly = False then
         QDetalleDET_DESCUENTO.value    := qDetalleOrdenTallerDET_DESCUENTO.asfloat;
         QDetalleDET_CONITBIS.value     := qDetalleOrdenTallerpro_itbis.asstring;
         QDetallePRO_CODIGO.value       := qDetalleOrdenTallerPro_codigo.asinteger;
@@ -9924,7 +9995,7 @@ else
         QDetalleDET_ESCALA.Value       := qDetalleOrdenTallerdet_escala.asstring;
         QDetalleDET_MEDIDA.Value       := qDetalleOrdenTallerdet_medida.asstring;
         QDetalleDET_COSTO.Value        := qDetalleOrdenTallerpro_costo.asfloat;
-        QDetallePED_NUMERO.Value       := QPedidosped_numero.Value;
+        QDetallePED_NUMERO.Value       := IDPedido;
         QDetallePRO_SERVICIO.Value     := qDetalleOrdenTallerpro_servicio.asstring;
         QDetalleDET_PRECIO.value       := qDetalleOrdenTallerdet_precio.asfloat;
         if Moneda <> dm.QParametrospar_moneda_local.Value then
@@ -11393,9 +11464,8 @@ QFacturaFAC_CONITBIS.Value:= 'False';
   end;
   end;
 
-  if QPedidos.Active then
-  if QPedidosped_numero.Value > 0 then
-  QFacturaPED_NUMERO.value := QPedidosped_numero.Value;
+   if IDPedido > 0 then
+  QFacturaPED_NUMERO.value := IDPedido;
 
   if QFacturaFAC_COMISION.IsNull then
     QFacturaFAC_COMISION.Value := 0;
@@ -13180,7 +13250,7 @@ begin
   Parameters.ParamByName('VEN').Value := QDetalleVEN_CODIGO.Value;
   Open;
   IF DM.qEjecutar.RecordCount > 0 THEN begin
-  lblVendedor.Caption := FieldByName('VEN_NOMBRE').Text;
+  lblVendedor.Caption := 'Vendedor: '+ FieldByName('VEN_NOMBRE').Text;
   lblVendedor.Visible := Enabled;
   end
   else
