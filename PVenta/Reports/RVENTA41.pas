@@ -342,8 +342,6 @@ end;
 procedure TREstadoCtaCli.QRBand3BeforePrint(Sender: TQRCustomBand;
   var PrintBand: Boolean);
 begin
-  Balance := 0;
-  BalanceUS := 0;
   if (QClientescli_rnc.IsNull) or (QClientescli_rnc.Value = '') then
     QRDBText22.DataField := 'cli_cedula'
   else
@@ -383,6 +381,7 @@ begin
   if QDocsmov_tasa.Value > 1 then
   BalanceUS := BalanceUS + (QDocsMOV_MONTOUS.Value)+(QDocsTotalInteres.Value/QDocsmov_tasa.Value);
   lbOBalance1.Caption := format('%n',[BalanceUS]);
+  lbBalance1.Caption  := format('%n',[BalanceUS*QDocsmov_tasa.Value]);
   dm.Query1.Close;
   dm.Query1.SQL.Clear;
   dm.Query1.SQL.Add('select tmo_codigo, tmo_nombre from tiposmov');
@@ -521,7 +520,7 @@ begin
   qrlNCRMonto2.Caption := format('%n',[(QCreditoMONTOUS.Value+bal_nc)]);
 
   if QRecibosREC_TASA.Value = 1 then
-  Balance := Balance - (QCreditoMONTOUS.Value+bal_nc) ;
+  Balance := Balance - (QCreditoNCR_MONTO.Value+bal_nc) ;
   if QRecibosREC_TASA.Value > 1 then
   BalanceUS := BalanceUS - (QCreditoMONTOUS.Value+bal_nc) ;
 
@@ -584,8 +583,8 @@ end;
 procedure TREstadoCtaCli.QRBand5BeforePrint(Sender: TQRCustomBand;
   var PrintBand: Boolean);
 begin
-  lbTotal.Caption := format('%n',[Total]);
-  lbTotalUS.Caption := format('%n',[TotalUS]);
+  lbTotal.Caption := format('%n',[Balance]);
+  lbTotalUS.Caption := format('%n',[BalanceUS]);
 end;
 
 procedure TREstadoCtaCli.QRSubDetail6BeforePrint(Sender: TQRCustomBand;
@@ -612,8 +611,12 @@ begin
   QRLTotalClienteOMonto.Caption := format('%n',[QAntigDIAUS1.Value+QAntigDIAUS2.Value+
                                          QAntigDIAUS3.Value+QAntigDIAUS4.Value+
                                          qMoraUSTOTALMORA.Value]);
-  Balance := Balance + qMoraTOTALMORA.Value;
-  BalanceUS := BalanceUS + qMoraUSTOTALMORA.Value;
+  Balance := Balance + QAntigDIA1.Value+QAntigDIA2.Value+
+                                         QAntigDIA3.Value+QAntigDIA4.Value+
+                                         qMoraTOTALMORA.Value;
+  BalanceUS := BalanceUS + QAntigDIAUS1.Value+QAntigDIAUS2.Value+
+                                         QAntigDIAUS3.Value+QAntigDIAUS4.Value+
+                                         qMoraUSTOTALMORA.Value;
   Total  := Total + Balance;
   TotalUS  := TotalUS + BalanceUS;
 end;

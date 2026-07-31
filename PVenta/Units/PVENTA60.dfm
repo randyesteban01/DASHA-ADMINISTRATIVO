@@ -1,6 +1,6 @@
 object frmConsCxC: TfrmConsCxC
-  Left = 161
-  Top = 168
+  Left = 192
+  Top = 126
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Consulta general de cuentas por cobrar'
@@ -2960,21 +2960,24 @@ object frmConsCxC: TfrmConsCxC
         ' AND DR.det_tipo = @MOVTIPO),0)'
       #9#9#9' '
       
-        'SET @PAGO = ISNULL(@PAGO,0) + ISNULL((SELECT ISNULL(SUM(DET_MONT' +
-        'O),0) '
-      '             FROM DET_NOTACREDITO N '
+        'SET @PAGO = ISNULL(@PAGO,0) + ISNULL((SELECT ISNULL(SUM(ncr_mont' +
+        'ousado),0) '
+      '             FROM NOTASCREDITO NC '
       
-        '             INNER JOIN NOTASCREDITO NC ON N.EMP_CODIGO = NC.EMP' +
-        '_CODIGO AND N.SUC_CODIGO = NC.SUC_CODIGO AND N.NCR_NUMERO = NC.N' +
-        'CR_NUMERO'
+        '             INNER JOIN DET_NOTACREDITO D ON NC.EMP_CODIGO = D.E' +
+        'MP_CODIGO AND NC.SUC_CODIGO = D.SUC_CODIGO'
       
-        '             WHERE MOV_NUMERO = @FAC AND N.emp_codigo  = @EMPRES' +
-        'A AND N.suc_codigo = @SUC'
+        '                                       AND NC.NCR_NUMERO = D.NCR' +
+        '_NUMERO'
       
-        '             AND N.FAC_FORMA = @FORMA AND N.tfa_codigo = @TIPO A' +
-        'ND NC.mov_tipo = @MOVTIPO'
+        '             WHERE D.MOV_NUMERO = @FAC AND D.emp_codigo  = @EMPR' +
+        'ESA AND D.suc_codigo = @SUC'
+      
+        '             AND D.FAC_FORMA = @FORMA AND D.tfa_codigo = @TIPO A' +
+        'ND D.mov_tipo = @MOVTIPO'
       #9#9#9' AND NC.NCR_STATUS <> '#39'ANU'#39
       '             AND NC.NCR_DEVOLUCION IS NULL ),0)'
+      ''
       ''
       
         'SET @PAGO = ISNULL(@PAGO,0) + ISNULL((SELECT ISNULL(SUM(DEV_TOTA' +

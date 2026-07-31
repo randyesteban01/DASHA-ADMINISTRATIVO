@@ -318,18 +318,7 @@ end;
 
 procedure TfrmConsCxC.BitBtn1Click(Sender: TObject);
 begin
-  //Reparar Balance del cliente
-  qRepBalanceFact.Close;
-    qRepBalanceFact.Parameters.ParamByName('emp').Value := dm.vp_cia;
-    qRepBalanceFact.Parameters.ParamByName('cli').Value := QClienteCLI_CODIGO.Value;
-    qRepBalanceFact.ExecSQL;
-    dm.Query1.Close;
-    dm.Query1.SQL.Clear;
-    dm.Query1.SQL.Add('execute pr_actualiza_bce :emp');
-    dm.Query1.Parameters.ParamByName('emp').Value := dm.QEmpresasEMP_CODIGO.Value;
-    dm.Query1.ExecSQL;  
-
-    
+try
   Application.CreateForm(tREstadoCtaCli, REstadoCtaCli);
 if not ChkB_cksucursal.Checked then
   REstadoCtaCli.suc := 0 else
@@ -376,7 +365,7 @@ if not ChkB_cksucursal.Checked then
   REstadoCtaCli.QDocs.SQL.Add('M.MON_CODIGO, ISNULL(FP.for_monto,0) ABONO2');
   REstadoCtaCli.QDocs.SQL.Add('FROM  Movimientos M ');
   REstadoCtaCli.QDocs.SQL.Add('LEFT JOIN FacFormaPago FP ON M.emp_codigo = FP.emp_codigo AND M.suc_codigo = FP.suc_codigo AND M.tfa_codigo = FP.tfa_codigo AND M.FAC_FORMA = FP.FAC_FORMA AND M.MOV_NUMERO = FP.FAC_NUMERO ');
-  REstadoCtaCli.QDocs.SQL.Add('WHERE M.TFA_CODIGO <> 1 AND CLI_CODIGO = :CLI_CODIGO AND M.EMP_CODIGO = :EMP_CODIGO AND M.MOV_STATUS = ''PEN'')  AS TEMP');
+  REstadoCtaCli.QDocs.SQL.Add('WHERE M.MOV_MONTO>0 AND M.TFA_CODIGO <> 1 AND CLI_CODIGO = :CLI_CODIGO AND M.EMP_CODIGO = :EMP_CODIGO AND M.MOV_STATUS = ''PEN'')  AS TEMP');
   REstadoCtaCli.QDocs.SQL.Add('WHERE MOV_FECHA <= @FECHA');
   REstadoCtaCli.QDocs.SQL.Add('AND (((MOV_MONTO-(ABONO+ABONO2))>1) OR ((ROUND(CASE WHEN MOV_TASA = 1 THEN 0 ELSE MOV_MONTO/MOV_TASA END,2) -ROUND(CASE WHEN MOV_TASA = 1 THEN 0 ELSE (ABONO+ABONO2)/MOV_TASA END,2))>1))');
 
@@ -438,96 +427,10 @@ IF ChkB_cksucursal.Checked = True then
   REstadoCtaCli.lbFecha.Caption := 'Al '+DateToStr(Date);
   REstadoCtaCli.PrinterSetup;
   REstadoCtaCli.Preview;
-  REstadoCtaCli.Destroy;
-{  Application.CreateForm(tREstadoCtaCli, REstadoCtaCli);
-  if ChkB_cksucursal.Checked then
-  REstadoCtaCli.suc := dblkcbb1.KeyValue;
-  if Trim(tTipo.Text)<>'' then
-  REstadoCtaCli.lbTipo.Caption := 'Tipo : '+tTipo.Text ELSE
-  REstadoCtaCli.lbTipo.Caption := '';
-  if not ChkB_cksucursal.Checked then
-  REstadoCtaCli.QRLSucursal.Caption := DM.QEmpresasEMP_NOMBRE.Text else
-  REstadoCtaCli.QRLSucursal.Caption := dblkcbb1.Text;
-  REstadoCtaCli.QClientes.Close;
-  REstadoCtaCli.QClientes.SQL.Clear;
-  REstadoCtaCli.QClientes.SQL.Add('DECLARE @fecha datetime, @EMPRESA int; set @fecha = :fecha; set @EMPRESA = '+IntToStr(DM.vp_cia));
-  REstadoCtaCli.QClientes.SQL.Add('select');
-  REstadoCtaCli.QClientes.SQL.Add('cli_codigo, cli_referencia, cli_nombre,');
-  REstadoCtaCli.QClientes.SQL.Add('cli_telefono, cli_balance, emp_codigo, cli_cedula, cli_rnc, @fecha fecha, cli_email');
-  REstadoCtaCli.QClientes.SQL.Add('from clientes');
-  REstadoCtaCli.QClientes.SQL.Add('where emp_codigo = :emp_codigo');
-  REstadoCtaCli.QClientes.SQL.Add('and cli_status = '+QuotedStr('ACT'));
-  REstadoCtaCli.QClientes.SQL.Add('and cli_codigo = '+QClienteCLI_CODIGO.Text);
-  REstadoCtaCli.QClientes.SQL.Add('order by cli_codigo');
-  REstadoCtaCli.QClientes.Parameters.ParamByName('emp_codigo').Value  := dm.vp_cia;
-  REstadoCtaCli.QClientes.Parameters.ParamByName('fecha').DataType    := ftDate;
-  REstadoCtaCli.QClientes.Parameters.ParamByName('fecha').Value       := Date;
-  REstadoCtaCli.QClientes.Open;
+finally
+  FreeAndNil(REstadoCtaCli);
+end;
 
-  REstadoCtaCli.QDocs.Close;
-  REstadoCtaCli.QDocs.SQL.Clear;
-  REstadoCtaCli.QDocs.SQL.Add('DECLARE @fecha datetime;');
-  REstadoCtaCli.QDocs.SQL.Add('set @fecha = :fecha; ');
-  REstadoCtaCli.QDocs.SQL.Add('SELECT * FROM(');
-  REstadoCtaCli.QDocs.SQL.Add('select M.FAC_FORMA, (M.MOV_ABONO) as mov_abono,');
-  REstadoCtaCli.QDocs.SQL.Add('M.MOV_FECHA, (M.MOV_MONTO) as mov_monto, M.MOV_NUMERO,');
-  REstadoCtaCli.QDocs.SQL.Add('M.MOV_TIPO, M.TFA_CODIGO, M.EMP_CODIGO, M.MOV_SECUENCIA,');
-  REstadoCtaCli.QDocs.SQL.Add('M.MOV_CUOTA, M.MOV_TASA, (m.mov_interes) mov_interes, m.mov_fechavence, m.suc_codigo, @fecha fecha,');
-  REstadoCtaCli.QDocs.SQL.Add('datediff(day,MOV_FECHA, @FECHA) DIASVENC, M.CLI_CODIGO, M.MOV_ABONO ABONO,');
-  REstadoCtaCli.QDocs.SQL.Add('M.MON_CODIGO');
-  REstadoCtaCli.QDocs.SQL.Add('FROM  Movimientos M WHERE M.TFA_CODIGO <> 1 AND CLI_CODIGO = :CLI_CODIGO AND EMP_CODIGO = :EMP_CODIGO AND MOV_STATUS = ''PEN'')  AS TEMP');
-  REstadoCtaCli.QDocs.SQL.Add('WHERE MOV_FECHA <= @FECHA');
-
-  IF ChkB_cksucursal.Checked THEN
-  REstadoCtaCli.QDocs.SQL.Add('and SUC_CODIGO = :SUC');
-  REstadoCtaCli.QDocs.SQL.Add('order by mov_fecha');
-  REstadoCtaCli.QDocs.Parameters.ParamByName('fecha').DataType := ftDate;
-  REstadoCtaCli.QDocs.Parameters.ParamByName('fecha').Value := Date;
-  REstadoCtaCli.QDocs.Parameters.ParamByName('emp_codigo').DataType := ftInteger;
-  REstadoCtaCli.QDocs.Parameters.ParamByName('cli_codigo').DataType := ftInteger;
-  IF ChkB_cksucursal.Checked = true THEN
-  REstadoCtaCli.QDocs.Parameters.ParamByName('SUC').Value         := REstadoCtaCli.suc;
-  REstadoCtaCli.QDocs.Open;
-
-  REstadoCtaCli.lbTipo.Caption := tTipo.Text;
-  REstadoCtaCli.lbFecha.Caption := 'Al '+DateToStr(Date);
-
-IF ChkB_cksucursal.Checked = True then
-    REstadoCtaCli.suc := REstadoCtaCli.suc ELSE
-    REstadoCtaCli.suc := REstadoCtaCli.suc;
-  if not VarIsNull(REstadoCtaCli.QDocs['mov_tasa']) then
-    REstadoCtaCli.tasa:= REstadoCtaCli.QDocs['mov_tasa']
-  else REstadoCtaCli.tasa:=1;
-  REstadoCtaCli.QRecibos.Close;
-  REstadoCtaCli.QRecibos.Parameters.ParamByName('FECHA').DataType := ftDate;
-  REstadoCtaCli.QRecibos.Open;
-  REstadoCtaCli.QNC.Close;
-  REstadoCtaCli.QNC.Parameters.ParamByName('fecha').DataType := ftDate;
-  REstadoCtaCli.QNC.Open;
-  REstadoCtaCli.QCredito.Close;
-  REstadoCtaCli.QCredito.Parameters.ParamByName('fecha').DataType := ftDate;
-  REstadoCtaCli.QCredito.Parameters.ParamByName('fecha').Value    := Date;
-  REstadoCtaCli.QCredito.Open;
-  REstadoCtaCli.QDepositos.Close;
-  REstadoCtaCli.QDepositos.Parameters.ParamByName('fecha').DataType := ftDate;
-  REstadoCtaCli.QDepositos.Open;
-  REstadoCtaCli.QAntig.Close;
-  REstadoCtaCli.QAntig.Parameters[1].Value := Date;
-  if ChkB_cksucursal.Checked then
-  REstadoCtaCli.QAntig.Parameters[3].Value := dblkcbb1.KeyValue else
-  REstadoCtaCli.QAntig.Parameters[3].Value := REstadoCtaCli.suc;
-  REstadoCtaCli.QAntig.Parameters.ParamByName('fecha').DataType := ftDate;
-  REstadoCtaCli.QAntig.Parameters.ParamByName('fecha').Value    := Date;
-  REstadoCtaCli.QAntig.Open;
-  REstadoCtaCli.qMora.Close;
-  REstadoCtaCli.qMora.Parameters.ParamByName('fecha').DataType := ftDate;
-  REstadoCtaCli.qMora.Parameters.ParamByName('fecha').Value    := Date;
-  REstadoCtaCli.qMora.Open;
-  REstadoCtaCli.lbFecha.Caption := 'Al '+DateToStr(Date);
-  REstadoCtaCli.PrinterSetup;
-  REstadoCtaCli.Preview;
-  REstadoCtaCli.Destroy;
-end;    }
 end;
 
 procedure TfrmConsCxC.btRefreshClick(Sender: TObject);
