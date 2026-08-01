@@ -551,6 +551,9 @@ var
   Total, Vencidos : Double;
   punt  : TBookmark;
 begin
+   //ACTUALIZA BALANCES
+  DM.ADOSigma.Execute('EXEC pr_actualiza_bce '+IntToStr(DM.vp_cia));
+
   QProv.Close;
   QProv.SQL.Clear;
   QProv.SQL := Memo1.Lines;
